@@ -4,4 +4,4 @@ getEmrData.sh is a shell script that will move data between local configuration 
 
 usage
 
-	bin/utils/getEmrData.sh hcvtarget-uf URI
+	bin/utils/getEmrData.sh <your_project_name> <your_sftp_uri>
