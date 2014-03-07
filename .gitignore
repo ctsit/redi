@@ -12,7 +12,5 @@ rawDataWithFormImported.xml
 rawDataWithFormStatus.xml
 !log/.dummy
 log/
-config/redcap.eav
-config/rawEscaped.txt
-config/report.txt
+config/
 .project
