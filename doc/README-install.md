@@ -24,7 +24,7 @@ In Debian Wheezy, execute these commands
 To install git, visit [Git Downloads](http://git-scm.com/downloads) for installation instructions for your operating system. Most linux distributions can install git using their package manager, as in Debian:
 
     sudo apt-get install git
-g
+
 Note to Mac Users: the deployment scripts below assume the use of GNU Utilities.  The default command line utilities that ship with Mac OSX behave differently.  If you want to use these procedures on a Mac please follow the installation procedures at [GNU Utilities](http://www.topbug.net/blog/2013/04/14/install-and-use-gnu-command-line-tools-in-mac-os-x/) to install the GNU Utilities
 
 ## Configuration
@@ -108,9 +108,8 @@ Remove the development configuration and replace it with the production config
 ## Manually run REDI
 
     # Run script to get EMR data
-    sudo /var/lib/redi/<local_folder_name>/config/updateRawXml.sh
-    cd /var/lib/redi/<local_folder_name>
-    sudo python bin/redi.py
+    sudo /var/lib/redi/<local_folder_name>/config/getEmrData.sh
+    sudo python /var/lib/redi/<local_folder_name>/bin/redi.py
 
 ## Configure this REDI to run via cron
 
