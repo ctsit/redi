@@ -1,0 +1,16 @@
+*.pyc
+*.pyo
+formData.xml
+rawData.xml
+translationalData.xml
+rawDataWithFormName.xml
+rawDataWithFormCompletedField.xml
+rawDataWithDatumAndUnitsFieldNames.xml
+rawDataSorted.xml
+rawDataWithAllUpdates.xml
+rawDataWithFormImported.xml
+rawDataWithFormStatus.xml
+!log/.dummy
+log/
+config/
+.project
