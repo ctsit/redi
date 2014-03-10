@@ -1,29 +1,34 @@
 # RED-I Project
 
-The REDCap Electronic Data Importer (RED-I) is a tool to automate the process of loading clinical data from EMRs into REDCap Study data capture systems. RED-I is a general purpose tool for REDCap data importing suitable for use on any study in any REDCap system. It uses XML lookups to translate csv into REDCap format eav. The tool allows study data to be securely uploaded from clinical reporting systems, error checked, and uploaded into REDCap.  It will provide the investigator with feedback on upload success as well as summary reporting to allow retrospective analysis of the data upload process.  
+The REDCap Electronic Data Importer (RED-I) is a tool to automate the process of loading clinical data from EMRs into REDCap Study data capture systems. RED-I is a general purpose tool for REDCap data importing suitable for use on any study in any REDCap system. It uses XML lookups to translate csv into REDCap format eav. The tool allows study data to be securely uploaded from clinical reporting systems, error checked, and uploaded into REDCap.  It provides the investigator with feedback on upload success in the form of summary reporting of the data upload process.  
 
 ## Directory layout 
-
 	
-	├── redi : This is the common repository for RED-I. This repository contains generic artifacts
-
-      ├── CHANGELOG - log of changes to the REDI project
-      ├── bin  : This folder consists of all the python modules for this repo
-      ├── config-example  : This folder consists of the configuration files specific to this repo
-      ├── doc  : This folder contains the documentation such as installation instructions, process flow specific to this repo
-      ├── log  : This folder has the log files that are generated during the run
-      └── test  : This folder has the test modules and test suite for this repo
+    redi : This is the common repository for RED-I. This repository contains generic artifacts
+    ├── CHANGELOG - log of changes to the REDI project
+    ├── bin  : This folder consists of all the python modules for this repo
+    ├── config-example  : This folder will consist of the configuration files specific to this repo
+    ├── doc  : This folder contains the documentation such as installation instructions, process flow specific to this repo
+    ├── log  : This folder has the log files that are generated during the run
+    └── test  : This folder has the test modules and test suite for this repo
 
 Installation
 -----------
 
-    git clone repository_access_url
+    git clone <repository_access_url> <your_project_name>
+    cd <your_project_name>
+    cp config-example config
+
+Adapt the example config folder to your needs.
+
+Reference doc/README-install.md for more installation details.
+Configuration docs have not yet been written.
+
 
 Usage
 -----
 
-    Go to Project Root
-    $python bin/redi.py
+    $python <project_root_path>/bin/redi.py
 
 Testing
 -------
@@ -31,8 +36,6 @@ Testing
 To run the tests:
 
     $ python <project_root_path>/test/TestSuite.py
-
-
 
 
 Contributing
@@ -44,4 +47,3 @@ Contributing
 4. Push to the branch (`git push origin my_branch`)
 5. Open a pull request
 6. Enjoy a refreshing Diet Coke (diet only) and wait
-
