@@ -1,8 +1,7 @@
 #!/bin/bash
 # draft script to send subjectMap to ftp site, get raw EMR data, and get log file
 
-SCRIPTDIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
-PROJECT_ROOT=$SCRIPTDIR/../../
+PROJECT_ROOT="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && cd ../../ && pwd )"
 
 if [ "$1" = "" ] ; then 
     echo "Please supply the project name"
