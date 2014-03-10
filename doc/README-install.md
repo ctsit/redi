@@ -35,39 +35,53 @@ REDI is configured via files that appear in ./config/  Once configured these fil
 
 Checkout the version of REDI required for this installation
 
+    # set some variables
+    redi_git_repository_uri=<redi_git_repository_uri>
+    redi_instance_name=<redi_instance_name>
+
     MYTEMP=`mktemp -d`
     cd $MYTEMP
 
-    git clone <your_git_repository_uri> <local_folder_name>
+    git clone $redi_git_repository_uri $redi_instance_name
     sudo mkdir /var/lib/redi.archive/
     sudo mkdir /var/lib/redi/
-    sudo cp -r $MYTEMP/<local_folder_name> /var/lib/redi/
-    cd /var/lib/redi/<local_folder_name>
+    sudo cp -r $MYTEMP/$redi_instance_name /var/lib/redi/
+    cd /var/lib/redi/$redi_instance_name
 
     # clean up the mess
     rm -rf $MYTEMP
 
-Copy the existing configuration to your home directory for editing and commiting changes.  After editing this config data needs to be deployed to the production location.
+Copy the example configuration to your home directory for editing and commiting changes.  After editing, this config data needs to be deployed to the production location.
 
-    mkdir ~/<local_config_folder_name>
-    cp -r /var/lib/redi/<local_folder_name>/config/* ~/<local_config_folder_name>
-    cd ~/<local_config_folder_name>
+    # set some variables
+    redi_instance_configuration_uri=<configuration_URI>
+
+    mkdir ~/$redi_instance_name
+    cp -r /var/lib/redi/$redi_instance_name/config-example/* ~/<local_config_folder_name>
+    cd ~/$redi_instance_name
     # edit config as needed
     git init 
-    git remote add origin <configuration_git_uri> 
+    git remote add origin $redi_instance_configuration_uri
     git push -u origin master
 
 Deploy config to the REDI instance 
 
-    sudo rm -rf /var/lib/redi/<local_folder_name>/config
-    sudo cp -r ~/<local_config_folder_name> /var/lib/redi/<local_folder_name>/config
+    sudo rm -rf /var/lib/redi/$redi_instance_name/config
+    sudo cp -r ~/$redi_instance_name /var/lib/redi/$redi_instance_name/config
+
 
 ## Redeployment to an existing redi installation
 
 Back up existing installation
 
+    # set some variables
+    redi_git_repository_uri=<redi_git_repository_uri>
+    redi_instance_name=<redi_instance_name>
+
     date=`date +"%Y%m%d-%H%M"`
-    sudo -E tar czvf   /var/lib/redi.archive/<local_folder_name>.$date.tgz /var/lib/redi/<local_folder_name>
+    if [ -e /var/lib/redi/$redi_instance_name ];  then
+        sudo -E tar czvf   /var/lib/redi.archive/$redi_instance_name.$date.tgz /var/lib/redi/$redi_instance_name
+    fi
 
 Remove the existing installation and redeploy code.
 Checkout the version of REDI required for this installation
@@ -76,30 +90,38 @@ Checkout the version of REDI required for this installation
     MYTEMP=`mktemp -d`
     cd $MYTEMP
     # Now checkout the head of master
-    git clone <your_git_repository_uri> <local_folder_name>
+    git clone $redi_git_repository_uri $redi_instance_name
 
     # delete the old code
-    sudo rm -rf /var/lib/redi/<local_folder_name>
+    if [ -e /var/lib/redi/$redi_instance_name ];  then
+        sudo rm -rf /var/lib/redi/$redi_instance_name
+    fi
 
     # deploy the new code
-    sudo cp -r $MYTEMP/<local_folder_name> /var/lib/redi/
-    cd /var/lib/redi/<local_folder_name>
+    sudo cp -r $MYTEMP/$redi_instance_name /var/lib/redi/
+    cd /var/lib/redi/$redi_instance_name
     sudo rm -rf .git
 
     # Clean up the mess
     rm -rf $MYTEMP
 
-Remove the development configuration and replace it with the production config
+Install the production configuration
+
+    # set some variables
+    redi_instance_configuration_uri=<configuration_URI>
 
     # Clone the config repo to some scratch space
     MYTEMP=`mktemp -d`
     cd $MYTEMP
-    git clone <configuration_git_uri> config
+    git clone $redi_instance_configuration_uri config
+    cd config
+    rm -rf .git
+    cd ..
     
     # Deploy config to the REDI instance
-    sudo rm -rf /var/lib/redi/<local_folder_name>/config
+    sudo rm -rf /var/lib/redi/$redi_instance_name/config
     cd $MYTEMP
-    sudo cp -r config /var/lib/redi/<local_folder_name>/config
+    sudo cp -r config /var/lib/redi/$redi_instance_name/config
 
     # Clean up the mess
     cd ~/
@@ -108,8 +130,9 @@ Remove the development configuration and replace it with the production config
 ## Manually run REDI
 
     # Run script to get EMR data
-    sudo /var/lib/redi/<local_folder_name>/config/getEmrData.sh
-    sudo python /var/lib/redi/<local_folder_name>/bin/redi.py
+    sudo /var/lib/redi/$redi_instance_name/config/getEmrData.sh
+    # Run REDI
+    sudo python /var/lib/redi/$redi_instance_name/bin/redi.py
 
 ## Configure this REDI to run via cron
 
