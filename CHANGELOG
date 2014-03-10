@@ -1,3 +1,18 @@
+2014-03-10 v0.6.2
+
+ * Summary: Completed commits required to share repo at UF
+
+ * Parameterize and add file tests in README-install.md (Philip Chase)
+ * Fix PROJECT_ROOT environment variable (Philip Chase)
+ * Revise 'Manually run REDI' section of README-install.md to reflect change in getEmrData.sh (Philip Chase)
+ * Added more credits to the AUTHORS file (Philip Chase)
+ * Update README.md to reflect the current project state (Philip Chase)
+ * Add README file (Mohan Das Katragadda)
+ * add manifest file for setup distribution generation (Radha Kandula)
+ * add setup.py (Radha Kandula)
+ * Add authors file (Philip Chase)
+ * Add config directory to gitignore (Philip Chase)
+
 2014-03-07 v0.6.1
  
  * Summary: Add location independence to tests. Add BSD 3-Clause license
