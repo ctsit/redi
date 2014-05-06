@@ -13,4 +13,4 @@ Thanks also to Linc Moldawer, Jen Lanz, Ruth Davis, and Scott Brakenridge of the
 
 Philip Chase (philipbchase@gmail.com), Nicholas Rejack (nrejack@ufl.edu), Erik Schmidt, and Chris Barnes provided direction to the development effort. 
 
-Radha Kandula, Mohan Das Katragadda, Yang Li, Kumar Sadhu, Alex Loiacono, Erik Schmidt, Nicholas Rejack, and Philip Chase provided code to make this project awesome.  We are nothing without our developers.
+Radha Kandula, Mohan Das Katragadda, Yang Li, Kumar Sadhu, Alex Loiacono, Erik Schmidt, Nicholas Rejack, Philip Chase, and Roy Keyes provided code to make this project awesome.  We are nothing without our developers.
