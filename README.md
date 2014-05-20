@@ -1,4 +1,4 @@
-# RED-I Project
+# RED-I Project https://zenodo.org/badge/doi/10.5281/zenodo.10014.png
 
 The REDCap Electronic Data Importer (RED-I) is a tool to automate the process of loading clinical data from EMRs into REDCap Study data capture systems. RED-I is a general purpose tool for REDCap data importing suitable for use on any study in any REDCap system. It uses XML lookups to translate csv into REDCap format eav. The tool allows study data to be securely uploaded from clinical reporting systems, error checked, and uploaded into REDCap.  It provides the investigator with feedback on upload success in the form of summary reporting of the data upload process.  
 
