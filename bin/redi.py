@@ -22,10 +22,13 @@ import string
 import httplib
 from urllib import urlencode
 import os
+import sys
 # This addresses the issues with relative paths
 file_dir = os.path.dirname(os.path.realpath(__file__))
 goal_dir = os.path.join(file_dir, "../")
 proj_root = os.path.abspath(goal_dir)+'/'
+sys.path.insert(0, proj_root+'bin/utils/')
+from redcap_transactions import redcap_transactions
 
 # INTERMEDIATE STEPS: XML!
 # step 1: parse raw XML to ElementTree: "data"
@@ -66,7 +69,7 @@ def main():
     # read config
     setup_json = proj_root+'config/setup.json'
     setup = read_config(setup_json)
-    
+
     # read in 3 main data files / translation tables
     raw_xml_file = proj_root+ setup['raw_xml_file']
     form_events_file = proj_root+ setup['form_events_file']
@@ -78,7 +81,7 @@ def main():
     input_date_format = setup['input_date_format']
     output_date_format = setup['output_date_format']
 
-    
+
     # Set path to log file
     # system_log_file = setup['system_log_file']
 
@@ -100,7 +103,7 @@ def main():
     form_data = {}
     for i in range(len(forms)):
         form_data[forms[i].text] = form_Completed_Field_Names[i].text
-    
+
     # check if form element tree is empty
     if not form_events_tree:
         # raise an exception if empty
@@ -131,7 +134,7 @@ def main():
 
     # set all formImportedFieldName value to the value mapped from
     # formEvents.xml
-    update_form_imported_field(data, form_events_tree, proj_root+'undefined')
+    update_form_imported_field(data, form_events_tree, 'undefined')
     # output raw file to check it
     write_element_tree_to_file(data, proj_root+'rawDataWithFormImported.xml')
 
@@ -168,18 +171,23 @@ def main():
     ## write back the changed global Element Tree
     write_element_tree_to_file(data, proj_root+'rawDataWithAllUpdates.xml')
 
+    # Initialize RedI
+    properties = redcap_transactions().init_redcap_interface(setup, setup['redcap_uri'], logger)
+
+    # Research ID - to - Redcap ID converter
+    research_id_to_redcap_id_converter(data, properties, setup)
+    ## write back the changed global Element Tree
+    write_element_tree_to_file(data, proj_root+'rawDataWithAllUpdates.xml')
+
     # generate redcap eav
     report_data = generate_redcap_eav(data,form_data,output_date_format)
-    
+
     # pull the data from the generated eav and push it to redi
     try:
         data_file = open(data_file_path, 'r')
         data_to_post = data_file.read()
     except IOError:
         raise LogException('EAV '+data_file_path +' file not found')
-
-    # Initialize RedI
-    properties = init_redcap_interface(setup)
 
     # send data to redcap intereface
     send_data_to_redcap(properties, data=data_to_post, token=setup['token'])
@@ -190,13 +198,13 @@ def main():
     transform = etree.XSLT(xslt)
     html_report = transform(xml_report_tree)
     html_str = etree.tostring(html_report, method='html', pretty_print=True)
-    
+
     # send report via email
     if send_email == 'Y':
         sender = setup["sender_email"]
         receiver = setup["receiver_email"]
         send_report(sender,receiver,html_str)
-    
+
 
 def get_emr_data():
     '''This function gets the EMR data from the sftp server and
@@ -387,17 +395,17 @@ def update_time_stamp(data, input_date_format, output_date_format):
     for subject in data.iter('subject'):
         # New EMR field SPECIMN_TAKEN_TIME is used in place of Collection Date and Collection Time
         specimn_taken_time = subject.find('SPECIMN_TAKEN_TIME').text
-        
+
         if specimn_taken_time is not None:
             #Converting specimen taken time to redcap accepted time format YYYY-MM-DD
-            
+
             # construct struct_time structure from String
             # this will accurately pad each part of the time
             # Rule : generic input/output of date format
             temptime = time.strptime(specimn_taken_time, input_date_format)
             # convert struct into a string representation
             date_time = time.strftime(output_date_format, temptime)
-            
+
             # write the dateTime to ElementTree
             subject.find('timestamp').text = format(date_time)
 
@@ -638,13 +646,13 @@ def update_event_name(data, lookup_data, undefined):
                 #Check that the event counter form the previous loop did not
                 # exceed the size of the event list.  If it did we should
                 # issue a warning
-                
+
                 if event_index >= lookup_table_length:
                     max_event_alert.append("Exceeded event list for record group "+\
                                         last_record_group+ ". Event count of "+str(event_index)+\
                                 " exceeds maximum of "+str(len(lookup_table[old_form_name])))
                     logger.warn('update_event_name: %s', max_event_alert)
-                
+
                 # reset the event counter so we can restart from the top
                 # of the list. We have moved to a new group
                 logger.debug("update_event_name: Move to new record group: %s",
@@ -703,6 +711,80 @@ def update_event_name(data, lookup_data, undefined):
                   event_index: %s", str(event_index))
     return {'max_event_alert':max_event_alert, 'multiple_values_alert':multiple_values_alert}
 
+def research_id_to_redcap_id_converter(data, properties, setup):
+  '''This function converts the research_id to redcap_id
+   1. prepare a dictionary with [key, value] --> [study_id, redcap_id]
+   2. replace the element tree study_id with the new redcap_id's
+   for each bad id, log it as warn
+
+  '''
+  # read each of the study_id's from the data etree
+  study_id_recap_id_dict = {}
+
+  ''' Configuration data from the mapping xml
+
+  '''
+  mapping_xml = proj_root+setup['research_id_to_redcap_id']
+
+  # read the field names from the research_id_to_redcap_id_map.xml
+  # check for file existance
+  if not os.path.exists(mapping_xml):
+      raise LogException("Error: research id to redcap id fieldname xml not found at "
+          +mapping_xml)
+
+  mapping_data = etree.parse(mapping_xml)
+  redcap_id_field_name = mapping_data.getroot().findtext('redcap_id_field_name')
+  research_id_field_name = mapping_data.getroot().findtext('research_id_field_name')
+
+  if research_id_field_name is None or research_id_field_name == '':
+    logger.error('research_id_field_name tag in file %s is not present', mapping_xml)
+    raise LogException('research_id_field_name tag in file %s is not present', mapping_xml)
+
+  if redcap_id_field_name is None or redcap_id_field_name == '':
+    logger.error('redcap_id_field_name tag in file %s is not present', mapping_xml)
+    raise LogException('redcap_id_field_name tag in file %s is not present', mapping_xml)
+
+  ''' Communication with redcap
+
+  '''
+  redcap_transaction = redcap_transactions()
+  # query the redcap for the response with redcap id's
+  properties['fields'] = research_id_field_name+','+redcap_id_field_name
+  response = redcap_transaction.get_data_from_redcap(properties, properties['token'],logger,
+          'Redcap', format_param='xml', type_param='flat', return_format='xml')
+  
+  import xml.etree.ElementTree as ET
+  items = ET.fromstring(response)
+  redcap_dict = {}
+  # list of bad research ids that are not present in redcap list
+  bad_ids = defaultdict(int)
+
+  for item in items.findall('./item'):
+    research_id = item.findtext(research_id_field_name)
+    redcap_id = item.findtext(redcap_id_field_name)
+    if research_id is not None and research_id != '':
+      redcap_dict[research_id] = redcap_id
+
+  for subject in data.iter('subject'):
+      study_id = subject.findtext('STUDY_ID')
+      # tag = subject.find('STUDY_ID')
+      # if the study id is not null populate the dictionary
+      if study_id is not None and study_id != '' and study_id in redcap_dict:
+        # if the study_id in redcap_dict of redcap id's update the study_id
+        # with redcap id
+        subject.find('STUDY_ID').text = redcap_dict[study_id]
+      elif study_id is not None and study_id != '' and study_id not in redcap_dict:
+        # add the bad research id to list of bad ids
+        bad_ids[study_id] += 1
+        data.getroot().remove(subject)
+      else:
+        logger.error('Error: research id to redcap id: study_id is invalid')
+
+  for bad_id in bad_ids.iteritems():
+    logger.warn('Bad research id %s found %s times', bad_id[0], bad_id[1])
+
+  pass
+
 
 def generate_redcap_eav(data,form_data,output_date_format):
     '''function to generate REDCap EAV from data ElementTree
@@ -748,7 +830,7 @@ def generate_redcap_eav(data,form_data,output_date_format):
             subject_dates[study_id] = list()
 
         # if the form_name 'undefined, go to the next record!
-        # TIMESTAMP check below is just a work-around for skipping the 
+        # TIMESTAMP check below is just a work-around for skipping the
         # wrong input of empty timestamps
         if form_name == 'undefined' or event_name == 'undefined' or timestamp == '':
             pass
@@ -767,8 +849,8 @@ def generate_redcap_eav(data,form_data,output_date_format):
             redcap_form_status = \
                 subject.findtext("redcapFieldNameStatus")
             result_value = subject.findtext("ORD_VALUE")
-            
-            
+
+
             #rule_engine(last_record_group)
             #print last_record_group+' '+current_record_group
             #print last_record_group_list
@@ -779,7 +861,7 @@ def generate_redcap_eav(data,form_data,output_date_format):
                 initialize_componentdict()
                 #print component_list
                 component_dict = rule_engine(component_list, last_record_group_list['form_name'])
-                
+
                 if component_dict is None:
                     logger.error('Returned null component dictionary')
                     last_record_group = current_record_group
@@ -801,7 +883,7 @@ def generate_redcap_eav(data,form_data,output_date_format):
                         stat + '"\n'
                         eav_file.write(eav_str.encode('utf-8'))
                 del component_list[:]
-                
+
 
                 # output event date and form completed records
                 #print current_record_group+' '+redcap_field_name_value+' '+timestamp
@@ -816,7 +898,7 @@ def generate_redcap_eav(data,form_data,output_date_format):
                     last_record_group_list['timestamp'] + '"\n'
                 eav_file.write(eav_str.encode('utf-8'))
 
-                
+
                 completed_field_name = last_record_group_list['form_completed_field_name']
                 if completed_field_name in form_data.values():
                     total_form_counts[completed_field_name] = \
@@ -856,7 +938,7 @@ def generate_redcap_eav(data,form_data,output_date_format):
             last_record_group_list['timestamp'] = timestamp
             last_record_group_list['form_completed_field_name'] = form_completed_field_name
             last_record_group_list['form_imported_field_name'] = form_imported_field_name
-            
+
         #print redcap_field_name_value+' '+result_value
         #print last_record_group_list['form_name']
             logger.debug("generate_redcap_eav: current and last record group match: " + last_record_group +"\n"  + current_record_group)
@@ -864,9 +946,9 @@ def generate_redcap_eav(data,form_data,output_date_format):
 
             # Append the current field name to the list of found field names
             component_list.append(redcap_field_name_value)
-            
+
             # For datum records, output the fields
-            #   Study_Id,eventName,redcapFieldNameValue,result_Value    
+            #   Study_Id,eventName,redcapFieldNameValue,result_Value
             eav_str = study_id + ',"' + event_name + '",' + \
                 redcap_field_name_value + ',' + result_value + "\n"
             eav_file.write(eav_str.encode('utf-8'))
@@ -878,7 +960,7 @@ def generate_redcap_eav(data,form_data,output_date_format):
                 eav_str = study_id + ',"' + event_name + '",' + \
                     redcap_field_name_units + ',"' + reference_unit + '"\n'
                 eav_file.write(eav_str.encode('utf-8'))
-    
+
     ''' last iteration START
 
     '''
@@ -903,7 +985,7 @@ def generate_redcap_eav(data,form_data,output_date_format):
             str(status_dict[myfield]) +',"' +\
             stat + '"\n'
             eav_file.write(eav_str.encode('utf-8'))
-    
+
     all_dates.add(last_record_group_list['timestamp'])
     subject_dates[study_id].append(last_record_group_list['timestamp'])
     eav_str = \
@@ -919,7 +1001,7 @@ def generate_redcap_eav(data,form_data,output_date_format):
         total_form_counts[completed_field_name] + 1
         consolidated_form_data[completed_field_name][last_record_group_list['study_id']] = \
         consolidated_form_data[completed_field_name][last_record_group_list['study_id']] +1
-    
+
     # For form completed records, output the fields
     #   Study_Id,eventName,formCompletedFieldName, 2
     eav_str = last_record_group_list['study_id'] + ',"' + \
@@ -940,7 +1022,7 @@ def generate_redcap_eav(data,form_data,output_date_format):
     '''
     date_lst = list(sorted(all_dates))
     subject_details = {}
-    
+
     subjects = subject_dates.keys()
     import datetime
     for k in subjects:
@@ -955,7 +1037,7 @@ def generate_redcap_eav(data,form_data,output_date_format):
                 subject_data[s] = consolidated_form_data[value][k]
             subject_data.update({'earliestdate':earliest_date,'latestdate':latest_date,'StudyPeriod':delta})
             subject_details[k] = subject_data
-    
+
     for k,v in form_data.items():
         s = 'Total_'+k+'_Forms'
         report_data[s] = total_form_counts[v]
@@ -980,8 +1062,8 @@ def init_statusdict():
 def initialize_componentdict():
     '''This function initializes component dictionary with 'False'
         values for all the forms taken from translational_table_tree
-        define the component dictionary 
-        list all the components under a form and mark them as 'False' as 
+        define the component dictionary
+        list all the components under a form and mark them as 'False' as
         default value.
         Radha
 
@@ -1005,12 +1087,12 @@ def rule_engine(component_list, form_name):
         return None
     if not form_name:
         return None
-    # The program dynamically changes the value to 'True' if it 
+    # The program dynamically changes the value to 'True' if it
     # encounters the value in the subject
-    
+
     for component in component_list:
         component_dict[form_name][component] = True
-        
+
     return component_dict[form_name]
 
 def init_redcap_interface(setup):
@@ -1121,7 +1203,7 @@ def configure_logging():
         are displayed. Depending on the maturity of the application
         and release version these levels will be further
         narrowed down to WARNING
-        
+
 
         Level       Numeric value
         =========================
@@ -1158,12 +1240,12 @@ def send_report(sender,receiver,body):
     msg['To'] = ",".join(receiver)
     msg['Subject'] = "Data Import Report"
     msg.attach(MIMEText(body, 'html'))
-    
+
     """
     Sending email
 
     """
-    
+
     try:
        smtpObj = smtplib.SMTP('smtp.ufl.edu',25)
        smtpObj.sendmail(sender, receiver, msg.as_string())
@@ -1185,7 +1267,7 @@ def create_summary_report(report_parameters, report_data, form_data, alert_summa
     tree = etree.ElementTree(root)
     write_element_tree_to_file(tree, report_parameters.get('report_file_path'))
     return tree
-    
+
 def updateReportHeader(root,report_parameters):
     import time
     header = root[0]
@@ -1202,8 +1284,8 @@ def updateReportSummary(root,report_data,form_data):
     subjectCount.text = str(report_data.get('total_subjects'))
     forms = etree.SubElement(summary, "forms")
     for k in sorted(form_data.keys()):
-        s = 'Total_'+k+'_Forms' 
-        form = etree.SubElement(forms, "form")       
+        s = 'Total_'+k+'_Forms'
+        form = etree.SubElement(forms, "form")
         name_element = etree.SubElement(form,"form_name")
         name_element.text = s
         count_element = etree.SubElement(form,"form_count")
@@ -1231,7 +1313,7 @@ def updateReportAlerts(root, alert_summary):
 
 def updateSubjectDetails(root,subject_details):
     subjectsDetails = root[3]
-    for key in subject_details.keys():
+    for key in sorted(subject_details.keys()):
         subject = etree.SubElement(subjectsDetails, "Subject")
         details = subject_details.get(key)
         subjectId = etree.SubElement(subject, "ID")
@@ -1239,16 +1321,15 @@ def updateSubjectDetails(root,subject_details):
         forms = etree.SubElement(subject, "forms")
         for k in sorted(details.keys()):
             if(k.endswith("_Forms")):
-                form = etree.SubElement(forms, "form")       
+                form = etree.SubElement(forms, "form")
                 name_element = etree.SubElement(form,"form_name")
                 name_element.text = k
                 count_element = etree.SubElement(form,"form_count")
                 count_element.text = str(details.get(k))
-            else: 
+            else:
                 element = etree.SubElement(subject, k)
                 element.text = str(details.get(k))
 
 
 if __name__ == "__main__":
     main()
-

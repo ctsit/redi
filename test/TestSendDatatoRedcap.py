@@ -27,7 +27,7 @@ class TestSendDatatoRedcap(unittest.TestCase):
         redi.configure_logging()
         # start a server in seperate thread
         thread.start_new_thread(self.server_setup,())
-    
+
     #@all_requests
     def response_content(self, environ, start_response):
         response_body = 'OK'
@@ -62,10 +62,10 @@ class TestSendDatatoRedcap(unittest.TestCase):
                 re.search(r'type\=eav',body).group() != 'type=eav':
                 response_body = 'NOT OK'
 
-        print response_body
+        #print response_body
         return [response_body]
 
-    '''This function runs as a seperate thread. 
+    '''This function runs as a seperate thread.
         used to start the server at localhost:8051
     '''
     def server_setup(self):
@@ -78,20 +78,20 @@ class TestSendDatatoRedcap(unittest.TestCase):
 
     '''
     def testSendDatatoRedcap(self):
-        # the test properties except the localhost are intentionally 
+        # the test properties except the localhost are intentionally
         # blanked out just to test the posting of content to the server
         # mentioned in variable test_data
-        test_properties = {'host' : 'localhost:8051', 
-                        'path' : '', "is_secure" : '', 
+        test_properties = {'host' : 'localhost:8051',
+                        'path' : '', "is_secure" : '',
                         'token': '4CE405878D219CFA5D3ADF7F9AB4E8ED'}
-        
+
         global test_data
         test_data = ''
         # This is the actual send_data_to_redcap function in test
         returned = redi.send_data_to_redcap(test_properties,data=test_data,
                         token=test_properties['token'])
         #print returned
-        # checking for the response from the server started with the expected 
+        # checking for the response from the server started with the expected
         # data from user side
         assert returned == 'OK'
 
