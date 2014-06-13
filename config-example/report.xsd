@@ -1,0 +1,111 @@
+<xs:schema attributeFormDefault="unqualified" elementFormDefault="qualified" xmlns:xs="http://www.w3.org/2001/XMLSchema">
+  <xs:element name="report">
+    <xs:complexType>
+      <xs:sequence>
+        <xs:element name="header">
+          <xs:complexType>
+            <xs:sequence>
+              <xs:element type="xs:string" name="project"/>
+              <xs:element type="xs:string" name="date"/>
+              <xs:element type="xs:string" name="redcapServerAddress"/>
+            </xs:sequence>
+          </xs:complexType>
+        </xs:element>
+        <xs:element name="summary">
+          <xs:complexType>
+            <xs:sequence>
+              <xs:element type="xs:byte" name="subjectCount"/>
+              <xs:element name="forms">
+                <xs:complexType>
+                  <xs:sequence>
+                    <xs:element name="form" maxOccurs="unbounded" minOccurs="0">
+                      <xs:complexType>
+                        <xs:sequence>
+                          <xs:element type="xs:string" name="form_name"/>
+                          <xs:element type="xs:byte" name="form_count"/>
+                        </xs:sequence>
+                      </xs:complexType>
+                    </xs:element>
+                  </xs:sequence>
+                </xs:complexType>
+              </xs:element>
+              <xs:element type="xs:byte" name="total_unique_dates"/>
+              <xs:element name="dates">
+                <xs:complexType>
+                  <xs:sequence>
+                    <xs:element type="xs:date" name="earliestDate"/>
+                    <xs:element type="xs:date" name="latestDate"/>
+                  </xs:sequence>
+                </xs:complexType>
+              </xs:element>
+            </xs:sequence>
+          </xs:complexType>
+        </xs:element>
+        <xs:element name="alerts">
+          <xs:complexType>
+            
+             <xs:sequence>
+              <xs:element name="tooManyForms">
+                <xs:complexType>
+                  <xs:sequence>
+                    <xs:element name="eventAlert" maxOccurs="unbounded" minOccurs="0">
+                      <xs:complexType>
+                        <xs:sequence>
+                          <xs:element type="xs:string" name="message"/>
+                        </xs:sequence>
+                      </xs:complexType>
+                    </xs:element>
+                  </xs:sequence>
+                </xs:complexType>
+              </xs:element>
+
+              <xs:element name="tooManyValues">
+                <xs:complexType>
+                  <xs:sequence>
+                    <xs:element name="valuesAlert" maxOccurs="unbounded" minOccurs="0">
+                      <xs:complexType>
+                        <xs:sequence>
+                          <xs:element type="xs:string" name="message"/>
+                        </xs:sequence>
+                      </xs:complexType>
+                    </xs:element>
+                  </xs:sequence>
+                </xs:complexType>
+              </xs:element>
+            </xs:sequence>
+          </xs:complexType>
+        </xs:element>
+        <xs:element name="subjectsDetails">
+          <xs:complexType>
+            <xs:sequence>
+              <xs:element name="Subject" maxOccurs="unbounded" minOccurs="0">
+                <xs:complexType>
+                  <xs:sequence>
+                    <xs:element type="xs:byte" name="ID"/>
+                    <xs:element name="forms">
+                      <xs:complexType>
+                        <xs:sequence>
+                          <xs:element name="form" maxOccurs="unbounded" minOccurs="0">
+                            <xs:complexType>
+                              <xs:sequence>
+                                <xs:element type="xs:string" name="form_name"/>
+                                <xs:element type="xs:byte" name="form_count"/>
+                              </xs:sequence>
+                            </xs:complexType>
+                          </xs:element>
+                        </xs:sequence>
+                      </xs:complexType>
+                    </xs:element>
+                    <xs:element type="xs:short" name="StudyPeriod"/>
+                    <xs:element type="xs:date" name="earliestdate"/>
+                    <xs:element type="xs:date" name="latestdate"/>
+                  </xs:sequence>
+                </xs:complexType>
+              </xs:element>
+            </xs:sequence>
+          </xs:complexType>
+        </xs:element>
+      </xs:sequence>
+    </xs:complexType>
+  </xs:element>
+</xs:schema>
