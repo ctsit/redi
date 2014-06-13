@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<redcapProject>
+	<name>Project</name>
+	<form>
+		<name>cbc</name>
+		<formDateField>cbc_lbdtc</formDateField>
+		<formCompletedFieldName>cbc_complete</formCompletedFieldName>
+		<formImportedFieldName>cbc_nximport</formImportedFieldName>
+		<event>
+    		<name>1_arm_1</name>
+		</event>
+		<event>
+		    <name>2_arm_1</name>
+		</event>
+		<event>
+		    <name>3_arm_1</name>
+		</event>
+		<event>
+		    <name>4_arm_1</name>
+		</event>
+		<event>
+		    <name>5_arm_1</name>
+		</event>
+		<event>
+		    <name>6_arm_1</name>
+		</event>
+		<event>
+		    <name>7_arm_1</name>
+		</event>
+		<event>
+		    <name>8_arm_1</name>
+		</event>
+		<event>
+		    <name>9_arm_1</name>
+		</event>
+		<event>
+		    <name>10_arm_1</name>
+		</event>
+	</form>
+</redcapProject>

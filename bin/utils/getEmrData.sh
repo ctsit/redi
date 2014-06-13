@@ -1,5 +1,9 @@
 #!/bin/bash
-# draft script to send subjectMap to ftp site, get raw EMR data, and get log file
+# Draft script to connect to an ftp site, get raw EMR data, get log file, 
+# and return the possibly modified log file to the FTP server.
+
+# Fix the path on Macs to allow Brewed Gnu Utilities to be the default
+export PATH="/usr/local/opt/coreutils/libexec/gnubin:/usr/local/bin:$PATH"
 
 PROJECT_ROOT="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && cd ../../ && pwd )"
 
@@ -19,9 +23,8 @@ fi
 
 MYTEMP=`mktemp -d`
 
-cp $PROJECT_ROOT/config/subjectMap.csv $MYTEMP/input.csv
 cd $MYTEMP
-lftp $URI -e "cd $PROJECT_NAME; put input.csv; get log.txt; get output.csv; bye"
+lftp $URI -e "cd $PROJECT_NAME; get log.txt; get output.csv; bye"
 cp output.csv $PROJECT_ROOT/config/raw.txt
 cp log.txt $PROJECT_ROOT/log/log.txt
 
