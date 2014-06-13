@@ -1,14 +1,12 @@
-2014-05-15 v0.7.1
+2014-06-13 v0.7.0
 
- * Stop sending the subjectMap.csv file to the ftp server.  That is being handled by a separate process. (Philip Chase)
-
-2014-04-22 v0.7.0
-
- * Add feature to translate research subject IDs to REDCap IDs based on queries of the target redcap system.  
-
-2014-04-22 v0.6.3
-
- * Specify a path that includes Brew's GNU Utilities in getEmrData.sh so that we get the correct version of mktemp (Philip Chase)
+ * Add feature to translate research subject IDs to REDCap IDs based on queries of the target redcap system
+ * Add config-examples with sample configuration files
+ * Update README.md
+ * Update data specification
+ * Add export_from_redcap.py, a tool to read data from a REDCap project using the REDCap API
+ * Update AUTHORS.md file
+ * Update LICENSE
 
 2014-03-10 v0.6.2
 
