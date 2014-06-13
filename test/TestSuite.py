@@ -28,6 +28,7 @@ from TestUpdateDataFromLookup import TestUpdateDataFromLookup
 from TestAddElementsToTree import TestAddElementsToTree
 from TestUpdateRedcapFieldNameValueAndUnits import TestUpdateRedcapFieldNameValueAndUnits
 from TestUpdateEventName import TestUpdateEventName
+from TestResearchIdToRedcapId import TestResearchIdToRedcapId
 from TestGenerateRedcapEAV import TestGenerateRedcapEAV
 from TestSendDatatoRedcap import TestSendDatatoRedcap
 from TestUpdateFormImported import TestUpdateFormImported
@@ -54,6 +55,7 @@ class redi_suite(unittest.TestSuite):
         redi_test_suite.addTest(TestAddElementsToTree)
         redi_test_suite.addTest(TestUpdateRedcapFieldNameValueAndUnits)
         redi_test_suite.addTest(TestUpdateEventName)
+        redi_test_suite.addTest(TestResearchIdToRedcapId)
         redi_test_suite.addTest(TestGenerateRedcapEAV)
         redi_test_suite.addTest(TestSendDatatoRedcap)
         redi_test_suite.addTest(TestUpdateFormImported)
@@ -65,8 +67,7 @@ class redi_suite(unittest.TestSuite):
 
 def main():
     unittest.main(buffer=True)
-    
+
 
 if __name__ == '__main__':
     main()
-
