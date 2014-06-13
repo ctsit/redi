@@ -1,0 +1,4 @@
+<subject_id_field_mapping>
+  <redcap_id_field_name>dm_subjid</redcap_id_field_name>
+  <research_id_field_name>dm_usubjid</research_id_field_name>
+</subject_id_field_mapping>

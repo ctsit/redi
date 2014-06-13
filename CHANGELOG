@@ -1,3 +1,15 @@
+2014-05-15 v0.7.1
+
+ * Stop sending the subjectMap.csv file to the ftp server.  That is being handled by a separate process. (Philip Chase)
+
+2014-04-22 v0.7.0
+
+ * Add feature to translate research subject IDs to REDCap IDs based on queries of the target redcap system.  
+
+2014-04-22 v0.6.3
+
+ * Specify a path that includes Brew's GNU Utilities in getEmrData.sh so that we get the correct version of mktemp (Philip Chase)
+
 2014-03-10 v0.6.2
 
  * Summary: Completed commits required to share repo at UF
