@@ -12,8 +12,12 @@ import unittest
 '''
     IMPORTANT: the imports should be updated in order to add the test to
     the test suite.
-    note: No error will be thrown if the import is not done, at the same
-    time test also will not be run even we addTest(<test_class>)
+    Notes:
+        - No error will be thrown if the `import` statement is missing
+        - No test will be run if the `import` statement is missing even
+            if we add the line `addTest(<test_class>)`
+        - To run the script the user must instal a few libraries
+            On a mac: pip install lxml request
 '''
 from lxml import etree
 from TestLog import TestLog
@@ -29,11 +33,16 @@ from TestAddElementsToTree import TestAddElementsToTree
 from TestUpdateRedcapFieldNameValueAndUnits import TestUpdateRedcapFieldNameValueAndUnits
 from TestUpdateEventName import TestUpdateEventName
 from TestResearchIdToRedcapId import TestResearchIdToRedcapId
-from TestGenerateRedcapEAV import TestGenerateRedcapEAV
-from TestSendDatatoRedcap import TestSendDatatoRedcap
 from TestUpdateFormImported import TestUpdateFormImported
 from TestCreateSummaryReport import TestCreateSummaryReport
-
+from TestUpdateStatusField import TestUpdateStatusField
+from TestCreateEmptyEventsForOneSubject import TestCreateEmptyEventsForOneSubject
+from TestCreateEmptyEventTreeForStudy import TestCreateEmptyEventTreeForStudy
+from TestCreateEavOutput import TestCreateEavOutput
+from TestGenerateOutput import TestGenerateOutput
+from TestParseAll import TestParseAll
+from TestHandleREDCapResponse import TestHandleErrorsInREDCapResponse
+from TestParseRawXml import TestParseRawXml
 
 class redi_suite(unittest.TestSuite):
 
@@ -56,12 +65,19 @@ class redi_suite(unittest.TestSuite):
         redi_test_suite.addTest(TestUpdateRedcapFieldNameValueAndUnits)
         redi_test_suite.addTest(TestUpdateEventName)
         redi_test_suite.addTest(TestResearchIdToRedcapId)
-        redi_test_suite.addTest(TestGenerateRedcapEAV)
-        redi_test_suite.addTest(TestSendDatatoRedcap)
         redi_test_suite.addTest(TestUpdateFormImported)
         redi_test_suite.addTest(TestCreateSummaryReport)
         redi_test_suite.addTest(TestUpdateFormCompletedFieldName)
+        redi_test_suite.addTest(TestUpdateStatusField)
+        redi_test_suite.addTest(TestCreateEmptyEventsForOneSubject)
+        redi_test_suite.addTest(TestCreateEmptyEventTreeForStudy)
+        redi_test_suite.addTest(TestParseAll)
 
+        # The redesign functions May 2014
+        redi_test_suite.addTest(TestCreateEavOutput)
+        redi_test_suite.addTest(TestGenerateOutput)
+        redi_test_suite.addTest(TestHandleErrorsInREDCapResponse)
+        redi_test_suite.addTest(TestParseRawXml)
         # return the suite
         return unittest.TestSuite([redi_test_suite])
 

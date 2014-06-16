@@ -15,7 +15,8 @@ class redcap_transactions:
     """A class for getting data from redcap instace"""
     def __init__(self):
         self.data = []
-
+        self.params = {}
+        
     def init_redcap_interface(self, setup, redcap_uri, logger):
         '''This function initializes the variables requrired to get data from redcap
         interface. This reads the data from the setup.json and fills the dict
@@ -80,4 +81,41 @@ class redcap_transactions:
         logger.info('***********RESPONSE RECEIVED FROM REDCAP***********')
         logger.debug(returned)
         redcap_connection.close()
+        return returned
+
+    def get_redcap_connection(self,properties, token, format_param='csv',
+        type_param='eav', overwrite_behavior='normal', return_content='ids',
+        return_format='xml'):
+        '''This function sends data to redcap using POST method
+
+        '''
+        params = {}
+        if token != '':
+            self.params['token'] = token
+        else:
+            self.params['token'] = properties['token']
+        self.params['content'] = 'record'
+        self.params['format'] = format_param
+        self.params['type'] = type_param
+        self.params['overwriteBehavior'] = overwrite_behavior
+        self.params['returnContent'] = return_content
+        self.params['returnFormat'] = return_format
+
+        if properties['is_secure'] is True:
+            redcap_connection = httplib.HTTPSConnection(properties['host'])
+        else:
+            redcap_connection = httplib.HTTPConnection(properties['host'])
+    
+        return redcap_connection   
+
+    def send_data(self, redcap_connection, properties, data, logger):
+        self.params['data'] = data
+        redcap_connection.request('POST', properties['path'], urlencode(self.params),
+            {'Content-Type': 'application/x-www-form-urlencoded',
+            'Accept': 'text/plain'})
+        response_buffer = redcap_connection.getresponse()
+        returned = response_buffer.read()
+        #print(returned)
+        logger.info('***********RESPONSE RECEIVED FROM REDCAP***********')
+        logger.debug(returned)
         return returned
