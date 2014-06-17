@@ -1,14 +1,4 @@
-2014-06-16 v0.8.2
-
- * Add note to Testing section (Mohan Das Katragadda)
- * Remove unused files from repository (Mohan Das Katragadda)
- * Modify config-example to reflect the new features in 0.8.x (Mohan Das Katragadda)
- 
-2014-06-10 v0.8.1
-
- * Replace lxml XPath call with find() in create_eav_output
-
-2014-05-23 v0.8.0
+2014-06-16 v0.8.0
 
  * Erase data in missing fields to assure a complete overwrite across all form event for each subject
  * Send data to REDCap one form instance at a time
@@ -16,7 +6,7 @@
  * Verify REDCap API responses and pass errors to report
  * Added test cases to improve test code coverage
 
-2014-06-13 v0.7.2-hcv
+2014-06-13 v0.7.0
 
  * Add feature to translate research subject IDs to REDCap IDs based on queries of the target redcap system
  * Add config-examples with sample configuration files
@@ -26,19 +16,7 @@
  * Update AUTHORS.md file
  * Update LICENSE
 
- 2014-05-15 v0.7.1-hcv
-
- * Stop sending the subjectMap.csv file to the ftp server.  That is being handled by a separate process. (Philip Chase)
-
-2014-04-22 v0.7.0-hcv
-
- * Add feature to translate research subject IDs to REDCap IDs based on queries of the target redcap system.  
-
-2014-04-22 v0.6.3-hcv
-
- * Specify a path that includes Brew's GNU Utilities in getEmrData.sh so that we get the correct version of mktemp (Philip Chase)
-
-2014-03-10 v0.6.2-hcv
+2014-03-10 v0.6.2
 
  * Summary: Completed commits required to share repo at UF
 
@@ -53,7 +31,7 @@
  * Add authors file (Philip Chase)
  * Add config directory to gitignore (Philip Chase)
 
-2014-03-07 v0.6.1-hcv
+2014-03-07 v0.6.1
  
  * Summary: Add location independence to tests. Add BSD 3-Clause license
 
