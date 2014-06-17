@@ -53,9 +53,6 @@
                                     <xsl:value-of select="form_name" />
                                 </th>    
                             </xsl:for-each>
-                            <th>Total Unique Dates</th>
-                            <th>Earliest date</th>
-                            <th>Latest date</th>
                         </tr>
                     </thead>
                     <tbody>
@@ -68,35 +65,6 @@
                                     <xsl:value-of select="form_count"/>
                                 </td>    
                             </xsl:for-each>
-                            <td>
-                                <xsl:value-of select="report/summary/total_unique_dates" />
-                            </td>
-                            <td>
-                                <xsl:variable name="month">
-                                <xsl:call-template name="date:month-abbreviation">
-                                    <xsl:with-param name="date-time" select="report/summary/dates/earliestDate" />?
-                                </xsl:call-template>
-                                </xsl:variable>
-                                <xsl:variable name="yr">
-                                <xsl:call-template name="date:year">
-                                    <xsl:with-param name="date-time" select="report/summary/dates/earliestDate" />?
-                                </xsl:call-template>
-                                </xsl:variable>
-                                <xsl:value-of select="concat($month, ' ', $yr)" />
-                            </td>
-                            <td>
-                                <xsl:variable name="month">
-                                <xsl:call-template name="date:month-abbreviation">
-                                    <xsl:with-param name="date-time" select="report/summary/dates/latestDate" />?
-                                </xsl:call-template>
-                                </xsl:variable>
-                                <xsl:variable name="yr">
-                                <xsl:call-template name="date:year">
-                                    <xsl:with-param name="date-time" select="report/summary/dates/latestDate" />?
-                                </xsl:call-template>
-                                </xsl:variable>
-                                <xsl:value-of select="concat($month, ' ', $yr)" />
-                            </td>
                         </tr>
                     </tbody>
                 </table>
@@ -155,9 +123,6 @@
                                     <xsl:value-of select="form_name" />
                                 </th>    
                             </xsl:for-each>
-                            <th>Earliest date</th>
-                            <th>Latest date</th>
-                            <th>Study Period (Days)</th>
                         </tr>
                     </thead>
                     <tbody>
@@ -171,41 +136,21 @@
                                     <xsl:value-of select="form_count"/>
                                 </td>    
                                 </xsl:for-each>
-                                <td>
-                                    <xsl:variable name="month">
-                                <xsl:call-template name="date:month-abbreviation">
-                                    <xsl:with-param name="date-time" select="earliestdate" />?
-                                </xsl:call-template>
-                                </xsl:variable>
-                                <xsl:variable name="yr">
-                                <xsl:call-template name="date:year">
-                                    <xsl:with-param name="date-time" select="earliestdate" />?
-                                </xsl:call-template>
-                                </xsl:variable>
-                                <xsl:value-of select="concat($month, ' ', $yr)" />
-                                    <!-- <xsl:value-of select="earliestdate" /> -->
-                                </td>
-                                <td>
-                                    <xsl:variable name="month">
-                                <xsl:call-template name="date:month-abbreviation">
-                                    <xsl:with-param name="date-time" select="latestdate" />?
-                                </xsl:call-template>
-                                </xsl:variable>
-                                <xsl:variable name="yr">
-                                <xsl:call-template name="date:year">
-                                    <xsl:with-param name="date-time" select="latestdate" />?
-                                </xsl:call-template>
-                                </xsl:variable>
-                                <xsl:value-of select="concat($month, ' ', $yr)" />
-                                    <!-- <xsl:value-of select="latestdate" /> -->
-                                </td>
-                                <td>
-                                    <xsl:value-of select="StudyPeriod" />
-                                </td>
                             </tr>
                         </xsl:for-each>
                     </tbody>
                 </table>
+				<br />
+				                <h3>Errors</h3>
+				                <table>
+				                    <xsl:for-each select="report/errors/error">
+				                    <tr>
+				                        <td>
+				                                    <xsl:value-of select='.' />
+				                        </td>
+				                    </tr>
+				                    </xsl:for-each>
+				                </table>
             </body>
         </html>
     </xsl:template>

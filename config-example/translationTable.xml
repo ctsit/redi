@@ -5,7 +5,8 @@
         <redcapFormName>cbc</redcapFormName>
         <redcapFieldNameValue>wbc_lborres</redcapFieldNameValue>
         <redcapFieldNameUnits>wbc_lborresu</redcapFieldNameUnits>
-        <redcapFieldNameStatus>wbc_lbstat</redcapFieldNameStatus>
+        <redcapStatusFieldName>wbc_lbstat</redcapStatusFieldName>
+        <redcapStatusFieldValue>NOT_DONE</redcapStatusFieldValue>
     </clinicalComponent>
     <clinicalComponent>
         <clinicalComponentId>999</clinicalComponentId>
@@ -13,7 +14,8 @@
         <redcapFormName>cbc</redcapFormName>
         <redcapFieldNameValue>wbc_lborres</redcapFieldNameValue>
         <redcapFieldNameUnits>wbc_lborresu</redcapFieldNameUnits>
-        <redcapFieldNameStatus>wbc_lbstat</redcapFieldNameStatus>
+        <redcapStatusFieldName>wbc_lbstat</redcapStatusFieldName>
+        <redcapStatusFieldValue>NOT_DONE</redcapStatusFieldValue>
     </clinicalComponent>
     <clinicalComponent>
         <clinicalComponentId>913</clinicalComponentId>
@@ -21,7 +23,8 @@
         <redcapFormName>cbc</redcapFormName>
         <redcapFieldNameValue>neut_lborres</redcapFieldNameValue>
         <redcapFieldNameUnits>neut_lborresu</redcapFieldNameUnits>
-        <redcapFieldNameStatus>neut_lbstat</redcapFieldNameStatus>
+        <redcapStatusFieldName>neut_lbstat</redcapStatusFieldName>
+        <redcapStatusFieldValue>NOT_DONE</redcapStatusFieldValue>
     </clinicalComponent>
     <clinicalComponent>
         <clinicalComponentId>1539315</clinicalComponentId>
@@ -29,7 +32,8 @@
         <redcapFormName>cbc</redcapFormName>
         <redcapFieldNameValue>neut_lborres</redcapFieldNameValue>
         <redcapFieldNameUnits>neut_lborresu</redcapFieldNameUnits>
-        <redcapFieldNameStatus>neut_lbstat</redcapFieldNameStatus>
+        <redcapStatusFieldName>neut_lbstat</redcapStatusFieldName>
+        <redcapStatusFieldValue>NOT_DONE</redcapStatusFieldValue>
     </clinicalComponent>
     <clinicalComponent>
         <clinicalComponentId>1558101</clinicalComponentId>
@@ -37,7 +41,8 @@
         <redcapFormName>cbc</redcapFormName>
         <redcapFieldNameValue>anc_lborres</redcapFieldNameValue>
         <redcapFieldNameUnits>anc_lborresu</redcapFieldNameUnits>
-        <redcapFieldNameStatus>anc_lbstat</redcapFieldNameStatus>
+        <redcapStatusFieldName>anc_lbstat</redcapStatusFieldName>
+        <redcapStatusFieldValue>NOT_DONE</redcapStatusFieldValue>
     </clinicalComponent>
     <clinicalComponent>
         <clinicalComponentId>1009</clinicalComponentId>
@@ -45,7 +50,8 @@
         <redcapFormName>cbc</redcapFormName>
         <redcapFieldNameValue>plat_lborres</redcapFieldNameValue>
         <redcapFieldNameUnits>plat_lborresu</redcapFieldNameUnits>
-        <redcapFieldNameStatus>plat_lbstat</redcapFieldNameStatus>
+        <redcapStatusFieldName>plat_lbstat</redcapStatusFieldName>
+        <redcapStatusFieldValue>NOT_DONE</redcapStatusFieldValue>
     </clinicalComponent>
     <clinicalComponent>
         <clinicalComponentId>1577116</clinicalComponentId>
@@ -53,7 +59,8 @@
         <redcapFormName>cbc</redcapFormName>
         <redcapFieldNameValue>plat_lborres</redcapFieldNameValue>
         <redcapFieldNameUnits>plat_lborresu</redcapFieldNameUnits>
-        <redcapFieldNameStatus>plat_lbstat</redcapFieldNameStatus>
+        <redcapStatusFieldName>plat_lbstat</redcapStatusFieldName>
+        <redcapStatusFieldValue>NOT_DONE</redcapStatusFieldValue>
     </clinicalComponent>
     <clinicalComponent>
         <clinicalComponentId>1534444</clinicalComponentId>
@@ -61,7 +68,8 @@
         <redcapFormName>cbc</redcapFormName>
         <redcapFieldNameValue>lym_lborres</redcapFieldNameValue>
         <redcapFieldNameUnits>lym_lborresu</redcapFieldNameUnits>
-        <redcapFieldNameStatus>lym_lbstat</redcapFieldNameStatus>
+        <redcapStatusFieldName>lym_lbstat</redcapStatusFieldName>
+        <redcapStatusFieldValue>NOT_DONE</redcapStatusFieldValue>
     </clinicalComponent>
     <clinicalComponent>
         <clinicalComponentId>918</clinicalComponentId>
@@ -69,7 +77,8 @@
         <redcapFormName>cbc</redcapFormName>
         <redcapFieldNameValue>lymce_lborres</redcapFieldNameValue>
         <redcapFieldNameUnits>lymce_lborresu</redcapFieldNameUnits>
-        <redcapFieldNameStatus>lymce_lbstat</redcapFieldNameStatus>
+        <redcapStatusFieldName>lym_lbstat</redcapStatusFieldName>
+        <redcapStatusFieldValue>NOT_DONE</redcapStatusFieldValue>
     </clinicalComponent>
     <clinicalComponent>
         <clinicalComponentId>1534435</clinicalComponentId>
@@ -77,6 +86,7 @@
         <redcapFormName>cbc</redcapFormName>
         <redcapFieldNameValue>hemo_lborres</redcapFieldNameValue>
         <redcapFieldNameUnits>hemo_lborresu</redcapFieldNameUnits>
-        <redcapFieldNameStatus>hemo_lbstat</redcapFieldNameStatus>
+        <redcapStatusFieldName>hemo_lbstat</redcapStatusFieldName>
+        <redcapStatusFieldValue>NOT_DONE</redcapStatusFieldValue>
     </clinicalComponent>
 </rediFieldMap>

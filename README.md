@@ -39,6 +39,7 @@ To run the tests:
 
     $ python <project_root_path>/test/TestSuite.py
 
+Note: One of test cases, `TestGenerateOutput`, requires a running REDCap instance. If there is no running REDCap instance details in setup.json this test case fails. This is a known issue and will be handled in future releases.
 
 Contributing
 ------------

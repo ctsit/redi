@@ -15,11 +15,13 @@ On a mac, run these commands to install the required libraries and related utili
     sudo easy_install requests
     brew install lftp
 
-In Debian Wheezy, execute these commands
+In Debian Wheezy or similar, execute these commands
 
     sudo apt-get install python-lxml
     sudo apt-get install python-requests
     sudo apt-get install lftp
+
+Additionally, one Python utility REDI uses as a support tool requires Python 3.
 
 To install git, visit [Git Downloads](http://git-scm.com/downloads) for installation instructions for your operating system. Most linux distributions can install git using their package manager, as in Debian:
 
