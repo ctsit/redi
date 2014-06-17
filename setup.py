@@ -2,7 +2,7 @@ from distutils.core import setup
 
 setup(
     name='REDI',
-    version='0.7.0',
+    version='0.8.0',
     author='Christopher P Barnes, Philip Chase, Nicolas Rejack',
     author_email='cpb@ufl.edu, pbc@ufl.edu, nrejack@ufl.edu',
     packages=['bin/'],

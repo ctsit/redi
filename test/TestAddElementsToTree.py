@@ -54,7 +54,7 @@ class TestAddElementsToTree(unittest.TestCase):
         <Component_ID>1534436</Component_ID>
         <Reference_Unit>%</Reference_Unit>
         <Result_Value>34.5</Result_Value>
-<timestamp/><redcapFormName/><eventName/><formDateField/><formCompletedFieldName/><formImportedFieldName/><redcapFieldNameValue/><redcapFieldNameUnits/><redcapFieldNameStatus/></subject>
+<timestamp/><redcapFormName/><eventName/><formDateField/><formCompletedFieldName/><formImportedFieldName/><redcapFieldNameValue/><redcapFieldNameUnits/><redcapStatusFieldName/></subject>
     <subject>
         <Study_Id>22</Study_Id>
         <Collection_Date>12/01/20</Collection_Date>
@@ -63,7 +63,7 @@ class TestAddElementsToTree(unittest.TestCase):
         <Component_ID>1534435</Component_ID>
         <Reference_Unit>g/dL</Reference_Unit>
         <Result_Value>11.3</Result_Value>
-<timestamp/><redcapFormName/><eventName/><formDateField/><formCompletedFieldName/><formImportedFieldName/><redcapFieldNameValue/><redcapFieldNameUnits/><redcapFieldNameStatus/></subject>
+<timestamp/><redcapFormName/><eventName/><formDateField/><formCompletedFieldName/><formImportedFieldName/><redcapFieldNameValue/><redcapFieldNameUnits/><redcapStatusFieldName/></subject>
     <subject>
         <Study_Id>22</Study_Id>
         <Collection_Date>04/18/19</Collection_Date>
@@ -72,7 +72,7 @@ class TestAddElementsToTree(unittest.TestCase):
         <Component_ID>1558221</Component_ID>
         <Reference_Unit>mg/dL</Reference_Unit>
         <Result_Value>0.8</Result_Value>
-<timestamp/><redcapFormName/><eventName/><formDateField/><formCompletedFieldName/><formImportedFieldName/><redcapFieldNameValue/><redcapFieldNameUnits/><redcapFieldNameStatus/></subject>
+<timestamp/><redcapFormName/><eventName/><formDateField/><formCompletedFieldName/><formImportedFieldName/><redcapFieldNameValue/><redcapFieldNameUnits/><redcapStatusFieldName/></subject>
 </study>
 """
         self.expect = etree.tostring(etree.fromstring(self.output))

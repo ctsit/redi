@@ -2,13 +2,16 @@
 @author : Radha
 email : rkandula@ufl.edu
 
-This file tests the logger functionality
+This file tests if the `configure_logging`
+properly creates a log file
 
+Note: the created file is destroyed at the end
 '''
 
 import unittest
 import os
 import sys
+import time
 file_dir = os.path.dirname(os.path.realpath(__file__))
 goal_dir = os.path.join(file_dir, "../")
 proj_root = os.path.abspath(goal_dir)+'/'
@@ -37,9 +40,11 @@ class TestLog(unittest.TestCase):
 
         # call the configure logging function
         redi.configure_logging()
-        #print os.path.isfile(file_name)
+
+        #print 'checking if log file was created: ' + file_name
         # check if the file is created
         assert os.path.isfile(file_name) == True
+
         # remove the file created through testing
         os.remove(file_name)
 

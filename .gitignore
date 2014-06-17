@@ -14,3 +14,9 @@ rawDataWithFormStatus.xml
 log/
 config/
 .project
+*.swp
+*.swo
+all_form_events.xml
+person_form_event_tree.xml
+person_form_event_tree_with_data.xml
+.figleaf
