@@ -1,3 +1,3 @@
 #!/bin/bash
 
-make test
+python test/TestSuite.py
