@@ -4,9 +4,9 @@ python:
 before_install:
   sudo apt-get install -y python-setuptools libxml2 libxslt1-dev python-dev
 install:
-	pip install requests
-	pip install lxml
-	pip install appdirs
+  - pip install requests
+  - pip install lxml
+  - pip install appdirs
 
 script: "./run-tests.sh"
 
