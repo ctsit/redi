@@ -27,6 +27,8 @@ from urllib import urlencode
 import xml.etree.ElementTree as ET #Ruchi
 import os
 import sys
+
+
 # This addresses the issues with relative paths
 file_dir = os.path.dirname(os.path.realpath(__file__))
 goal_dir = os.path.join(file_dir, "../")
