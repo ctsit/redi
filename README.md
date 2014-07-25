@@ -34,12 +34,21 @@ Usage
 
 Testing
 -------
+1. Go to the vagrant folder and remove the old virtual machine (VM) instance:
 
-To run the tests:
+   `$ cd vagrant && vagrant destroy`
+
+2. Start a fresh VM:
+
+    `$ vagrant up`
+
+3. To run the tests:
 
     $ python <project_root_path>/test/TestSuite.py
 
 Note: One of test cases, `TestGenerateOutput`, requires a running REDCap instance. If there is no running REDCap instance details in setup.json this test case fails. This is a known issue and will be handled in future releases.
+
+@TODO: A sample redcap project and test dataset need to be added.
 
 Contributing
 ------------

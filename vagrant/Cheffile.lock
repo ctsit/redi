@@ -1,0 +1,38 @@
+SITE
+  remote: http://community.opscode.com/api/v1
+  specs:
+    apache2 (1.7.0)
+    apt (1.10.0)
+    build-essential (1.4.2)
+    chef_handler (1.1.4)
+    dmg (2.0.0)
+    git (2.6.0)
+      build-essential (>= 0.0.0)
+      dmg (>= 0.0.0)
+      runit (>= 1.0.0)
+      windows (>= 0.0.0)
+      yum (>= 0.0.0)
+    mysql (3.0.4)
+      build-essential (> 1.1.0)
+      openssl (>= 0.0.0)
+    openssl (1.1.0)
+    php (1.2.4)
+      build-essential (>= 0.0.0)
+      mysql (>= 0.0.0)
+      xml (>= 0.0.0)
+    runit (1.2.0)
+      build-essential (>= 0.0.0)
+      yum (>= 0.0.0)
+    windows (1.10.0)
+      chef_handler (>= 0.0.0)
+    xml (1.1.2)
+      build-essential (>= 0.0.0)
+    yum (2.3.2)
+
+DEPENDENCIES
+  apache2 (>= 0)
+  apt (= 1.10.0)
+  git (>= 0)
+  mysql (>= 0)
+  php (>= 0)
+
