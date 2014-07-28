@@ -1,0 +1,7 @@
+dm_subjid,redcap_event_name,dm_usubjid,dm_suppdm_hcvt1idf,dm_suppdm_hcvt1id,dm_sex,dm_race,dm_ethnic,dm_brthyr,height_vsorres,height_vsorresu,height_vsperf,weight_vsorres,weight_vsorresu,weight_vsperf,demographics_complete
+"1","1_arm_1","999-0059","N","","F","ASIAN","NOT_HISPANIC_OR_LATINO","1901",70,"IN","",170,"LB","",2
+"2","1_arm_1","999-0060","N","","M","ASIAN","NOT_HISPANIC_OR_LATINO","1902",70,"IN","",170,"LB","",2
+"3","1_arm_1","999-0061","N","","F","ASIAN","NOT_HISPANIC_OR_LATINO","1903",70,"IN","",170,"LB","",2
+"4","1_arm_1","999-0062","N","","M","ASIAN","NOT_HISPANIC_OR_LATINO","1904",70,"IN","",170,"LB","",2
+"5","1_arm_1","999-0063","N","","F","ASIAN","NOT_HISPANIC_OR_LATINO","1905",70,"IN","",170,"LB","",2
+
