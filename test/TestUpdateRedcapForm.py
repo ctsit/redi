@@ -19,7 +19,7 @@ class TestUpdateRedcapForm(unittest.TestCase):
         <Collection_Date>04/17/19</Collection_Date>
         <Collection_Time>13:50</Collection_Time>
         <Component_Name>HEMATOCRIT</Component_Name>
-        <COMPONENT_ID>1534436</COMPONENT_ID>
+        <loinc_code>1534436</loinc_code>
         <Reference_Unit>%</Reference_Unit>
         <Result_Value>34.5</Result_Value>
     <timestamp/><redcapFormName/><eventName/><formDateField/><formCompletedFieldName/></subject>
@@ -28,7 +28,7 @@ class TestUpdateRedcapForm(unittest.TestCase):
         <Collection_Date>04/17/19</Collection_Date>
         <Collection_Time>13:50</Collection_Time>
         <Component_Name>HEMOGLOBIN</Component_Name>
-        <COMPONENT_ID>1534435</COMPONENT_ID>
+        <loinc_code>1534435</loinc_code>
         <Reference_Unit>g/dL</Reference_Unit>
         <Result_Value>11.3</Result_Value>
     <timestamp/><redcapFormName/><eventName/><formDateField/><formCompletedFieldName/></subject>
@@ -37,7 +37,7 @@ class TestUpdateRedcapForm(unittest.TestCase):
         <Collection_Date>09/12/22</Collection_Date>
         <Collection_Time>12:38</Collection_Time>
         <Component_Name>BILIRUBIN DIRECT</Component_Name>
-        <COMPONENT_ID>1558221</COMPONENT_ID>
+        <loinc_code>1558221</loinc_code>
         <Reference_Unit>mg/dL</Reference_Unit>
         <Result_Value>0.8</Result_Value>
     <timestamp/><redcapFormName/><eventName/><formDateField/><formCompletedFieldName/></subject>
@@ -47,7 +47,7 @@ class TestUpdateRedcapForm(unittest.TestCase):
 
         self.translationTable = """<rediFieldMap>
     <clinicalComponent>
-        <clinicalComponentId>1534435</clinicalComponentId>
+        <loinc_code>1534435</loinc_code>
         <clinicalComponentName>HEMOGLOBIN</clinicalComponentName>
         <redcapFormName>cbc</redcapFormName>
         <redcapFieldNameValue>hemo_lborres</redcapFieldNameValue>
@@ -58,7 +58,7 @@ class TestUpdateRedcapForm(unittest.TestCase):
         <lbtestcd>hemo_lbtestcd</lbtestcd>
     </clinicalComponent>
     <clinicalComponent>
-        <clinicalComponentId>1558221</clinicalComponentId>
+        <loinc_code>1558221</loinc_code>
         <clinicalComponentName>BILIRUBIN DIRECT</clinicalComponentName>
         <redcapFormName>chemistry</redcapFormName>
         <redcapFieldNameValue>dbil_lborres</redcapFieldNameValue>
@@ -80,7 +80,7 @@ class TestUpdateRedcapForm(unittest.TestCase):
         <Collection_Date>04/17/19</Collection_Date>
         <Collection_Time>13:50</Collection_Time>
         <Component_Name>HEMATOCRIT</Component_Name>
-        <COMPONENT_ID>1534436</COMPONENT_ID>
+        <loinc_code>1534436</loinc_code>
         <Reference_Unit>%</Reference_Unit>
         <Result_Value>34.5</Result_Value>
     <timestamp/><redcapFormName>undefined</redcapFormName><eventName/><formDateField/><formCompletedFieldName/></subject>
@@ -89,7 +89,7 @@ class TestUpdateRedcapForm(unittest.TestCase):
         <Collection_Date>04/17/19</Collection_Date>
         <Collection_Time>13:50</Collection_Time>
         <Component_Name>HEMOGLOBIN</Component_Name>
-        <COMPONENT_ID>1534435</COMPONENT_ID>
+        <loinc_code>1534435</loinc_code>
         <Reference_Unit>g/dL</Reference_Unit>
         <Result_Value>11.3</Result_Value>
     <timestamp/><redcapFormName>cbc</redcapFormName><eventName/><formDateField/><formCompletedFieldName/></subject>
@@ -98,7 +98,7 @@ class TestUpdateRedcapForm(unittest.TestCase):
         <Collection_Date>09/12/22</Collection_Date>
         <Collection_Time>12:38</Collection_Time>
         <Component_Name>BILIRUBIN DIRECT</Component_Name>
-        <COMPONENT_ID>1558221</COMPONENT_ID>
+        <loinc_code>1558221</loinc_code>
         <Reference_Unit>mg/dL</Reference_Unit>
         <Result_Value>0.8</Result_Value>
     <timestamp/><redcapFormName>chemistry</redcapFormName><eventName/><formDateField/><formCompletedFieldName/></subject>

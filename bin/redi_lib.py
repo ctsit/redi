@@ -25,14 +25,19 @@ import httplib
 from urllib import urlencode
 import os
 import sys
+import time
 from redcap_transactions import redcap_transactions
-
+import json
 import xml.etree.ElementTree as ET
 import redi
 file_dir = os.path.dirname(os.path.realpath(__file__))
 goal_dir = os.path.join(file_dir, "../")
 proj_root = os.path.abspath(goal_dir)+'/'
 sys.path.insert(0, proj_root+'bin/utils/')
+
+#Constants
+DEFAULT_RATE_LIMITER = 600 
+
 
 """
 =============================================
@@ -77,7 +82,7 @@ def create_eav_output(study_id, event_tree):
     # Each row has a prefix composed of study_id and event name:
     # 3,"1_arm_1",
     event_name = root.find('name')
-    if event_name is None:
+    if event_name is None or not event_name.text:
         raise redi.LogException('Expected non-blank element event/name')
 
     header = '\nrecord,redcap_event_name,field_name,value'
@@ -121,7 +126,7 @@ Steps:
 
 @return the report_data dictionary 
 """
-def generate_output(person_tree) :
+def generate_output(person_tree,setup) :
     redi.configure_logging()
 
     # the global dictionary to be returned
@@ -147,16 +152,19 @@ def generate_output(person_tree) :
 
     # count how many csv fragments are created
     event_count = 0
-
     root = person_tree.getroot()
     persons = root.xpath('//person')
-    setup_json = proj_root+'config/setup.json'
-    setup = redi.read_config(setup_json)
     
     redcapTransactionsObject = redcap_transactions()
+    print 'Sending data to REDCap API uri: ' + setup['redcap_uri']
     properties = redcapTransactionsObject.init_redcap_interface(setup, setup['redcap_uri'], redi.logger)
-    redcap_connection = redcapTransactionsObject.get_redcap_connection(properties, setup['token'])
-   
+    redcap_connection = redcapTransactionsObject.get_redcap_connection(properties, setup['token'],return_format='json')
+    
+    rate_limiter_value_in_redcap=setup['rate_limiter_value_in_redcap']
+    if rate_limiter_value_in_redcap is None or rate_limiter_value_in_redcap==0 or rate_limiter_value_in_redcap=="":
+        rate_limiter_value_in_redcap = DEFAULT_RATE_LIMITER
+    ideal_time_per_request = 60/float(rate_limiter_value_in_redcap)
+    time_stamp_after_request=0
     # main loop for each person
     for person in persons :
         time_begin = datetime.datetime.now()
@@ -196,16 +204,11 @@ def generate_output(person_tree) :
                     eav_string = csv_dict['csv']
                     contains_data = csv_dict['contains_data']
 
-                    #redi.logger.debug('Created eav string: \n' + eav_string)
-                    #print ('Created eav string: \n' + eav_string)
-
-                    #time_begin_send = datetime.datetime.now()
+                    time_lapse_since_last_request = time.time()- time_stamp_after_request
+                    minOf2 =max(ideal_time_per_request-time_lapse_since_last_request,0)
+                    time.sleep(minOf2)
                     response = redcapTransactionsObject.send_data(redcap_connection, properties, eav_string, redi.logger)
-                    #time_end_send = datetime.datetime.now()
-                    #redi.logger.debug("Execution time for `send_data` was: " + str(time_end_send - time_begin_send))
-
-                    #response = send_eav_csv_data_to_redcap(eav_string)
-                    #redi.logger.debug('RedCAP response xml: ' + response)
+                    time_stamp_after_request = time.time()
                     found_error = handle_errors_in_redcap_xml_response(response,report_data)
 
                     if not found_error and contains_data :
@@ -218,9 +221,9 @@ def generate_output(person_tree) :
                     raise
                     continue
 
+        
         time_end = datetime.datetime.now()
         print "Total execution time for study_id %s was %s" % (study_id_key, (time_end - time_begin))
-
     #pprint.pprint(subject_details)
     # total_unique_dates = root.xpath('count(//form/event/)')
 
@@ -244,18 +247,20 @@ Parameters:
 """
 def handle_errors_in_redcap_xml_response(redcap_response_xml, report_data):
     redi.logger.info('handling response from the REDCap')
-    responseTree = ET.fromstring(redcap_response_xml)
-    errorsPresent = False
-    errors = responseTree.findall('error')
-    if len(errors)>0:
-        for error in errors:
-            try:
-                report_data['errors'].append(error.text)
-            except KeyError,e:
-                raise redi.LogException('There is no key "errors" in the report_data')
-            errorsPresent = True
-            
-    return errorsPresent
+    redcap_response = json.loads(redcap_response_xml)
+    if type(redcap_response) is list:
+        return False
+    try:
+        if 'error' in redcap_response:
+            for recordData in redcap_response['records']:
+                error_string="Error writing to record "+ recordData["record"]+" field "+recordData["field_name"] +" Value "+recordData["value"]+ ".Error Message: "+recordData["message"]
+                redi.logger.info(error_string)
+                report_data['errors'].append(error_string)
+        else:
+            redi.logger.error( "REDCap response is in unknown format")
+    except KeyError,e:
+        redi.logger.error(str(e))
+    return True
 
 def send_eav_csv_data_to_redcap(eav_string):
     xml = '''
