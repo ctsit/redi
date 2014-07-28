@@ -170,16 +170,9 @@ class TestGenerateOutput(unittest.TestCase):
             'subject_details'       : subject_details,
             'errors'                : []
         }
-        
-        setup_data = {
-            'redcap_uri':"http://localhost:8998/redcap/api/",
-            'token':"121212",
-            'rate_limiter_value_in_redcap':500
-            
-        }
 
         etree_1 = etree.ElementTree(etree.fromstring(string_1_xml))
-        result = redi_lib.generate_output(etree_1,setup_data)
+        result = redi_lib.generate_output(etree_1)
         self.assertEqual(report_data['total_subjects'], result['total_subjects'])
         self.assertEqual(report_data['form_details'], result['form_details'])
         self.assertEqual(report_data['subject_details'], result['subject_details'])

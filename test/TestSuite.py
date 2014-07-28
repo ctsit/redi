@@ -43,9 +43,6 @@ from TestGenerateOutput import TestGenerateOutput
 from TestParseAll import TestParseAll
 from TestHandleREDCapResponse import TestHandleErrorsInREDCapResponse
 from TestParseRawXml import TestParseRawXml
-from TestValidateXmlFleAndExtractData import TestValidateXmlFleAndExtractData
-from TestConvertComponentIdToLoincCode import TestConvertComponentIdToLoincCode
-from TestCopyDataToPersonFormEventTree import TestCopyDataToPersonFormEventTree
 
 class redi_suite(unittest.TestSuite):
 
@@ -81,11 +78,6 @@ class redi_suite(unittest.TestSuite):
         redi_test_suite.addTest(TestGenerateOutput)
         redi_test_suite.addTest(TestHandleErrorsInREDCapResponse)
         redi_test_suite.addTest(TestParseRawXml)
-        redi_test_suite.addTest(TestValidateXmlFleAndExtractData)
-        redi_test_suite.addTest(TestConvertComponentIdToLoincCode)
-        redi_test_suite.addTest(TestRuleProcessing)
-        redi_test_suite.addTest(TestCopyDataToPersonFormEventTree)
-
         # return the suite
         return unittest.TestSuite([redi_test_suite])
 

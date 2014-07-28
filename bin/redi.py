@@ -27,7 +27,6 @@ from urllib import urlencode
 import xml.etree.ElementTree as ET #Ruchi
 import os
 import sys
-import imp
 # This addresses the issues with relative paths
 file_dir = os.path.dirname(os.path.realpath(__file__))
 goal_dir = os.path.join(file_dir, "../")
@@ -76,22 +75,16 @@ def main():
     setup_json = proj_root+'config/setup.json'
     setup = read_config(setup_json)
 
-    # load custom post-processing rules
-    rules = load_rules(setup, proj_root)
-
     # read in 3 main data files / translation tables
     raw_xml_file = proj_root+ setup['raw_xml_file']
     form_events_file = proj_root+ setup['form_events_file']
     translation_table_file = proj_root+ setup['translation_table_file']
     data_file_path = proj_root+ setup['data_file_path']
     report_parameters = {'report_file_path':proj_root+setup['report_file_path'],'project':setup['project'],'redcap_server':setup['redcap_server']}
-    # report_xsl = proj_root+ setup['report_xsl_path']
-    report_xsl = proj_root + "bin/utils/report.xsl"
-    report_file_path2 = setup['report_file_path2']
+    report_xsl = proj_root+ setup['report_xsl_path']
     send_email = setup['send_email']
     input_date_format = setup['input_date_format']
     output_date_format = setup['output_date_format']
-    include_rule_errors_in_report = bool(setup.get('include_rule_errors_in_report', False))
 
 
     # Set path to log file
@@ -100,8 +93,6 @@ def main():
     # parse the raw.xml file and fill the etree rawElementTree
     data = parse_raw_xml(raw_xml_file)
 
-    data = verify_and_correct_collection_date(data)
-    # write_element_tree_to_file(data, proj_root+'raw_with_proper_dates.xml')
     # check if raw element tree is empty
     if not data:
         # raise an exception if empty
@@ -110,15 +101,6 @@ def main():
     # add blank elements to each subject in data tree
     add_elements_to_tree(data)
 
-    #replace fields in raw_xml
-    data = replace_fields_in_raw_xml(data,setup['replace_fields_in_raw_data_xml'])
-
-    #Convert COMPONENT_ID to loinc_code in the raw data
-    component_to_loinc_code_xml = proj_root+ setup['component_to_loinc_code_xml']
-    # component_to_loinc_code_xsd = proj_root+ setup['component_to_loinc_code_xsd']
-    component_to_loinc_code_xsd = proj_root + "bin/utils/component_id_to_loinc_code.xsd"
-    component_to_loinc_code_xml_tree = validate_xml_file_and_extract_data(component_to_loinc_code_xml,component_to_loinc_code_xsd)
-    convert_component_id_to_loinc_code(data,component_to_loinc_code_xml_tree)
     # parse the formEvents.xml file and fill the etree 'form_events_file'
     form_events_tree = parse_form_events(form_events_file)
     forms = form_events_tree.findall("form/name")
@@ -142,8 +124,6 @@ def main():
     global translational_table_tree
     translational_table_tree = parse_translation_table(translation_table_file)
 
-
-
     # check if translational table element tree is empty
     if not translational_table_tree:
         # raise an exception if empty
@@ -151,8 +131,6 @@ def main():
     write_element_tree_to_file(translational_table_tree,
                               proj_root+'translationalData.xml')
 
-    # components_tree = generateComponentToLoincCode2(translational_table_tree)
-#     write_element_tree_to_file(components_tree, proj_root+'componentstree2.xml')
 
     # update the timestamp for the global element tree
     update_time_stamp(data, input_date_format, output_date_format)
@@ -202,11 +180,11 @@ def main():
     alert_summary = update_event_name(data, form_events_tree, 'undefined')
     ## write back the changed global Element Tree
     write_element_tree_to_file(data, proj_root+'rawDataWithAllUpdates.xml')
-
+    
     properties = redcap_transactions().init_redcap_interface(setup, setup['redcap_uri'], logger)
     # Research ID - to - Redcap ID converter
     research_id_to_redcap_id_converter(data, properties, setup)
-
+    
     #create person_form_event_tree.xml
     person_form_event_tree = create_empty_event_tree_for_study(data,all_form_events_per_subject)
     #write person_form_event_tree to file
@@ -217,12 +195,9 @@ def main():
     updateStatusFieldValueInPersonFormEventTree(person_form_event_tree_with_data, translational_table_tree)
     #write person form event tree with data (both regular fields and status fields) to file
     write_element_tree_to_file(person_form_event_tree_with_data, proj_root+'person_form_event_tree_with_data.xml')
-
-    # run custom post-processing rules
-    person_form_event_tree_with_data, rule_errors = run_rules(rules, person_form_event_tree_with_data)
-
+   
     # Use the new method to communicate with RedCAP
-    report_data = redi_lib.generate_output(person_form_event_tree_with_data,setup)
+    report_data = redi_lib.generate_output(person_form_event_tree_with_data)
     """
     report_data = {
         'total_subjects': 3,
@@ -236,13 +211,7 @@ def main():
     }
     pprint.pprint(report_data)
     """
-
-    # Add any errors from running the rules to the report
-    map(logging.warning, rule_errors)
-
-    if include_rule_errors_in_report:
-        report_data['errors'].extend(rule_errors)
-
+    
     #create summary report
     xml_report_tree = create_summary_report(report_parameters, report_data, alert_summary)
     #print ElementTree.tostring(xml_report_tree)
@@ -257,12 +226,6 @@ def main():
         sender = setup["sender_email"]
         receiver = setup["receiver_email"]
         send_report(sender,receiver,html_str)
-    else:
-        try:
-            report_file = open(report_file_path2, 'w')
-        except IOError:
-            raise LogException('could not open '+report_file_path2 +' file not found')
-        report_file.write(html_str)
 
 def read_config(setup_json):
     """function to read the config data from setup.json
@@ -392,9 +355,9 @@ Update the redcapStatusFieldName value to all subjects
 def update_recap_form_status(data, lookup_data, undefined):
     # make a dictionary of the relevant elements from the form_events
     element_to_set_in_data = 'redcapStatusFieldName'
-    index_element_in_data = 'loinc_code'
+    index_element_in_data = 'COMPONENT_ID'
     element_to_find_in_lookup_data = 'clinicalComponent'
-    index_element_in_lookup_data = 'loinc_code'
+    index_element_in_lookup_data = 'clinicalComponentId'
     value_in_lookup_data = 'redcapStatusFieldName'
 
     update_data_from_lookup(data, element_to_set_in_data,
@@ -421,7 +384,7 @@ Write an ElementTree to a file whose name is provided as an argument
 '''
 def write_element_tree_to_file(element_tree, file_name):
     logger.debug('Writing ElementTree to %s', file_name)
-    element_tree.write(file_name, encoding="us-ascii", xml_declaration=True, method="xml", pretty_print=True)
+    element_tree.write(file_name, encoding="us-ascii", xml_declaration=True, method="xml")
 
 '''
 Update timestamp using input and output data formats
@@ -431,7 +394,7 @@ def update_time_stamp(data, input_date_format, output_date_format):
     logger.info('Updating timestamp to ElementTree')
     for subject in data.iter('subject'):
         # New EMR field SPECIMN_TAKEN_TIME is used in place of Collection Date and Collection Time
-        specimn_taken_time = subject.find('DATE_TIME_STAMP').text
+        specimn_taken_time = subject.find('SPECIMN_TAKEN_TIME').text
 
         if specimn_taken_time is not None:
             #Converting specimen taken time to redcap accepted time format YYYY-MM-DD
@@ -454,11 +417,10 @@ If component lookup fails, sets formName to undefinedForm
 def update_redcap_form(data, lookup_data, undefined):
     # make a dictionary of the relevant elements from the form_events
     element_to_set_in_data = 'redcapFormName'
-    index_element_in_data = 'loinc_code'
+    index_element_in_data = 'COMPONENT_ID'
     element_to_find_in_lookup_data = 'clinicalComponent'
-    index_element_in_lookup_data = 'loinc_code'
+    index_element_in_lookup_data = 'clinicalComponentId'
     value_in_lookup_data = 'redcapFormName'
-
 
     update_data_from_lookup(data, element_to_set_in_data,
         index_element_in_data, lookup_data, element_to_find_in_lookup_data,
@@ -556,9 +518,9 @@ def update_redcap_field_name_value_and_units(data, lookup_data, undefined):
     '''
     # set redcapFieldNameValue
     element_to_set_in_data = 'redcapFieldNameValue'
-    index_element_in_data = 'loinc_code'
+    index_element_in_data = 'COMPONENT_ID'
     element_to_find_in_lookup_data = 'clinicalComponent'
-    index_element_in_lookup_data = 'loinc_code'
+    index_element_in_lookup_data = 'clinicalComponentId'
     value_in_lookup_data = 'redcapFieldNameValue'
 
     update_data_from_lookup(data, element_to_set_in_data,
@@ -567,9 +529,9 @@ def update_redcap_field_name_value_and_units(data, lookup_data, undefined):
 
     # set redcapFieldNameUnits
     element_to_set_in_data = 'redcapFieldNameUnits'
-    index_element_in_data = 'loinc_code'
+    index_element_in_data = 'COMPONENT_ID'
     element_to_find_in_lookup_data = 'clinicalComponent'
-    index_element_in_lookup_data = 'loinc_code'
+    index_element_in_lookup_data = 'clinicalComponentId'
     value_in_lookup_data = 'redcapFieldNameUnits'
     undefined = "redcapFieldNameUnitsUndefined"
 
@@ -607,18 +569,19 @@ def update_data_from_lookup(data, element_to_set_in_data,
     for child in root_of_lookup_data.findall(element_to_find_in_lookup_data):
         child_lookup_data = child.find(value_in_lookup_data)
         if child_lookup_data is not None:
-            lookup_table[child.findtext(index_element_in_lookup_data)] = \
-                            child_lookup_data.text
+            lookup_table[child.find(index_element_in_lookup_data).text] = \
+                        child_lookup_data.text
     # Update the field value using the lookup_table we just created
     data_root = data.getroot()
-    count =0
     for child in data_root:
         # get the element text, but set a default value of undefined for
         # each look up failure
         new_element_text = \
-            lookup_table.get(child.findtext(index_element_in_data), undefined)
+            lookup_table.get(child.find(index_element_in_data).text, undefined)
         element_to_set = child.find(element_to_set_in_data)
         element_to_set.text = new_element_text
+
+
 
 def update_event_name(data, lookup_data, undefined):
     '''function to update eventName to data ElementTree via lookup of formName
@@ -925,7 +888,7 @@ def updateReportSummary(root,report_data):
         name_element.text = k
         count_element = etree.SubElement(form,"form_count")
         count_element.text = str(form_data.get(k))
-
+    
 def updateReportAlerts(root, alert_summary):
     alerts = root[2]
     too_many_forms = etree.SubElement(alerts, 'tooManyForms')
@@ -970,7 +933,7 @@ This function creates new copies of the form_events_tree and translation_table_t
 Parameters:
     form_events_file: This parameter holds the path of form_events file
     translation_table_file: This parameter holds the path of translation_table file
-
+    
 """
 def create_empty_events_for_one_subject_helper(form_events_file,translation_table_file):
     form_events_tree = parse_form_events(form_events_file)
@@ -983,7 +946,7 @@ This function uses form_events_tree and translation_table_tree and creates an al
 Parameters:
     form_events_tree: This parameter holds form events tree
     translation_table_tree: This parameter holds translation table tree
-
+    
 """
 def create_empty_events_for_one_subject(form_events_tree,translation_table_tree):
         logger.info('Creating all form events template for one subject')
@@ -1046,7 +1009,7 @@ This function uses raw_data_tree and all_form_events_tree and creates a person_f
 Parameters:
     raw_data_tree: This parameter holds raw data tree
     all_form_events_tree: This parameter holds all form events tree
-
+    
 """
 def create_empty_event_tree_for_study(raw_data_tree, all_form_events_tree):
     logger.info('Creating all form events template for all subjects')
@@ -1087,22 +1050,18 @@ def setStat(event, translation_table_dict, translation_table_status_field_text_l
   for field in event.iter('field'): #loop3
     value = field.find('value')
     if (value is not None and value.text is not None):
-      logger.info("text is missing")
       continue
 
     name = field.find('name')
     if (name is None):
-      logger.info("tag is missing")
       continue
 
     is_status_field = name.text in translation_table_status_field_text_list
     if (is_status_field):
-      logger.info("This tag needs to be skipped as it might stand for status")
       continue
 
     doesnt_have_status_field = name.text not in translation_table_dict or translation_table_dict[name.text][0] == ""
     if (doesnt_have_status_field):
-      logger.info("This tag needs to be skipped as it might stand for form name")
       continue #name could have been a redcap form name like cbc_lbdtc
 
     set_status_for(name, event, translation_table_dict)
@@ -1128,14 +1087,13 @@ def updateStatusFieldValueInPersonFormEventTree(person_form_event_tree, translat
   person_form_event__tree_root = person_form_event_tree.getroot()
   if (person_form_event__tree_root is None):
     # Log error: Person Form Event Tree is empty
-    raise LogException('Person Form Event Tree is empty')
-
+    print "Person Form Event Tree is empty"
   else:
     # Get root of translation table
     translation_table_root = translational_table_tree.getroot()
     if (translation_table_root is None):
       # Log error: Translation Table Tree is empty
-      raise LogException("Translation Table Tree is empty")
+      print "Translation Table Tree is empty"
     else:
       # This list contains text values of redcapStatusFieldName, to avoid searching for elements with this text later in setStat function
       translation_table_status_field_text_list = [x.text for x in translation_table_root.iter('redcapStatusFieldName') if x.text is not None]
@@ -1178,7 +1136,6 @@ def updateStatusFieldValueInPersonFormEventTree(person_form_event_tree, translat
             field_values += value.text
         #End of for value in event.iter('value'):
         if (field_values == ""):
-          logger.info("Empty event")
           continue
         else:
           setStat(event, translation_table_dict, translation_table_status_field_text_list)
@@ -1193,7 +1150,7 @@ Parameters:
     raw_data_tree: This parameter holds raw data tree
     person_form_event_tree: This parameter holds person form event tree
     form_events_tree: This parameter holds form events tree
-
+    
 """
 def copy_data_to_person_form_event_tree(raw_data_tree,person_form_event_tree,form_events_tree):
     logger.info('Copying data to person form event tree')
@@ -1213,15 +1170,14 @@ def copy_data_to_person_form_event_tree(raw_data_tree,person_form_event_tree,for
            study_id_object = subject.find("STUDY_ID")
            formNameObject = subject.find("redcapFormName")
            fieldNameObject = subject.find("redcapFieldNameValue")
-           fieldValueObject = subject.find("RESULT")
+           fieldValueObject = subject.find("ORD_VALUE")
            dateFieldObject = subject.find("formDateField")
            dateValueObject = subject.find("timestamp")
            fieldUnitsNameObject = subject.find("redcapFieldNameUnits")
            fieldUnitsValueObject = subject.find("REFERENCE_UNIT")
            formCompletedField = subject.find("formCompletedFieldName")
            formImportedField = subject.find("formImportedFieldName")
-
-
+           
            logger.info('Checking for required fields')
            if study_id_object is None:
                raise LogException('Missing required field STUDY_ID')
@@ -1244,7 +1200,7 @@ def copy_data_to_person_form_event_tree(raw_data_tree,person_form_event_tree,for
 
 
            if fieldValueObject is None:
-               raise LogException('Missing required field RESULT')
+               raise LogException('Missing required field ORD_VALUE')
            else:
                redcapFieldValue = fieldValueObject.text
 
@@ -1272,34 +1228,25 @@ def copy_data_to_person_form_event_tree(raw_data_tree,person_form_event_tree,for
 
            if len(form)<1:
                 raise LogException('Form named '+formName+' Not Found in person form event tree for subject '+subject_id)
-
-           logger.info('Check passed. Copying data with subject_id:' + subject_id \
-            + ", formName:" +formName\
-            + ", eventName:" +eventName \
-            + ", dateValue:" +dateValue \
-            + ", redcapFieldName:" +redcapFieldName \
-            + ", redcapFieldUnitsName:" +redcapFieldUnitsName \
-            )
-
-           # Copy the first three data fields into the PFE Tree
+        
+           logger.info('Check for required fields passed. Initiating the data copy')
            path = "person/study_id[.='"+subject_id+"']/../all_form_events/form/name[.='"+formName+"']/../event/name[.='"+eventName+"']/../field"
            fields = person_form_event_tree_root.xpath(path)
            fieldValues = ""
            for node in fields:
                if node.find("name").text == redcapFieldName:
                    node.find("value").text = redcapFieldValue
-                   fieldValues = fieldValues + convert_none_type_object_to_empty_string(redcapFieldValue)
+                   fieldValues = fieldValues + redcapFieldValue
                    continue
                if node.find("name").text == dateField:
                    node.find("value").text = dateValue
-                   fieldValues = fieldValues + convert_none_type_object_to_empty_string(dateValue)
+                   fieldValues = fieldValues + dateValue
                    continue
                if node.find("name").text == redcapFieldUnitsName:
                    node.find("value").text = redcapFieldUnitsValue
-                   fieldValues = fieldValues + convert_none_type_object_to_empty_string(redcapFieldUnitsValue)
+                   fieldValues = fieldValues + redcapFieldUnitsValue
                    continue
 
-           # If we had values in any of the first three fields, copy the form_completed and imported fields
            if fieldValues:
               completedFieldValue = person_form_event_tree_root.xpath("person/study_id[.='"+subject_id+"']/../all_form_events/form/name[.='"+formName+"']/../event/name[.='"+eventName+"']/../field/name[.='"+formCompletedField.text+"']/../value")
               completedFieldValue[0].text = form_event_root.xpath("form/name[.='"+formName+"']/../formCompletedFieldValue")[0].text
@@ -1314,175 +1261,7 @@ def copy_data_to_person_form_event_tree(raw_data_tree,person_form_event_tree,for
     tree = etree.ElementTree(person_form_event_tree_root)
     return tree
 
-"""
-replace noneType objects with an empty string. Else return the object.
-"""
-def convert_none_type_object_to_empty_string(my_object):
-    return ('' if my_object is None else my_object)
-
-"""
-convert_component_id_to_loinc_code:
-This function converts COMPONENT_ID in raw data to loinc_code based on the mapping provided in the xml file
-Parameters:
-    data: Raw data xml tree
-    component_to_loinc_code_xml_tree: COMPONENT_ID to loinc_code mapping xml file tree.
-
-"""
-def convert_component_id_to_loinc_code(data, component_to_loinc_code_xml_tree):
-    component2loinc_root = component_to_loinc_code_xml_tree.getroot()
-    if component2loinc_root is None:
-        raise LogException('component_to_loinc_code_xml is empty')
-
-    for component in component2loinc_root.iter('component'):
-        source_name = component.findtext('source/name')
-        source_value = component.findtext('source/value')
-        target_name = component.findtext('target/name')
-        target_value = component.findtext('target/value')
-        if source_name and source_value and target_name:
-            path = "subject/"+source_name+"[.='"+source_value+"']/.."
-            subjects_to_change = data.xpath(path)
-            if len(subjects_to_change)<1:
-                logger.debug('There are no matching sujects to modify in the Raw Data')
-            for subject in subjects_to_change:
-                new_target_element = etree.Element(target_name)
-                new_target_element.text = target_value
-                source_element = subject.find(source_name)
-                subject.replace(source_element,new_target_element)
-        else:
-            raise LogException("Elements source/name and Source/value are not present in the component_to_loinc_code xml")
-    return data
-
-"""
-validate_xml_file_and_extract_data:
-This function is responsible for validating xml file against an xsd and to extract data from xml if validation succeeds
-Parameters:
-    xmlfilename: This parameter holds the path to the xml file
-    xsdfilename: This parameter holds the path to the xsd file
-
-"""
-def validate_xml_file_and_extract_data(xmlfilename,xsdfilename):
-    if not os.path.exists(xsdfilename):
-        raise LogException("Error: "+xsdfilename+" xsd file not found at "
-            + xsdfilename)
-    else:
-        xsdfilehandle = open(xsdfilename, 'r')
-        logger.info(xmlfilename+" Xsd file read in. ")
-
-    xsd_tree = etree.parse(xsdfilename)
-    xsd = etree.XMLSchema(xsd_tree)
-
-    if not os.path.exists(xmlfilename):
-        raise LogException("Error: "+xmlfilename+" xml file not found at "
-            + xmlfilename)
-    else:
-        xmlfilehandle = open(xmlfilename, 'r')
-        logger.info(xmlfilename+" XML file read in. " +  str(sum(1 for line in xmlfilehandle))
-            + " total lines in file.")
-    xml = etree.parse(xmlfilename)
-    if not xsd.validate(xml):
-        raise LogException("XSD Validation Failed for xml file %s and xsd file %s",xmlfilename,xsdfilename)
-    return xml
-
-"""
-replace_fields_in_raw_xml:
-This function renames all fields which need renaming.Fields which need renaming are read from the xml file.
-Parameters:
-    data: Raw data xml tree
-    fields_to_replace_xml: Path to xml file which has list of fields which need renaming.
-
-"""
-def replace_fields_in_raw_xml(data,fields_to_replace_xml):
-    file_path = proj_root+fields_to_replace_xml
-    if not os.path.exists(file_path):
-        raise LogException("Error: "+fields_to_replace_xml+" xml file not found at "
-            + fields_to_replace_xml)
-    else:
-        fields_to_replace_xml_handle = open(file_path, 'r')
-        logger.info(fields_to_replace_xml+" Xml file read in. ")
-
-    fields_to_replace_xml_tree = etree.parse(file_path)
-    fields_to_replace_xml_tree_root = fields_to_replace_xml_tree.getroot()
-    if fields_to_replace_xml_tree_root is None:
-        raise LogException('replace_fields_in_raw_data.xml is empty')
-
-    for field in fields_to_replace_xml_tree_root.iter('field'):
-        source = field.findtext('source')
-        target = field.findtext('target')
-        for subject in data.iter('subject'):
-            source_element = subject.find(source)
-            if source_element is not None:
-                new_target_element = etree.Element(target)
-                new_target_element.text = source_element.text
-                subject.replace(source_element,new_target_element)
-    return data
-
-
-def load_rules(setup, root='./'):
-    """ Loads custom post-processing rules.
-
-    Rules should be added to the configuration file under a property called
-    "rules", which has key-value pairs mapping a unique rule name to a Python
-    file. Each Python file intended to be used as a rules file should have a
-    run_rules() function which takes one argument.
-
-    Example config.json:
-      { "rules": { "my_rules": "rules/my_rules.py" } }
-
-    Example rules file:
-      def run_rules(data):
-        pass
-    """
-    if 'rules' not in setup:
-        return {}
-
-    loaded_rules = {}
-    for (rule, path) in setup['rules'].iteritems():
-        module = None
-        if os.path.exists(path):
-            module = imp.load_source(rule, path)
-        elif os.path.exists(root + path):
-            module = imp.load_source(rule, root + path)
-
-        assert module is not None
-        assert module.run_rules is not None
-
-        loaded_rules[rule] = module
-
-    return loaded_rules
-
-
-def run_rules(rules, person_form_event_tree_with_data):
-    errors = []
-
-    for (rule, module) in rules.iteritems():
-        try:
-            module.run_rules(person_form_event_tree_with_data)
-        except Exception as e:
-            message_format = 'Error processing rule "{0}". {1}'
-            if not hasattr(e, 'errors'):
-                errors.append(message_format.format(rule, e.message))
-                continue
-            for error in e.errors:
-                errors.append(message_format.format(rule, error))
-
-    return person_form_event_tree_with_data, errors
-
-def verify_and_correct_collection_date(data):
-    for subject in data.iter('subject'):
-        collection_date_element = subject.find('DATE_TIME_STAMP')
-        result_date_element = subject.find('RESULT_DATE')
-        if collection_date_element is not None and result_date_element is not None:
-            if not collection_date_element.text:
-                collection_date_element.text = result_date_element.text
-        elif collection_date_element is None and result_date_element is not None:
-            new_collection_date_element = etree.Element('DATE_TIME_STAMP')
-            new_collection_date_element.text = result_date_element.text
-            subject.replace(result_date_element, new_collection_date_element)
-            continue
-        else:
-            continue
-        subject.remove(result_date_element)
-    return data
+    
 
 if __name__ == "__main__":
     main()

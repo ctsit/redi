@@ -59,12 +59,13 @@ class TestCreateEmptyEventTreeForStudy(unittest.TestCase):
             <study>
             <subject>
             <NAME>TestSubject</NAME>
-            <loinc_code>123456</loinc_code>
-            <RESULT>123</RESULT>
+            <COMPONENT_ID>123456</COMPONENT_ID>
+            <ORD_VALUE>123</ORD_VALUE>
             <REFERENCE_LOW>12.3</REFERENCE_LOW>
             <REFERENCE_HIGH>12.3</REFERENCE_HIGH>
             <REFERENCE_UNIT>g/dL</REFERENCE_UNIT>
-            <DATE_TIME_STAMP/>
+            <SPECIMN_TAKEN_TIME/>
+            <RESULT_DATE>1906-12-25 13:50:00</RESULT_DATE>
             <STUDY_ID>123</STUDY_ID>
         <timestamp/><redcapFormName>cbc</redcapFormName><eventName/><formDateField>cbc_lbdtc</formDateField><formCompletedFieldName>cbc_complete</formCompletedFieldName><formImportedFieldName>cbc_nximport</formImportedFieldName><redcapFieldNameValue>hemo_lborres</redcapFieldNameValue><redcapFieldNameUnits>hemo_lborresu</redcapFieldNameUnits><redcapFieldNameStatus>hemo_lbstat</redcapFieldNameStatus></subject>
         </study>
@@ -109,22 +110,24 @@ class TestCreateEmptyEventTreeForStudy(unittest.TestCase):
             <study>
                 <subject>
                 <NAME>TestSubject_1</NAME>
-                <loinc_code>123456</loinc_code>
-                <RESULT>123</RESULT>
+                <COMPONENT_ID>123456</COMPONENT_ID>
+                <ORD_VALUE>123</ORD_VALUE>
                 <REFERENCE_LOW>12.3</REFERENCE_LOW>
                 <REFERENCE_HIGH>12.3</REFERENCE_HIGH>
                 <REFERENCE_UNIT>g/dL</REFERENCE_UNIT>
-                <DATE_TIME_STAMP/>
+                <SPECIMN_TAKEN_TIME/>
+                <RESULT_DATE>1906-12-25 13:50:00</RESULT_DATE>
                 <STUDY_ID>123</STUDY_ID>
             <timestamp/><redcapFormName>cbc</redcapFormName><eventName/><formDateField>cbc_lbdtc</formDateField><formCompletedFieldName>cbc_complete</formCompletedFieldName><formImportedFieldName>cbc_nximport</formImportedFieldName><redcapFieldNameValue>hemo_lborres</redcapFieldNameValue><redcapFieldNameUnits>hemo_lborresu</redcapFieldNameUnits><redcapFieldNameStatus>hemo_lbstat</redcapFieldNameStatus></subject>
             <subject>
             <NAME>TestSubject_2</NAME>
-            <loinc_code>123456</loinc_code>
-            <RESULT>123</RESULT>
+            <COMPONENT_ID>123456</COMPONENT_ID>
+            <ORD_VALUE>123</ORD_VALUE>
             <REFERENCE_LOW>12.3</REFERENCE_LOW>
             <REFERENCE_HIGH>12.3</REFERENCE_HIGH>
             <REFERENCE_UNIT>g/dL</REFERENCE_UNIT>
-            <DATE_TIME_STAMP/>
+            <SPECIMN_TAKEN_TIME/>
+            <RESULT_DATE>1906-12-25 13:50:00</RESULT_DATE>
             <STUDY_ID>1234</STUDY_ID>
         <timestamp/><redcapFormName>cbc</redcapFormName><eventName/><formDateField>cbc_lbdtc</formDateField><formCompletedFieldName>cbc_complete</formCompletedFieldName><formImportedFieldName>cbc_nximport</formImportedFieldName><redcapFieldNameValue>hemo_lborres</redcapFieldNameValue><redcapFieldNameUnits>hemo_lborresu</redcapFieldNameUnits><redcapFieldNameStatus>hemo_lbstat</redcapFieldNameStatus></subject>
         </study>

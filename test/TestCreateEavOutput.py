@@ -29,6 +29,7 @@ import os
 class TestCreateEavOutput(unittest.TestCase):
 
     def setUp(self):
+        print 'setUp in __function__'
         self.CONST_STUDY_ID = 73
          
         global logger
@@ -185,22 +186,6 @@ record,redcap_event_name,field_name,value
         etree_4 = etree.ElementTree(etree.fromstring(string_4_blank_name))
         self.assertRaises(redi.LogException, redi_lib.create_eav_output, self.CONST_STUDY_ID, etree_4)
 
-    # Verify if code checks for blank `event/name`
-    def test_empty_event_name(self):
-        redi.configure_logging()
-        logger.info("Running " + __name__
-            + "#test_empty_event_name() for study_id: " + `self.CONST_STUDY_ID`)
-
-        string_4a_blank_name = """
-<event>
-    <!-- <name></name> -->
-    <name></name>
-    <field>
-        <name>tbil_lborresu</name>
-    </field>
-</event> """
-        etree_4a = etree.ElementTree(etree.fromstring(string_4a_blank_name))
-        self.assertRaises(redi.LogException, redi_lib.create_eav_output, self.CONST_STUDY_ID, etree_4a)
 
     ############################
     # == TEST_5

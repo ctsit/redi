@@ -22,7 +22,7 @@ class redcap_transactions:
         interface. This reads the data from the setup.json and fills the dict
         with required properties.
         Mohan'''
-        logger.info('Initializing redcap interface for: ' + redcap_uri)
+        logger.info('Initializing redcap interface')
         host = ''
         path = ''
         token = setup['token']
@@ -84,7 +84,7 @@ class redcap_transactions:
         return returned
 
     def get_redcap_connection(self,properties, token, format_param='csv',
-        type_param='eav', overwrite_behavior='overwrite', return_content='ids',
+        type_param='eav', overwrite_behavior='normal', return_content='ids',
         return_format='xml'):
         '''This function sends data to redcap using POST method
 

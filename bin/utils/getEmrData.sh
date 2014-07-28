@@ -39,7 +39,7 @@ lftp $2 -e "cd $PROJECT_NAME; put log.txt; bye"
 cd $PROJECT_ROOT
 rm -rf $MYTEMP
 
-cat $PROJECT_ROOT/config/raw.txt | sed -e "s/&/\&amp;/g; s/</\&lt;/g; s/>/\&gt;/g; " > $PROJECT_ROOT/config/rawEscaped.txt
+cat $PROJECT_ROOT/config/raw.txt | sed -e "s/&/\&amp;/g; s/</\&lt; /g; s/>/\&gt; /g; " > $PROJECT_ROOT/config/rawEscaped.txt 
 $PROJECT_ROOT/bin/utils/csv2xml.py --input-encoding=cp1252  --output-encoding=utf8 --header \
   --delimiter=,  --xml-declaration -tstudy -rsubject --output-file=$PROJECT_ROOT/config/raw.xml \
   $PROJECT_ROOT/config/rawEscaped.txt

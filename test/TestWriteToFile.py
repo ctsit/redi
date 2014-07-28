@@ -30,7 +30,7 @@ class TestWriteToFile(unittest.TestCase):
         <Qualifying_Result>Y</Qualifying_Result>
         <Study_Stop>04/14/20</Study_Stop>
         <Component_Name>ALBUMIN</Component_Name>
-        <loinc_code>1810650</loinc_code>
+        <Component_ID>1810650</Component_ID>
         <Reference_Unit>g/dL</Reference_Unit>
         <Reference_Low>3.5</Reference_Low>
         <Reference_High>5.0</Reference_High>
@@ -44,7 +44,7 @@ class TestWriteToFile(unittest.TestCase):
         <Qualifying_Result>Y</Qualifying_Result>
         <Study_Stop>04/14/20</Study_Stop>
         <Component_Name>ALKALINE PHOSPHATASE</Component_Name>
-        <loinc_code>1525848</loinc_code>
+        <Component_ID>1525848</Component_ID>
         <Reference_Unit>U/L</Reference_Unit>
         <Reference_Low>35</Reference_Low>
         <Reference_High>129</Reference_High>

@@ -19,42 +19,46 @@ class TestResearchIdToRedcapId(unittest.TestCase):
     <study>
     <subject>
         <NAME>HEMOGLOBIN</NAME>
-        <loinc_code>1534435</loinc_code>
-        <RESULT>10.5</RESULT>
+        <COMPONENT_ID>1534435</COMPONENT_ID>
+        <ORD_VALUE>10.5</ORD_VALUE>
         <REFERENCE_LOW>12.0</REFERENCE_LOW>
         <REFERENCE_HIGH>16.0</REFERENCE_HIGH>
         <REFERENCE_UNIT>g/dL</REFERENCE_UNIT>
-        <DATE_TIME_STAMP/>
+        <SPECIMN_TAKEN_TIME/>
+        <RESULT_DATE>1906-12-25 13:50:00</RESULT_DATE>
         <STUDY_ID>999-0059</STUDY_ID>
     <timestamp/><redcapFormName>cbc</redcapFormName><eventName/><formDateField>cbc_lbdtc</formDateField><formCompletedFieldName>cbc_complete</formCompletedFieldName><formImportedFieldName>cbc_nximport</formImportedFieldName><redcapFieldNameValue>hemo_lborres</redcapFieldNameValue><redcapFieldNameUnits>hemo_lborresu</redcapFieldNameUnits><redcapFieldNameStatus>hemo_lbstat</redcapFieldNameStatus></subject>
     <subject>
         <NAME>WBC</NAME>
-        <loinc_code>999</loinc_code>
-        <RESULT>5.4</RESULT>
+        <COMPONENT_ID>999</COMPONENT_ID>
+        <ORD_VALUE>5.4</ORD_VALUE>
         <REFERENCE_LOW/>
         <REFERENCE_HIGH/>
         <REFERENCE_UNIT/>
-        <DATE_TIME_STAMP/>
+        <SPECIMN_TAKEN_TIME/>
+        <RESULT_DATE>1906-12-25 13:50:00</RESULT_DATE>
         <STUDY_ID>999-0059</STUDY_ID>
     <timestamp/><redcapFormName>cbc</redcapFormName><eventName/><formDateField>cbc_lbdtc</formDateField><formCompletedFieldName>cbc_complete</formCompletedFieldName><formImportedFieldName>cbc_nximport</formImportedFieldName><redcapFieldNameValue>wbc_lborres</redcapFieldNameValue><redcapFieldNameUnits>wbc_lborresu</redcapFieldNameUnits><redcapFieldNameStatus>wbc_lbstat</redcapFieldNameStatus></subject>
     <subject>
         <NAME>PLATELET COUNT</NAME>
-        <loinc_code>1009</loinc_code>
-        <RESULT>92</RESULT>
+        <COMPONENT_ID>1009</COMPONENT_ID>
+        <ORD_VALUE>92</ORD_VALUE>
         <REFERENCE_LOW/>
         <REFERENCE_HIGH/>
         <REFERENCE_UNIT/>
-        <DATE_TIME_STAMP/>
+        <SPECIMN_TAKEN_TIME/>
+        <RESULT_DATE>1906-12-25 13:50:00</RESULT_DATE>
         <STUDY_ID>999-0059</STUDY_ID>
     <timestamp/><redcapFormName>cbc</redcapFormName><eventName/><formDateField>cbc_lbdtc</formDateField><formCompletedFieldName>cbc_complete</formCompletedFieldName><formImportedFieldName>cbc_nximport</formImportedFieldName><redcapFieldNameValue>plat_lborres</redcapFieldNameValue><redcapFieldNameUnits>plat_lborresu</redcapFieldNameUnits><redcapFieldNameStatus>plat_lbstat</redcapFieldNameStatus></subject>
     <subject>
         <NAME>HEMOGLOBIN</NAME>
-        <loinc_code>1534435</loinc_code>
-        <RESULT>9.5</RESULT>
+        <COMPONENT_ID>1534435</COMPONENT_ID>
+        <ORD_VALUE>9.5</ORD_VALUE>
         <REFERENCE_LOW>12.0</REFERENCE_LOW>
         <REFERENCE_HIGH>16.0</REFERENCE_HIGH>
         <REFERENCE_UNIT>g/dL</REFERENCE_UNIT>
-        <DATE_TIME_STAMP/>
+        <SPECIMN_TAKEN_TIME/>
+        <RESULT_DATE>1908-06-12 04:00:00</RESULT_DATE>
         <STUDY_ID>999-0059</STUDY_ID>
     <timestamp/><redcapFormName>cbc</redcapFormName><eventName/><formDateField>cbc_lbdtc</formDateField><formCompletedFieldName>cbc_complete</formCompletedFieldName><formImportedFieldName>cbc_nximport</formImportedFieldName><redcapFieldNameValue>hemo_lborres</redcapFieldNameValue><redcapFieldNameUnits>hemo_lborresu</redcapFieldNameUnits><redcapFieldNameStatus>hemo_lbstat</redcapFieldNameStatus></subject>
     </study>"""
@@ -69,42 +73,46 @@ class TestResearchIdToRedcapId(unittest.TestCase):
         self.output = """<study>
     <subject>
         <NAME>HEMOGLOBIN</NAME>
-        <loinc_code>1534435</loinc_code>
-        <RESULT>10.5</RESULT>
+        <COMPONENT_ID>1534435</COMPONENT_ID>
+        <ORD_VALUE>10.5</ORD_VALUE>
         <REFERENCE_LOW>12.0</REFERENCE_LOW>
         <REFERENCE_HIGH>16.0</REFERENCE_HIGH>
         <REFERENCE_UNIT>g/dL</REFERENCE_UNIT>
-        <DATE_TIME_STAMP/>
+        <SPECIMN_TAKEN_TIME/>
+        <RESULT_DATE>1906-12-25 13:50:00</RESULT_DATE>
         <STUDY_ID>76</STUDY_ID>
     <timestamp/><redcapFormName>cbc</redcapFormName><eventName/><formDateField>cbc_lbdtc</formDateField><formCompletedFieldName>cbc_complete</formCompletedFieldName><formImportedFieldName>cbc_nximport</formImportedFieldName><redcapFieldNameValue>hemo_lborres</redcapFieldNameValue><redcapFieldNameUnits>hemo_lborresu</redcapFieldNameUnits><redcapFieldNameStatus>hemo_lbstat</redcapFieldNameStatus></subject>
     <subject>
         <NAME>WBC</NAME>
-        <loinc_code>999</loinc_code>
-        <RESULT>5.4</RESULT>
+        <COMPONENT_ID>999</COMPONENT_ID>
+        <ORD_VALUE>5.4</ORD_VALUE>
         <REFERENCE_LOW/>
         <REFERENCE_HIGH/>
         <REFERENCE_UNIT/>
-        <DATE_TIME_STAMP/>
+        <SPECIMN_TAKEN_TIME/>
+        <RESULT_DATE>1906-12-25 13:50:00</RESULT_DATE>
         <STUDY_ID>76</STUDY_ID>
     <timestamp/><redcapFormName>cbc</redcapFormName><eventName/><formDateField>cbc_lbdtc</formDateField><formCompletedFieldName>cbc_complete</formCompletedFieldName><formImportedFieldName>cbc_nximport</formImportedFieldName><redcapFieldNameValue>wbc_lborres</redcapFieldNameValue><redcapFieldNameUnits>wbc_lborresu</redcapFieldNameUnits><redcapFieldNameStatus>wbc_lbstat</redcapFieldNameStatus></subject>
     <subject>
         <NAME>PLATELET COUNT</NAME>
-        <loinc_code>1009</loinc_code>
-        <RESULT>92</RESULT>
+        <COMPONENT_ID>1009</COMPONENT_ID>
+        <ORD_VALUE>92</ORD_VALUE>
         <REFERENCE_LOW/>
         <REFERENCE_HIGH/>
         <REFERENCE_UNIT/>
-        <DATE_TIME_STAMP/>
+        <SPECIMN_TAKEN_TIME/>
+        <RESULT_DATE>1906-12-25 13:50:00</RESULT_DATE>
         <STUDY_ID>76</STUDY_ID>
     <timestamp/><redcapFormName>cbc</redcapFormName><eventName/><formDateField>cbc_lbdtc</formDateField><formCompletedFieldName>cbc_complete</formCompletedFieldName><formImportedFieldName>cbc_nximport</formImportedFieldName><redcapFieldNameValue>plat_lborres</redcapFieldNameValue><redcapFieldNameUnits>plat_lborresu</redcapFieldNameUnits><redcapFieldNameStatus>plat_lbstat</redcapFieldNameStatus></subject>
     <subject>
         <NAME>HEMOGLOBIN</NAME>
-        <loinc_code>1534435</loinc_code>
-        <RESULT>9.5</RESULT>
+        <COMPONENT_ID>1534435</COMPONENT_ID>
+        <ORD_VALUE>9.5</ORD_VALUE>
         <REFERENCE_LOW>12.0</REFERENCE_LOW>
         <REFERENCE_HIGH>16.0</REFERENCE_HIGH>
         <REFERENCE_UNIT>g/dL</REFERENCE_UNIT>
-        <DATE_TIME_STAMP/>
+        <SPECIMN_TAKEN_TIME/>
+        <RESULT_DATE>1908-06-12 04:00:00</RESULT_DATE>
         <STUDY_ID>76</STUDY_ID>
     <timestamp/><redcapFormName>cbc</redcapFormName><eventName/><formDateField>cbc_lbdtc</formDateField><formCompletedFieldName>cbc_complete</formCompletedFieldName><formImportedFieldName>cbc_nximport</formImportedFieldName><redcapFieldNameValue>hemo_lborres</redcapFieldNameValue><redcapFieldNameUnits>hemo_lborresu</redcapFieldNameUnits><redcapFieldNameStatus>hemo_lbstat</redcapFieldNameStatus></subject>
     </study>"""

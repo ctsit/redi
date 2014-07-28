@@ -21,7 +21,7 @@ class TestUpdateRedcapFieldNameValueAndUnits(unittest.TestCase):
         <Collection_Date>10/01/17</Collection_Date>
         <Collection_Time>13:50</Collection_Time>
         <Component_Name>HEMATOCRIT</Component_Name>
-        <loinc_code>1534436</loinc_code>
+        <COMPONENT_ID>1534436</COMPONENT_ID>
         <Reference_Unit>%</Reference_Unit>
         <Result_Value>34.5</Result_Value>
 <timestamp/><redcapFormName/><eventName/><formDateField/><formCompletedFieldName/><redcapFieldNameValue/><redcapFieldNameUnits/></subject>
@@ -30,7 +30,7 @@ class TestUpdateRedcapFieldNameValueAndUnits(unittest.TestCase):
         <Collection_Date>10/01/17</Collection_Date>
         <Collection_Time>13:50</Collection_Time>
         <Component_Name>HEMOGLOBIN</Component_Name>
-        <loinc_code>1534435</loinc_code>
+        <COMPONENT_ID>1534435</COMPONENT_ID>
         <Reference_Unit>g/dL</Reference_Unit>
         <Result_Value>11.3</Result_Value>
 <timestamp/><redcapFormName/><eventName/><formDateField/><formCompletedFieldName/><redcapFieldNameValue/><redcapFieldNameUnits/></subject>
@@ -39,7 +39,7 @@ class TestUpdateRedcapFieldNameValueAndUnits(unittest.TestCase):
         <Collection_Date>05/05/22</Collection_Date>
         <Collection_Time>12:38</Collection_Time>
         <Component_Name>BILIRUBIN DIRECT</Component_Name>
-        <loinc_code>1558221</loinc_code>
+        <COMPONENT_ID>1558221</COMPONENT_ID>
         <Reference_Unit>mg/dL</Reference_Unit>
         <Result_Value>0.8</Result_Value>
 <timestamp/><redcapFormName/><eventName/><formDateField/><formCompletedFieldName/><redcapFieldNameValue/><redcapFieldNameUnits/></subject>
@@ -49,7 +49,7 @@ class TestUpdateRedcapFieldNameValueAndUnits(unittest.TestCase):
 
         self.lookup_table = """<rediFieldMap>
     <clinicalComponent>
-        <loinc_code>1534435</loinc_code>
+        <clinicalComponentId>1534435</clinicalComponentId>
         <clinicalComponentName>HEMOGLOBIN</clinicalComponentName>
         <redcapFormName>cbc</redcapFormName>
         <redcapFieldNameValue>hemo_lborres</redcapFieldNameValue>
@@ -60,7 +60,7 @@ class TestUpdateRedcapFieldNameValueAndUnits(unittest.TestCase):
         <lbtestcd>hemo_lbtestcd</lbtestcd>
     </clinicalComponent>
     <clinicalComponent>
-        <loinc_code>1558221</loinc_code>
+        <clinicalComponentId>1558221</clinicalComponentId>
         <clinicalComponentName>BILIRUBIN DIRECT</clinicalComponentName>
         <redcapFormName>chemistry</redcapFormName>
         <redcapFieldNameValue>dbil_lborres</redcapFieldNameValue>
@@ -82,7 +82,7 @@ class TestUpdateRedcapFieldNameValueAndUnits(unittest.TestCase):
         <Collection_Date>10/01/17</Collection_Date>
         <Collection_Time>13:50</Collection_Time>
         <Component_Name>HEMATOCRIT</Component_Name>
-        <loinc_code>1534436</loinc_code>
+        <COMPONENT_ID>1534436</COMPONENT_ID>
         <Reference_Unit>%</Reference_Unit>
         <Result_Value>34.5</Result_Value>
 <timestamp/><redcapFormName/><eventName/><formDateField/><formCompletedFieldName/><redcapFieldNameValue>undefined</redcapFieldNameValue><redcapFieldNameUnits>redcapFieldNameUnitsUndefined</redcapFieldNameUnits></subject>
@@ -91,7 +91,7 @@ class TestUpdateRedcapFieldNameValueAndUnits(unittest.TestCase):
         <Collection_Date>10/01/17</Collection_Date>
         <Collection_Time>13:50</Collection_Time>
         <Component_Name>HEMOGLOBIN</Component_Name>
-        <loinc_code>1534435</loinc_code>
+        <COMPONENT_ID>1534435</COMPONENT_ID>
         <Reference_Unit>g/dL</Reference_Unit>
         <Result_Value>11.3</Result_Value>
 <timestamp/><redcapFormName/><eventName/><formDateField/><formCompletedFieldName/><redcapFieldNameValue>hemo_lborres</redcapFieldNameValue><redcapFieldNameUnits>hemo_lborresu</redcapFieldNameUnits></subject>
@@ -100,7 +100,7 @@ class TestUpdateRedcapFieldNameValueAndUnits(unittest.TestCase):
         <Collection_Date>05/05/22</Collection_Date>
         <Collection_Time>12:38</Collection_Time>
         <Component_Name>BILIRUBIN DIRECT</Component_Name>
-        <loinc_code>1558221</loinc_code>
+        <COMPONENT_ID>1558221</COMPONENT_ID>
         <Reference_Unit>mg/dL</Reference_Unit>
         <Result_Value>0.8</Result_Value>
 <timestamp/><redcapFormName/><eventName/><formDateField/><formCompletedFieldName/><redcapFieldNameValue>dbil_lborres</redcapFieldNameValue><redcapFieldNameUnits>dbil_lborresu</redcapFieldNameUnits></subject>

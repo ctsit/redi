@@ -23,22 +23,24 @@ class TestParseRawXml(unittest.TestCase):
         self.sampleData = """<study>
         <subject>
             <NAME>TestSubject1</NAME>
-            <loinc_code>test1</loinc_code>
-            <RESULT>0.12</RESULT>
+            <COMPONENT_ID>test1</COMPONENT_ID>
+            <ORD_VALUE>0.12</ORD_VALUE>
             <REFERENCE_LOW>0.34</REFERENCE_LOW>
             <REFERENCE_HIGH>5.60</REFERENCE_HIGH>
             <REFERENCE_UNIT>mIU/L</REFERENCE_UNIT>
-            <DATE_TIME_STAMP>7891-11-30 11:12:00</DATE_TIME_STAMP>
+            <SPECIMN_TAKEN_TIME>7891-11-30 11:12:00</SPECIMN_TAKEN_TIME>
+            <RESULT_DATE>1934-12-29 00:00:00</RESULT_DATE>
             <STUDY_ID>1234-5678</STUDY_ID>
         </subject>
         <subject>
             <NAME>TestSubject2</NAME>
-            <loinc_code>test2</loinc_code>
-            <RESULT>8.7</RESULT>
+            <COMPONENT_ID>test2</COMPONENT_ID>
+            <ORD_VALUE>8.7</ORD_VALUE>
             <REFERENCE_LOW/>
             <REFERENCE_HIGH/>
             <REFERENCE_UNIT>ml</REFERENCE_UNIT>
-            <DATE_TIME_STAMP>1909-8-27 16:13:00</DATE_TIME_STAMP>
+            <SPECIMN_TAKEN_TIME>1909-8-27 16:13:00</SPECIMN_TAKEN_TIME>
+            <RESULT_DATE>1904-12-28 00:00:00</RESULT_DATE>
             <STUDY_ID>987-654</STUDY_ID>
         </subject>
     </study>

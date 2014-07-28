@@ -1,4 +1,0 @@
-alias db='mysql --prompt="(\u@\h) [\d]> " --pager="less -niSFX" -uroot -ppassword redcap'
-alias check_redcap="curl -s http://localhost/redcap/ | grep -i  'Welcome\|Critical Error' "
-alias restart_httpd='sudo /etc/init.d/apache2 reload '
-alias lsa='ls -al --color=auto'
