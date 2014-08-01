@@ -19,7 +19,7 @@ class TestAddElementsToTree(unittest.TestCase):
         <Collection_Date>12/01/20</Collection_Date>
         <Collection_Time>13:50</Collection_Time>
         <Component_Name>HEMATOCRIT</Component_Name>
-        <Component_ID>1534436</Component_ID>
+        <loinc_code>1534436</loinc_code>
         <Reference_Unit>%</Reference_Unit>
         <Result_Value>34.5</Result_Value>
 </subject>
@@ -28,7 +28,7 @@ class TestAddElementsToTree(unittest.TestCase):
         <Collection_Date>12/01/20</Collection_Date>
         <Collection_Time>13:50</Collection_Time>
         <Component_Name>HEMOGLOBIN</Component_Name>
-        <Component_ID>1534435</Component_ID>
+        <loinc_code>1534435</loinc_code>
         <Reference_Unit>g/dL</Reference_Unit>
         <Result_Value>11.3</Result_Value>
 </subject>
@@ -37,7 +37,7 @@ class TestAddElementsToTree(unittest.TestCase):
         <Collection_Date>04/18/19</Collection_Date>
         <Collection_Time>12:38</Collection_Time>
         <Component_Name>BILIRUBIN DIRECT</Component_Name>
-        <Component_ID>1558221</Component_ID>
+        <loinc_code>1558221</loinc_code>
         <Reference_Unit>mg/dL</Reference_Unit>
         <Result_Value>0.8</Result_Value>
 </subject>
@@ -51,7 +51,7 @@ class TestAddElementsToTree(unittest.TestCase):
         <Collection_Date>12/01/20</Collection_Date>
         <Collection_Time>13:50</Collection_Time>
         <Component_Name>HEMATOCRIT</Component_Name>
-        <Component_ID>1534436</Component_ID>
+        <loinc_code>1534436</loinc_code>
         <Reference_Unit>%</Reference_Unit>
         <Result_Value>34.5</Result_Value>
 <timestamp/><redcapFormName/><eventName/><formDateField/><formCompletedFieldName/><formImportedFieldName/><redcapFieldNameValue/><redcapFieldNameUnits/><redcapStatusFieldName/></subject>
@@ -60,7 +60,7 @@ class TestAddElementsToTree(unittest.TestCase):
         <Collection_Date>12/01/20</Collection_Date>
         <Collection_Time>13:50</Collection_Time>
         <Component_Name>HEMOGLOBIN</Component_Name>
-        <Component_ID>1534435</Component_ID>
+        <loinc_code>1534435</loinc_code>
         <Reference_Unit>g/dL</Reference_Unit>
         <Result_Value>11.3</Result_Value>
 <timestamp/><redcapFormName/><eventName/><formDateField/><formCompletedFieldName/><formImportedFieldName/><redcapFieldNameValue/><redcapFieldNameUnits/><redcapStatusFieldName/></subject>
@@ -69,7 +69,7 @@ class TestAddElementsToTree(unittest.TestCase):
         <Collection_Date>04/18/19</Collection_Date>
         <Collection_Time>12:38</Collection_Time>
         <Component_Name>BILIRUBIN DIRECT</Component_Name>
-        <Component_ID>1558221</Component_ID>
+        <loinc_code>1558221</loinc_code>
         <Reference_Unit>mg/dL</Reference_Unit>
         <Result_Value>0.8</Result_Value>
 <timestamp/><redcapFormName/><eventName/><formDateField/><formCompletedFieldName/><formImportedFieldName/><redcapFieldNameValue/><redcapFieldNameUnits/><redcapStatusFieldName/></subject>

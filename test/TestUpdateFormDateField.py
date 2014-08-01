@@ -30,7 +30,7 @@ class TestUpdateFormDateField(unittest.TestCase):
         <Qualifying_Result>Y</Qualifying_Result>
         <Study_Stop>12/17/16</Study_Stop>
         <Component_Name>ALBUMIN</Component_Name>
-        <Component_ID>1810650</Component_ID>
+        <loinc_code>1810650</loinc_code>
         <Reference_Unit>g/dL</Reference_Unit>
         <Reference_Low>3.5</Reference_Low>
         <Reference_High>5.0</Reference_High>
@@ -44,7 +44,7 @@ class TestUpdateFormDateField(unittest.TestCase):
         <Qualifying_Result>Y</Qualifying_Result>
         <Study_Stop>12/17/16</Study_Stop>
         <Component_Name>ALKALINE PHOSPHATASE</Component_Name>
-        <Component_ID>1525848</Component_ID>
+        <loinc_code>1525848</loinc_code>
         <Reference_Unit>U/L</Reference_Unit>
         <Reference_Low>35</Reference_Low>
         <Reference_High>129</Reference_High>
@@ -58,7 +58,7 @@ class TestUpdateFormDateField(unittest.TestCase):
         <Qualifying_Result>Y</Qualifying_Result>
         <Study_Stop>12/17/16</Study_Stop>
         <Component_Name>ALPHA FETO PROT</Component_Name>
-        <Component_ID>683</Component_ID>
+        <loinc_code>683</loinc_code>
         <Reference_Unit>ng/mL</Reference_Unit>
         <Reference_Low>0.0</Reference_Low>
         <Reference_High>8.7</Reference_High>

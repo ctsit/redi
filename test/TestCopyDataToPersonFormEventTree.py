@@ -61,6 +61,56 @@ class TestCopyDataToPersonFormEventTree(unittest.TestCase):
         self.data_form_event_tree = etree.ElementTree(etree.fromstring(self.form_event_tree))
         return()
 
+    def test_copy_data_with_blank_reference_unit(self):
+
+        self.person_form_event_tree = """<person_form_event><person><study_id>123</study_id><all_form_events><form>
+        <name>cbc</name>
+        <event>
+            <name>1_arm_1</name>
+            <field><name>hemo_lborres</name><value/></field>
+            <field><name>hemo_lborresu</name><value/></field>
+            <field><name>cbc_complete</name><value/></field>
+            <field><name>cbc_nximport</name><value/></field></event>
+        </form>
+        </all_form_events></person></person_form_event>
+        """
+        self.data_person_form_event_tree = etree.ElementTree(etree.fromstring(self.person_form_event_tree))
+
+        self.one_subject = """<?xml version='1.0' encoding='US-ASCII'?>
+            <study>
+            <subject>
+            <NAME>TestSubject</NAME>
+            <RESULT>987</RESULT>
+            <REFERENCE_UNIT/>
+            <STUDY_ID>123</STUDY_ID>
+            <timestamp>1906-12-25</timestamp>
+            <redcapFormName>cbc</redcapFormName>
+            <eventName>1_arm_1</eventName>
+            <formDateField>cbc_lbdtc</formDateField>
+            <formCompletedFieldName>cbc_complete</formCompletedFieldName>
+            <formImportedFieldName>cbc_nximport</formImportedFieldName>
+            <redcapFieldNameValue>hemo_lborres</redcapFieldNameValue>
+            <redcapFieldNameUnits>hemo_lborresu</redcapFieldNameUnits>
+            <redcapFieldNameStatus>hemo_lbstat</redcapFieldNameStatus></subject>
+        </study>
+            """
+        self.data_one_subject= etree.ElementTree(etree.fromstring(self.one_subject))
+        self.result = etree.tostring(redi.copy_data_to_person_form_event_tree(self.data_one_subject,self.data_person_form_event_tree,self.data_form_event_tree))
+
+        self.output = """<person_form_event><person><study_id>123</study_id><all_form_events><form>
+        <name>cbc</name>
+        <event>
+            <name>1_arm_1</name>
+            <field><name>hemo_lborres</name><value>987</value></field>
+            <field><name>hemo_lborresu</name><value/></field>
+            <field><name>cbc_complete</name><value>2</value></field>
+            <field><name>cbc_nximport</name><value>Y</value></field></event>
+        </form>
+        </all_form_events></person></person_form_event>"""
+
+        self.expect = etree.tostring(etree.fromstring(self.output))
+        self.assertEqual(self.expect, self.result)
+
     def test_copy_data_to_person_form_event_tree_one_person(self):
         
         self.person_form_event_tree = """<person_form_event><person><study_id>123</study_id><all_form_events><form>
@@ -68,6 +118,7 @@ class TestCopyDataToPersonFormEventTree(unittest.TestCase):
         <event>
             <name>1_arm_1</name>
             <field><name>hemo_lborres</name><value/></field>
+            <field><name>hemo_lborresu</name><value/></field>
             <field><name>cbc_complete</name><value/></field>
             <field><name>cbc_nximport</name><value/></field></event>
         </form>    
@@ -79,10 +130,18 @@ class TestCopyDataToPersonFormEventTree(unittest.TestCase):
             <study>
             <subject>
             <NAME>TestSubject</NAME>
-            <ORD_VALUE>987</ORD_VALUE>
+            <RESULT>987</RESULT>
             <REFERENCE_UNIT>g/dL</REFERENCE_UNIT>
             <STUDY_ID>123</STUDY_ID>
-        <timestamp>1906-12-25</timestamp><redcapFormName>cbc</redcapFormName><eventName>1_arm_1</eventName><formDateField>cbc_lbdtc</formDateField><formCompletedFieldName>cbc_complete</formCompletedFieldName><formImportedFieldName>cbc_nximport</formImportedFieldName><redcapFieldNameValue>hemo_lborres</redcapFieldNameValue><redcapFieldNameUnits>hemo_lborresu</redcapFieldNameUnits><redcapFieldNameStatus>hemo_lbstat</redcapFieldNameStatus></subject>
+        <timestamp>1906-12-25</timestamp>
+        <redcapFormName>cbc</redcapFormName>
+        <eventName>1_arm_1</eventName>
+        <formDateField>cbc_lbdtc</formDateField>
+        <formCompletedFieldName>cbc_complete</formCompletedFieldName>
+        <formImportedFieldName>cbc_nximport</formImportedFieldName>
+        <redcapFieldNameValue>hemo_lborres</redcapFieldNameValue>
+        <redcapFieldNameUnits>hemo_lborresu</redcapFieldNameUnits>
+        <redcapFieldNameStatus>hemo_lbstat</redcapFieldNameStatus></subject>
         </study>
             """
         self.data_one_subject= etree.ElementTree(etree.fromstring(self.one_subject))
@@ -93,6 +152,7 @@ class TestCopyDataToPersonFormEventTree(unittest.TestCase):
         <event>
             <name>1_arm_1</name>
             <field><name>hemo_lborres</name><value>987</value></field>
+            <field><name>hemo_lborresu</name><value>g/dL</value></field>
             <field><name>cbc_complete</name><value>2</value></field>
             <field><name>cbc_nximport</name><value>Y</value></field></event>
         </form>    
@@ -132,13 +192,13 @@ class TestCopyDataToPersonFormEventTree(unittest.TestCase):
             <study>
             <subject>
             <NAME>TestSubject</NAME>
-            <ORD_VALUE>987</ORD_VALUE>
+            <RESULT>987</RESULT>
             <REFERENCE_UNIT>g/dL</REFERENCE_UNIT>
             <STUDY_ID>123</STUDY_ID>
         <timestamp>1906-12-25</timestamp><redcapFormName>cbc</redcapFormName><eventName>1_arm_1</eventName><formDateField>cbc_lbdtc</formDateField><formCompletedFieldName>cbc_complete</formCompletedFieldName><formImportedFieldName>cbc_nximport</formImportedFieldName><redcapFieldNameValue>hemo_lborres</redcapFieldNameValue><redcapFieldNameUnits>hemo_lborresu</redcapFieldNameUnits><redcapFieldNameStatus>hemo_lbstat</redcapFieldNameStatus></subject>
             <subject>
             <NAME>TestSubject_2</NAME>
-            <ORD_VALUE>123</ORD_VALUE>
+            <RESULT>123</RESULT>
             <REFERENCE_UNIT>g/dL</REFERENCE_UNIT>
             <STUDY_ID>456</STUDY_ID>
         <timestamp>1906-12-25</timestamp><redcapFormName>inr</redcapFormName><eventName>1_arm_1</eventName><formDateField>inr_lbdtc</formDateField><formCompletedFieldName>inr_complete</formCompletedFieldName><formImportedFieldName>inr_nximport</formImportedFieldName><redcapFieldNameValue>hemo_lborres</redcapFieldNameValue><redcapFieldNameUnits>hemo_lborresu</redcapFieldNameUnits><redcapFieldNameStatus>hemo_lbstat</redcapFieldNameStatus></subject>
@@ -186,7 +246,7 @@ class TestCopyDataToPersonFormEventTree(unittest.TestCase):
             <study>
             <subject>
             <NAME>TestSubject_2</NAME>
-            <ORD_VALUE>123</ORD_VALUE>
+            <RESULT>123</RESULT>
             <REFERENCE_UNIT>g/dL</REFERENCE_UNIT>
             <STUDY_ID>456</STUDY_ID>
         <timestamp>1906-12-25</timestamp><redcapFormName>inr</redcapFormName><eventName>1_arm_1</eventName><formDateField>inr_lbdtc</formDateField><formCompletedFieldName>inr_complete</formCompletedFieldName><formImportedFieldName>inr_nximport</formImportedFieldName><redcapFieldNameValue>hemo_lborres</redcapFieldNameValue><redcapFieldNameUnits>hemo_lborresu</redcapFieldNameUnits><redcapFieldNameStatus>hemo_lbstat</redcapFieldNameStatus></subject>
@@ -224,13 +284,13 @@ class TestCopyDataToPersonFormEventTree(unittest.TestCase):
             <study>
             <subject>
             <NAME>TestSubject_2</NAME>
-            <ORD_VALUE>987</ORD_VALUE>
+            <RESULT>987</RESULT>
             <REFERENCE_UNIT>g/dL</REFERENCE_UNIT>
             <STUDY_ID>456</STUDY_ID>
         <timestamp>1906-12-26</timestamp><redcapFormName>cbc</redcapFormName><eventName>1_arm_1</eventName><formDateField>cbc_lbdtc</formDateField><formCompletedFieldName>cbc_complete</formCompletedFieldName><formImportedFieldName>cbc_nximport</formImportedFieldName><redcapFieldNameValue>hemo_lborres</redcapFieldNameValue><redcapFieldNameUnits>hemo_lborresu</redcapFieldNameUnits><redcapFieldNameStatus>hemo_lbstat</redcapFieldNameStatus></subject>
             <subject>
             <NAME>TestSubject_2</NAME>
-            <ORD_VALUE>123</ORD_VALUE>
+            <RESULT>123</RESULT>
             <REFERENCE_UNIT>g/dL</REFERENCE_UNIT>
             <STUDY_ID>456</STUDY_ID>
         <timestamp>1906-12-25</timestamp><redcapFormName>inr</redcapFormName><eventName>1_arm_1</eventName><formDateField>inr_lbdtc</formDateField><formCompletedFieldName>inr_complete</formCompletedFieldName><formImportedFieldName>inr_nximport</formImportedFieldName><redcapFieldNameValue>hemo_lborres</redcapFieldNameValue><redcapFieldNameUnits>hemo_lborresu</redcapFieldNameUnits><redcapFieldNameStatus>hemo_lbstat</redcapFieldNameStatus></subject>
@@ -287,13 +347,13 @@ class TestCopyDataToPersonFormEventTree(unittest.TestCase):
             <study>
             <subject>
             <NAME>TestSubject_2</NAME>
-            <ORD_VALUE>987</ORD_VALUE>
+            <RESULT>987</RESULT>
             <REFERENCE_UNIT>g/dL</REFERENCE_UNIT>
             <STUDY_ID>456</STUDY_ID>
         <timestamp>1906-12-26</timestamp><redcapFormName>inr</redcapFormName><eventName>1_arm_1</eventName><formDateField>inr_lbdtc</formDateField><formCompletedFieldName>inr_complete</formCompletedFieldName><formImportedFieldName>inr_nximport</formImportedFieldName><redcapFieldNameValue>hemo_lborres</redcapFieldNameValue><redcapFieldNameUnits>hemo_lborresu</redcapFieldNameUnits><redcapFieldNameStatus>hemo_lbstat</redcapFieldNameStatus></subject>
             <subject>
             <NAME>TestSubject_2</NAME>
-            <ORD_VALUE>123</ORD_VALUE>
+            <RESULT>123</RESULT>
             <REFERENCE_UNIT>g/dL</REFERENCE_UNIT>
             <STUDY_ID>456</STUDY_ID>
         <timestamp>1906-12-25</timestamp><redcapFormName>inr</redcapFormName><eventName>2_arm_1</eventName><formDateField>inr_lbdtc</formDateField><formCompletedFieldName>inr_complete</formCompletedFieldName><formImportedFieldName>inr_nximport</formImportedFieldName><redcapFieldNameValue>hemo_lborres</redcapFieldNameValue><redcapFieldNameUnits>hemo_lborresu</redcapFieldNameUnits><redcapFieldNameStatus>hemo_lbstat</redcapFieldNameStatus></subject>
@@ -340,7 +400,7 @@ class TestCopyDataToPersonFormEventTree(unittest.TestCase):
             <study>
             <subject>
             <NAME>TestSubject_2</NAME>
-            <ORD_VALUE>987</ORD_VALUE>
+            <RESULT>987</RESULT>
             <REFERENCE_UNIT>g/dL</REFERENCE_UNIT>
             <STUDY_ID>456</STUDY_ID>
         <timestamp>1906-12-26</timestamp><redcapFormName>inr</redcapFormName><eventName>1_arm_1</eventName><formCompletedFieldName>cbc_complete</formCompletedFieldName><formImportedFieldName>cbc_nximport</formImportedFieldName><redcapFieldNameValue>hemo_lborres</redcapFieldNameValue><redcapFieldNameUnits>hemo_lborresu</redcapFieldNameUnits><redcapFieldNameStatus>hemo_lbstat</redcapFieldNameStatus></subject>
@@ -352,7 +412,7 @@ class TestCopyDataToPersonFormEventTree(unittest.TestCase):
             <study>
             <subject>
             <NAME>TestSubject_2</NAME>
-            <ORD_VALUE>987</ORD_VALUE>
+            <RESULT>987</RESULT>
             <REFERENCE_UNIT>g/dL</REFERENCE_UNIT>
             <STUDY_ID>456</STUDY_ID>
         <redcapFormName>inr</redcapFormName><eventName>1_arm_1</eventName><formCompletedFieldName>cbc_complete</formCompletedFieldName><formDateField>cbc_lbdtc</formDateField><formImportedFieldName>cbc_nximport</formImportedFieldName><redcapFieldNameValue>hemo_lborres</redcapFieldNameValue><redcapFieldNameUnits>hemo_lborresu</redcapFieldNameUnits><redcapFieldNameStatus>hemo_lbstat</redcapFieldNameStatus></subject>
@@ -380,7 +440,7 @@ class TestCopyDataToPersonFormEventTree(unittest.TestCase):
             <study>
             <subject>
             <NAME>TestSubject_2</NAME>
-            <ORD_VALUE>987</ORD_VALUE>
+            <RESULT>987</RESULT>
             <REFERENCE_UNIT>g/dL</REFERENCE_UNIT>
             <STUDY_ID>456</STUDY_ID>
         <timestamp>1906-12-26</timestamp><redcapFormName>inr</redcapFormName><eventName>1_arm_1</eventName><formCompletedFieldName>cbc_complete</formCompletedFieldName><formImportedFieldName>cbc_nximport</formImportedFieldName><redcapFieldNameUnits>hemo_lborresu</redcapFieldNameUnits><redcapFieldNameStatus>hemo_lbstat</redcapFieldNameStatus></subject>
@@ -418,7 +478,7 @@ class TestCopyDataToPersonFormEventTree(unittest.TestCase):
             <study>
             <subject>
             <NAME>TestSubject_2</NAME>
-            <ORD_VALUE>987</ORD_VALUE>
+            <RESULT>987</RESULT>
             <REFERENCE_UNIT>g/dL</REFERENCE_UNIT>
             <STUDY_ID>456</STUDY_ID>
         <timestamp>1906-12-26</timestamp><redcapFormName>inr</redcapFormName><eventName>1_arm_1</eventName><formDateField>cbc_lbdtc</formDateField><formCompletedFieldName>cbc_complete</formCompletedFieldName><redcapFieldNameValue>hemo_lborres</redcapFieldNameValue><formImportedFieldName>cbc_nximport</formImportedFieldName><redcapFieldNameStatus>hemo_lbstat</redcapFieldNameStatus></subject>
@@ -430,7 +490,7 @@ class TestCopyDataToPersonFormEventTree(unittest.TestCase):
             <study>
             <subject>
             <NAME>TestSubject_2</NAME>
-            <ORD_VALUE>987</ORD_VALUE>
+            <RESULT>987</RESULT>
             <STUDY_ID>456</STUDY_ID>
         <timestamp>1906-12-26</timestamp><redcapFormName>inr</redcapFormName><eventName>1_arm_1</eventName><formCompletedFieldName>cbc_complete</formCompletedFieldName><formDateField>cbc_lbdtc</formDateField><formImportedFieldName>cbc_nximport</formImportedFieldName><redcapFieldNameValue>hemo_lborres</redcapFieldNameValue><redcapFieldNameUnits>hemo_lborresu</redcapFieldNameUnits><redcapFieldNameStatus>hemo_lbstat</redcapFieldNameStatus></subject>
             
@@ -479,7 +539,7 @@ class TestCopyDataToPersonFormEventTree(unittest.TestCase):
             <study>
             <subject>
             <NAME>TestSubject_2</NAME>
-            <ORD_VALUE>987</ORD_VALUE>
+            <RESULT>987</RESULT>
             <REFERENCE_UNIT>g/dL</REFERENCE_UNIT>
             <STUDY_ID>456</STUDY_ID>
         <timestamp>1906-12-26</timestamp><redcapFormName>inr</redcapFormName><eventName>1_arm_1</eventName><formDateField>inr_lbdtc</formDateField><formCompletedFieldName>inr_complete</formCompletedFieldName><redcapFieldNameValue>hemo_lborres</redcapFieldNameValue><formImportedFieldName>inr_nximport</formImportedFieldName><redcapFieldNameUnits>hemo_lborresu</redcapFieldNameUnits><redcapFieldNameStatus>hemo_lbstat</redcapFieldNameStatus></subject>
@@ -526,7 +586,7 @@ class TestCopyDataToPersonFormEventTree(unittest.TestCase):
             <study>
             <subject>
             <NAME>TestSubject_2</NAME>
-            <ORD_VALUE>987</ORD_VALUE>
+            <RESULT>987</RESULT>
             <REFERENCE_UNIT>g/dL</REFERENCE_UNIT>
             <STUDY_ID>456</STUDY_ID>
         <timestamp>1906-12-26</timestamp><redcapFormName>inr</redcapFormName><eventName>1_arm_1</eventName><formCompletedFieldName>inr_complete</formCompletedFieldName><formDateField>inr_lbdtc</formDateField><redcapFieldNameValue>hemo_lborres</redcapFieldNameValue><formImportedFieldName>inr_nximport</formImportedFieldName><redcapFieldNameUnits>hemo_lborresu</redcapFieldNameUnits><redcapFieldNameStatus>hemo_lbstat</redcapFieldNameStatus></subject>
