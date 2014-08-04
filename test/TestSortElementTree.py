@@ -1,12 +1,12 @@
 import unittest
-import sys
 import os
+from lxml import etree
+import redi
+
 file_dir = os.path.dirname(os.path.realpath(__file__))
 goal_dir = os.path.join(file_dir, "../")
 proj_root = os.path.abspath(goal_dir)+'/'
-sys.path.append(proj_root + 'bin/')
-from lxml import etree
-import redi
+
 
 class TestSortElementTree(unittest.TestCase):
 
