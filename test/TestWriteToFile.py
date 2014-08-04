@@ -7,19 +7,18 @@ This file should be run from the project level folder (one level up from /bin)
 
 '''
 import unittest
-import sys
 import os
+from lxml import etree
+import redi
+
 file_dir = os.path.dirname(os.path.realpath(__file__))
 goal_dir = os.path.join(file_dir, "../")
 proj_root = os.path.abspath(goal_dir)+'/'
-sys.path.append(proj_root + 'bin/')
-import redi
-from lxml import etree
 
 
 class TestWriteToFile(unittest.TestCase):
     def setUp(self):
-        redi.configure_logging()
+        redi.configure_logging(proj_root+'log/redi.log')
         self.test_raw_xml = """<?xml version='1.0' encoding='US-ASCII'?>
 <study>
     <subject>

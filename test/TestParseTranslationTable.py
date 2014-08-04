@@ -7,19 +7,18 @@ This file tests for the function parse_translation_table
 '''
 import unittest
 import os
-import sys
+from lxml import etree
+import redi
+
 file_dir = os.path.dirname(os.path.realpath(__file__))
 goal_dir = os.path.join(file_dir, "../")
 proj_root = os.path.abspath(goal_dir)+'/'
-sys.path.append(proj_root + 'bin/')
-from lxml import etree
-import redi
 
 
 class TestParseTranslationTable(unittest.TestCase):
 
     def setUp(self):
-        redi.configure_logging()
+        redi.configure_logging(proj_root+'log/redi.log')
         self.sampleData = """<rediFieldMap>
     <clinicalComponent>
         <clinicalComponentId>123456</clinicalComponentId>

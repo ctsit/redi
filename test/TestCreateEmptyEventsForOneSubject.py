@@ -1,13 +1,12 @@
-import json
 import unittest
-import tempfile
 import os
-import sys
-
 from lxml import etree
-
-sys.path.append('bin/')
 import redi
+
+file_dir = os.path.dirname(os.path.realpath(__file__))
+goal_dir = os.path.join(file_dir, "../")
+proj_root = os.path.abspath(goal_dir)+'/'
+
 
 class TestCreateEmptyEventsForOneSubject(unittest.TestCase):
 
@@ -234,13 +233,13 @@ class TestCreateEmptyEventsForOneSubject(unittest.TestCase):
 
 
     def test_create_empty_events_for_one_subject_all_fields_input(self):
-        redi.configure_logging()
+        redi.configure_logging(proj_root+'log/redi.log')
         self.result = etree.tostring(redi.create_empty_events_for_one_subject(self.data1_test1,self.data2_test1))
         self.assertEqual(self.expect_test1, self.result)
 
     def test_create_empty_events_for_one_subject_no_fields_input(self):
-        redi.configure_logging()
-        self.assertRaises(redi.LogException,redi.create_empty_events_for_one_subject,self.data1_test2,self.data2_test2)
+        redi.configure_logging(proj_root+'log/redi.log')
+        self.assertRaises(Exception,redi.create_empty_events_for_one_subject,self.data1_test2,self.data2_test2)
 
     def tearDown(self):
         return()

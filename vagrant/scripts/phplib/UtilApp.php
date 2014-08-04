@@ -1,16 +1,16 @@
 <?php
 /**
 *  This class is an utility application used to
-*  run custom queries on the redcap database.  
+*  run custom queries on the redcap database.
 *
 *  @author  : Andrei Sura 
 */
 
-class UtilApp { 
-   private $conn; 
+class UtilApp {
+   private $conn;
    static $instance;
 
-   // The following properties can be stored 
+   // The following properties can be stored
    // in a config file or the $_SERVER environment variable
    static $UTIL_DB_HOST = 'localhost';
    static $UTIL_DB_USER = 'root';
@@ -29,18 +29,23 @@ class UtilApp {
       'redcap_surveys_participants',
       'redcap_surveys_emails',
       'redcap_surveys_response',
+      'redcap_data_quality_status',
+      'redcap_ddp_records',
+      'redcap_ip_cache',
+      'redcap_page_hits',
+      'redcap_sessions',
    );
 
    public static function getInstance() {
       if (! self::$instance) {
          self::$instance = new UtilApp();
-      }   
+      }
       return self::$instance;
-   }   
+   }
 
    private function __construct() {
-      $this->setupConnection();    
-   }   
+      $this->setupConnection();
+   }
 
    private function setupConnection() {
       $urlObj = API_DB::createDbUrl(
@@ -75,9 +80,31 @@ class UtilApp {
       $count = 0;
       $count += $this->cleanDerivedTables($projID);
       $count += $this->cleanMainTables($projID);
+      $count += $this->cleanExtraTables($projID);
       $this->showHelpQuery();
 
       return $count;
+   }
+
+   public function cleanExtraTables($projID) {
+      $deleteAll = array(
+         'redcap_ip_cache',
+         'redcap_page_hits',
+         'redcap_sessions',
+      );
+
+      $c = 0;
+      foreach ($deleteAll as $table) {
+         $query = "DELETE FROM $table";
+         // echo "\nQuery: $query\n";
+         $result = $this->conn->query($query);
+         if (! $result) {
+            return self::getErrors("\n<br /> Unable to delete data for table: $table");
+         }
+         $c += $result->rowCount();
+         echo "\n Rows deleted in cleanExtraTables(): $c";
+      }
+      return $c;
    }
 
    /**
@@ -94,6 +121,9 @@ class UtilApp {
 'DELETE FROM    redcap_docs                 WHERE project_id = ?',
 'DELETE FROM    redcap_locking_data         WHERE project_id = ?',
 'DELETE FROM    redcap_esignatures          WHERE project_id = ?',
+'DELETE FROM    redcap_data_quality_status  WHERE project_id = ?',
+'DELETE FROM    redcap_ddp_records          WHERE project_id = ?',
+'DELETE FROM    redcap_log_view             WHERE project_id = ?',
 );
       foreach ($queries as $query) {
          // echo "\nQuery: $query\n";
@@ -102,7 +132,7 @@ class UtilApp {
             return self::getErrors("\n<br /> Unable to delete data for projID: $projID");
          }
          $c += $result->rowCount();
-         echo "\n Rows deleted in deleteMainTables(): $c\n";
+         echo "\n Rows deleted in cleanMainTables(): $c";
       }
       return $c;
    }
@@ -288,28 +318,21 @@ SQL;
 You can run the following query to verify the row counts:\n";
       $query = <<<SQL
 
-SELECT 'redcap_projects' AS tableName, count(*) AS rowCount FROM redcap_projects
-UNION 
-SELECT 'redcap_data' AS tableName, COUNT(*) AS rowCount  FROM redcap_data
-UNION
-SELECT 'redcap_events_calendar' AS tableName, count(*) AS rowCount FROM redcap_events_calendar
-UNION
-SELECT 'redcap_log_event' AS tableName, count(*) AS rowCount FROM redcap_log_event
-UNION
-SELECT 'redcap_docs' AS tableName, count(*) AS rowCount FROM redcap_docs
-UNION
-SELECT 'redcap_locking_data' AS tableName, count(*) AS rowCount FROM redcap_locking_data
-UNION
-SELECT 'redcap_esignatures' AS tableName, count(*) AS rowCount FROM redcap_esignatures
-UNION
-SELECT 'redcap_surveys' AS tableName, COUNT(*) AS rowCount FROM redcap_surveys
-UNION
-SELECT 'redcap_surveys_participants' AS tableName, COUNT(*) AS rowCount FROM redcap_surveys_participants
-UNION
-SELECT 'redcap_surveys_emails' AS tableName, COUNT(*) AS rowCount FROM redcap_surveys_emails
-UNION
-SELECT 'redcap_surveys_response' AS tableName, COUNT(*) AS rowCount FROM redcap_surveys_response
-
+SELECT 'redcap_projects' AS tableName,                   COUNT(*) FROM redcap_projects
+UNION SELECT 'redcap_data' AS tableName,                 COUNT(*) FROM redcap_data
+UNION SELECT 'redcap_events_calendar' AS tableName,      COUNT(*) FROM redcap_events_calendar
+UNION SELECT 'redcap_log_event' AS tableName,            COUNT(*) FROM redcap_log_event
+UNION SELECT 'redcap_docs' AS tableName,                 COUNT(*) FROM redcap_docs
+UNION SELECT 'redcap_locking_data' AS tableName,         COUNT(*) FROM redcap_locking_data
+UNION SELECT 'redcap_esignatures' AS tableName,          COUNT(*) FROM redcap_esignatures
+UNION SELECT 'redcap_surveys' AS tableName,              COUNT(*) FROM redcap_surveys
+UNION SELECT 'redcap_surveys_participants' AS tableName, COUNT(*) FROM redcap_surveys_participants
+UNION SELECT 'redcap_surveys_emails' AS tableName,       COUNT(*) FROM redcap_surveys_emails
+UNION SELECT 'redcap_surveys_response' AS tableName,     COUNT(*) FROM redcap_surveys_response
+UNION SELECT 'redcap_ip_cache',                          COUNT(*) FROM redcap_ip_cache
+UNION SELECT 'redcap_log_view',                          COUNT(*) FROM redcap_log_view
+UNION SELECT 'redcap_page_hits',                         COUNT(*) FROM redcap_page_hits
+UNION SELECT 'redcap_sessions',                          COUNT(*) FROM redcap_sessions
 SQL;
       echo $query;
    }
@@ -376,7 +399,7 @@ SQL;
       $out = system($cmdBackupAll, $retVal);
       // echo "\n$cmdBackupAll\n";
       // echo "\n Output: $out";
-   
+
       if ($retVal) {
          echo "\nThe command $cmdBackupAll returned $retVal";
       }
@@ -392,7 +415,7 @@ SQL;
       if ($retVal) {
          echo "\nThe command $cmdBackupSchema returned $retVal";
       }
-   
+
       // output the created file size
       system("echo 'Backup file created: ' && du -h $fileName");
    }

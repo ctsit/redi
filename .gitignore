@@ -20,9 +20,13 @@ all_form_events.xml
 person_form_event_tree.xml
 person_form_event_tree_with_data.xml
 .figleaf
-
+build/
+dist/
 vagrant/.vagrant/
 vagrant/.vimrc
+vagrant/report.html
 vagrant/tmp/
 vagrant/backup-redcap-*.sql
 vagrant/redcap-backup-*.sql
+vagrant/REDI-*.egg
+

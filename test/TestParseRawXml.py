@@ -7,13 +7,12 @@ This file tests for the function parse_raw_xml
 '''
 import unittest
 import os
-import sys
+from lxml import etree
+import redi
+
 file_dir = os.path.dirname(os.path.realpath(__file__))
 goal_dir = os.path.join(file_dir, "../")
 proj_root = os.path.abspath(goal_dir)+'/'
-sys.path.append(proj_root + 'bin/')
-from lxml import etree
-import redi
 
 
 class TestParseRawXml(unittest.TestCase):
@@ -55,7 +54,7 @@ class TestParseRawXml(unittest.TestCase):
         os.remove(file_name)
     
     def test_parse_raw_xml_without_file(self):
-        self.assertRaises(redi.LogException,redi.parse_raw_xml,'')  
+        self.assertRaises(Exception,redi.parse_raw_xml,'')  
         
     def tearDown(self):
         return()
