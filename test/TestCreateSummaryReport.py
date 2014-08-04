@@ -9,22 +9,20 @@ has been created or not
 import unittest
 import os
 import sys
+from lxml import etree
+from StringIO import StringIO
+import time
+import redi
+
 file_dir = os.path.dirname(os.path.realpath(__file__))
 goal_dir = os.path.join(file_dir, "../")
 proj_root = os.path.abspath(goal_dir)+'/'
-sys.path.append(proj_root+'test')
-sys.path.append(proj_root+'bin')
 
-import redi
-from lxml import etree
-import datetime
-from StringIO import StringIO
-import time
 
 class TestCreateSummaryReport(unittest.TestCase):
 
     def setUp(self):
-    	redi.configure_logging()
+    	redi.configure_logging(proj_root+'log/redi.log')
         self.test_report_params = {'project': 'hcvtarget-uf',
         							'report_file_path': proj_root + 'config/report.xml',
         							'redcap_server': 'https://hostname.org'}

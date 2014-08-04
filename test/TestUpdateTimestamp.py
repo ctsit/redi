@@ -11,19 +11,19 @@ assertion
 '''
 import unittest
 import os
-import sys
+from lxml import etree
+import redi
+
 file_dir = os.path.dirname(os.path.realpath(__file__))
 goal_dir = os.path.join(file_dir, "../")
 proj_root = os.path.abspath(goal_dir)+'/'
-sys.path.append(proj_root + 'bin/')
-from lxml import etree
-import redi
+
 
 class TestUpdateTimestamp(unittest.TestCase):
 
     def setUp(self):
         # initialize the data with element tree
-        redi.configure_logging()
+        redi.configure_logging(proj_root+'log/redi.log')
         self.test_xml = """<?xml version="1.0" encoding="utf8"?>
 <study>
     <subject>
