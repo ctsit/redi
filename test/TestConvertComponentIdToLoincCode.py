@@ -7,13 +7,12 @@ This file tests for the function parse_raw_xml
 '''
 import unittest
 import os
-import sys
+from lxml import etree
+import redi
+
 file_dir = os.path.dirname(os.path.realpath(__file__))
 goal_dir = os.path.join(file_dir, "../")
 proj_root = os.path.abspath(goal_dir)+'/'
-sys.path.append(proj_root + 'bin/')
-from lxml import etree
-import redi
 
 
 class TestConvertComponentIdToLoincCode(unittest.TestCase):
@@ -133,7 +132,7 @@ class TestConvertComponentIdToLoincCode(unittest.TestCase):
         </study>"""
         self.rawxmlDataTree= etree.ElementTree(etree.fromstring(self.rawXmlData))
     
-        self.assertRaises(redi.LogException,redi.convert_component_id_to_loinc_code,self.rawxmlDataTree, self.mapxmlDataTree)
+        self.assertRaises(Exception,redi.convert_component_id_to_loinc_code,self.rawxmlDataTree, self.mapxmlDataTree)
                 
     def tearDown(self):
         return()

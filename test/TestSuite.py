@@ -5,10 +5,6 @@ email : rkandula@ufl.edu
 This file creates a test suite for all the test classes.
 
 '''
-
-import unittest
-
-
 '''
     IMPORTANT: the imports should be updated in order to add the test to
     the test suite.
@@ -19,8 +15,7 @@ import unittest
         - To run the script the user must instal a few libraries
             On a mac: pip install lxml request
 '''
-from lxml import etree
-from TestLog import TestLog
+import unittest
 from TestReadConfig import TestReadConfig
 from TestWriteToFile import TestWriteToFile
 from TestUpdateRedcapForm import TestUpdateRedcapForm
@@ -38,7 +33,7 @@ from TestCreateSummaryReport import TestCreateSummaryReport
 from TestUpdateStatusField import TestUpdateStatusField
 from TestCreateEmptyEventsForOneSubject import TestCreateEmptyEventsForOneSubject
 from TestCreateEmptyEventTreeForStudy import TestCreateEmptyEventTreeForStudy
-from TestCreateEavOutput import TestCreateEavOutput
+from TestCreateImportDataJson import TestCreateImportDataJson
 from TestGenerateOutput import TestGenerateOutput
 from TestParseAll import TestParseAll
 from TestHandleREDCapResponse import TestHandleErrorsInREDCapResponse
@@ -46,17 +41,15 @@ from TestParseRawXml import TestParseRawXml
 from TestValidateXmlFleAndExtractData import TestValidateXmlFleAndExtractData
 from TestConvertComponentIdToLoincCode import TestConvertComponentIdToLoincCode
 from TestCopyDataToPersonFormEventTree import TestCopyDataToPersonFormEventTree
+from TestGetEMRData import TestGetEMRData
 
 class redi_suite(unittest.TestSuite):
 
     def suite(self):
         # create a test suite
         redi_test_suite = unittest.TestSuite()
-        redi_test_suite = unittest.TestLoader().\
-        loadTestsFromTestCase(TestLog)
 
         # add the test to the suite in the order to be tested
-        redi_test_suite.addTest(TestLog)
         redi_test_suite.addTest(TestReadConfig)
         redi_test_suite.addTest(TestWriteToFile)
         redi_test_suite.addTest(TestUpdateRedcapForm)
@@ -77,14 +70,14 @@ class redi_suite(unittest.TestSuite):
         redi_test_suite.addTest(TestParseAll)
 
         # The redesign functions May 2014
-        redi_test_suite.addTest(TestCreateEavOutput)
+        redi_test_suite.addTest(TestCreateImportDataJson)
         redi_test_suite.addTest(TestGenerateOutput)
         redi_test_suite.addTest(TestHandleErrorsInREDCapResponse)
         redi_test_suite.addTest(TestParseRawXml)
         redi_test_suite.addTest(TestValidateXmlFleAndExtractData)
         redi_test_suite.addTest(TestConvertComponentIdToLoincCode)
-        redi_test_suite.addTest(TestRuleProcessing)
         redi_test_suite.addTest(TestCopyDataToPersonFormEventTree)
+        redi_test_suite.addTest(TestGetEMRData)
 
         # return the suite
         return unittest.TestSuite([redi_test_suite])

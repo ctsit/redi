@@ -1,13 +1,7 @@
-import json
 import unittest
-import tempfile
-import os
-import sys
-
 from lxml import etree
-
-sys.path.append('bin/')
 import redi
+
 
 class TestUpdateRedcapForm(unittest.TestCase):
 
