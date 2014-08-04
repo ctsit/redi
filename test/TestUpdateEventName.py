@@ -19,7 +19,7 @@ class TestUpdateEventName(unittest.TestCase):
         <Collection_Date>07/29/17</Collection_Date>
         <Collection_Time>11:00</Collection_Time>
         <Component_Name>WHITE BLOOD CELL COUNT</Component_Name>
-        <COMPONENT_ID>1577876</COMPONENT_ID>
+        <loinc_code>1577876</loinc_code>
         <Reference_Unit>g/dL</Reference_Unit>
         <Result_Value>8.7</Result_Value>
     <timestamp>1906-03-15 11:00</timestamp><redcapFormName>cbc</redcapFormName><eventName/><formDateField/><formCompletedFieldName/><timestamp/><redcapFormName/><eventName/><formDateField/><formCompletedFieldName/></subject>
@@ -28,7 +28,7 @@ class TestUpdateEventName(unittest.TestCase):
         <Collection_Date>07/29/17</Collection_Date>
         <Collection_Time>11:00</Collection_Time>
         <Component_Name>HEMOGLOBIN</Component_Name>
-        <COMPONENT_ID>1534435</COMPONENT_ID>
+        <loinc_code>1534435</loinc_code>
         <Reference_Unit>g/dL</Reference_Unit>
         <Result_Value>11.3</Result_Value>
     <timestamp>1906-03-15 11:00</timestamp><redcapFormName>cbc</redcapFormName><eventName/><formDateField/><formCompletedFieldName/><timestamp/><redcapFormName/><eventName/><formDateField/><formCompletedFieldName/></subject>
@@ -37,7 +37,7 @@ class TestUpdateEventName(unittest.TestCase):
         <Collection_Date>05/20/20</Collection_Date>
         <Collection_Time>12:00</Collection_Time>
         <Component_Name>WHITE BLOOD CELL COUNT</Component_Name>
-        <COMPONENT_ID>1577876</COMPONENT_ID>
+        <loinc_code>1577876</loinc_code>
         <Reference_Unit>g/dL</Reference_Unit>
         <Result_Value>8.7</Result_Value>
     <timestamp>1903-04-16 12:00</timestamp><redcapFormName>cbc</redcapFormName><eventName/><formDateField/><formCompletedFieldName/><timestamp/><redcapFormName/><eventName/><formDateField/><formCompletedFieldName/></subject>
@@ -46,7 +46,7 @@ class TestUpdateEventName(unittest.TestCase):
         <Collection_Date>05/20/20</Collection_Date>
         <Collection_Time>12:00</Collection_Time>
         <Component_Name>HEMOGLOBIN</Component_Name>
-        <COMPONENT_ID>1534435</COMPONENT_ID>
+        <loinc_code>1534435</loinc_code>
         <Reference_Unit>g/dL</Reference_Unit>
         <Result_Value>11.3</Result_Value>
     <timestamp>1903-04-16 12:00</timestamp><redcapFormName>cbc</redcapFormName><eventName/><formDateField/><formCompletedFieldName/><timestamp/><redcapFormName/><eventName/><formDateField/><formCompletedFieldName/></subject>
@@ -55,7 +55,7 @@ class TestUpdateEventName(unittest.TestCase):
         <Collection_Date>10/12/18</Collection_Date>
         <Collection_Time>12:38</Collection_Time>
         <Component_Name>BILIRUBIN DIRECT</Component_Name>
-        <COMPONENT_ID>1558221</COMPONENT_ID>
+        <loinc_code>1558221</loinc_code>
         <Reference_Unit>mg/dL</Reference_Unit>
         <Result_Value>0.8</Result_Value>
     <timestamp>1908-07-01 12:38</timestamp><redcapFormName>chemistry</redcapFormName><eventName/><formDateField/><formCompletedFieldName/><timestamp/><redcapFormName/><eventName/><formDateField/><formCompletedFieldName/></subject>
@@ -64,7 +64,7 @@ class TestUpdateEventName(unittest.TestCase):
         <Collection_Date>10/12/18</Collection_Date>
         <Collection_Time>16:01</Collection_Time>
         <Component_Name>BILIRUBIN DIRECT</Component_Name>
-        <COMPONENT_ID>1558221</COMPONENT_ID>
+        <loinc_code>1558221</loinc_code>
         <Reference_Unit>mg/dL</Reference_Unit>
         <Result_Value>0.9</Result_Value>
     <timestamp>1908-07-01 16:01</timestamp><redcapFormName>chemistry</redcapFormName><eventName/><formDateField/><formCompletedFieldName/><timestamp/><redcapFormName/><eventName/><formDateField/><formCompletedFieldName/></subject>
@@ -73,7 +73,7 @@ class TestUpdateEventName(unittest.TestCase):
         <Collection_Date>05/20/20</Collection_Date>
         <Collection_Time>13:50</Collection_Time>
         <Component_Name>HEMATOCRIT</Component_Name>
-        <COMPONENT_ID>1534436</COMPONENT_ID>
+        <loinc_code>1534436</loinc_code>
         <Reference_Unit>%</Reference_Unit>
         <Result_Value>34.5</Result_Value>
     <timestamp>1903-04-16 13:50</timestamp><redcapFormName>undefined</redcapFormName><eventName/><formDateField/><formCompletedFieldName/><timestamp/><redcapFormName/><eventName/><formDateField/><formCompletedFieldName/></subject>
@@ -82,7 +82,7 @@ class TestUpdateEventName(unittest.TestCase):
         <Collection_Date>07/29/17</Collection_Date>
         <Collection_Time>11:00</Collection_Time>
         <Component_Name>WHITE BLOOD CELL COUNT</Component_Name>
-        <COMPONENT_ID>1577876</COMPONENT_ID>
+        <loinc_code>1577876</loinc_code>
         <Reference_Unit>g/dL</Reference_Unit>
         <Result_Value>8.7</Result_Value>
     <timestamp>1906-03-15 11:00</timestamp><redcapFormName>cbc</redcapFormName><eventName/><formDateField/><formCompletedFieldName/><timestamp/><redcapFormName/><eventName/><formDateField/><formCompletedFieldName/></subject>
@@ -91,7 +91,7 @@ class TestUpdateEventName(unittest.TestCase):
         <Collection_Date>05/20/20</Collection_Date>
         <Collection_Time>13:50</Collection_Time>
         <Component_Name>HEMOGLOBIN</Component_Name>
-        <COMPONENT_ID>1534435</COMPONENT_ID>
+        <loinc_code>1534435</loinc_code>
         <Reference_Unit>g/dL</Reference_Unit>
         <Result_Value>11.3</Result_Value>
     <timestamp>1903-04-16 13:50</timestamp><redcapFormName>cbc</redcapFormName><eventName/><formDateField/><formCompletedFieldName/><timestamp/><redcapFormName/><eventName/><formDateField/><formCompletedFieldName/></subject>
@@ -100,7 +100,7 @@ class TestUpdateEventName(unittest.TestCase):
         <Collection_Date>10/12/18</Collection_Date>
         <Collection_Time>12:38</Collection_Time>
         <Component_Name>BILIRUBIN DIRECT</Component_Name>
-        <COMPONENT_ID>1558221</COMPONENT_ID>
+        <loinc_code>1558221</loinc_code>
         <Reference_Unit>mg/dL</Reference_Unit>
         <Result_Value>0.8</Result_Value>
     <timestamp>1908-07-01 12:38</timestamp><redcapFormName>chemistry</redcapFormName><eventName/><formDateField/><formCompletedFieldName/><timestamp/><redcapFormName/><eventName/><formDateField/><formCompletedFieldName/></subject>
@@ -109,7 +109,7 @@ class TestUpdateEventName(unittest.TestCase):
         <Collection_Date>10/12/18</Collection_Date>
         <Collection_Time>16:01</Collection_Time>
         <Component_Name>BILIRUBIN DIRECT</Component_Name>
-        <COMPONENT_ID>1558221</COMPONENT_ID>
+        <loinc_code>1558221</loinc_code>
         <Reference_Unit>mg/dL</Reference_Unit>
         <Result_Value>0.9</Result_Value>
     <timestamp>1908-07-01 16:01</timestamp><redcapFormName>chemistry</redcapFormName><eventName/><formDateField/><formCompletedFieldName/><timestamp/><redcapFormName/><eventName/><formDateField/><formCompletedFieldName/></subject>
@@ -118,7 +118,7 @@ class TestUpdateEventName(unittest.TestCase):
         <Collection_Date>05/20/20</Collection_Date>
         <Collection_Time>13:50</Collection_Time>
         <Component_Name>HEMATOCRIT</Component_Name>
-        <COMPONENT_ID>1534436</COMPONENT_ID>
+        <loinc_code>1534436</loinc_code>
         <Reference_Unit>%</Reference_Unit>
         <Result_Value>34.5</Result_Value>
     <timestamp>1903-04-16 13:50</timestamp><redcapFormName>undefined</redcapFormName><eventName/><formDateField/><formCompletedFieldName/><timestamp/><redcapFormName/><eventName/><formDateField/><formCompletedFieldName/></subject>
@@ -168,7 +168,7 @@ class TestUpdateEventName(unittest.TestCase):
         <Collection_Date>07/29/17</Collection_Date>
         <Collection_Time>11:00</Collection_Time>
         <Component_Name>WHITE BLOOD CELL COUNT</Component_Name>
-        <COMPONENT_ID>1577876</COMPONENT_ID>
+        <loinc_code>1577876</loinc_code>
         <Reference_Unit>g/dL</Reference_Unit>
         <Result_Value>8.7</Result_Value>
     <timestamp>1906-03-15 11:00</timestamp><redcapFormName>cbc</redcapFormName><eventName>1_arm_1</eventName><formDateField/><formCompletedFieldName/><timestamp/><redcapFormName/><eventName/><formDateField/><formCompletedFieldName/></subject>
@@ -177,7 +177,7 @@ class TestUpdateEventName(unittest.TestCase):
         <Collection_Date>07/29/17</Collection_Date>
         <Collection_Time>11:00</Collection_Time>
         <Component_Name>HEMOGLOBIN</Component_Name>
-        <COMPONENT_ID>1534435</COMPONENT_ID>
+        <loinc_code>1534435</loinc_code>
         <Reference_Unit>g/dL</Reference_Unit>
         <Result_Value>11.3</Result_Value>
     <timestamp>1906-03-15 11:00</timestamp><redcapFormName>cbc</redcapFormName><eventName>1_arm_1</eventName><formDateField/><formCompletedFieldName/><timestamp/><redcapFormName/><eventName/><formDateField/><formCompletedFieldName/></subject>
@@ -186,7 +186,7 @@ class TestUpdateEventName(unittest.TestCase):
         <Collection_Date>05/20/20</Collection_Date>
         <Collection_Time>12:00</Collection_Time>
         <Component_Name>WHITE BLOOD CELL COUNT</Component_Name>
-        <COMPONENT_ID>1577876</COMPONENT_ID>
+        <loinc_code>1577876</loinc_code>
         <Reference_Unit>g/dL</Reference_Unit>
         <Result_Value>8.7</Result_Value>
     <timestamp>1903-04-16 12:00</timestamp><redcapFormName>cbc</redcapFormName><eventName>2_arm_1</eventName><formDateField/><formCompletedFieldName/><timestamp/><redcapFormName/><eventName/><formDateField/><formCompletedFieldName/></subject>
@@ -195,7 +195,7 @@ class TestUpdateEventName(unittest.TestCase):
         <Collection_Date>05/20/20</Collection_Date>
         <Collection_Time>12:00</Collection_Time>
         <Component_Name>HEMOGLOBIN</Component_Name>
-        <COMPONENT_ID>1534435</COMPONENT_ID>
+        <loinc_code>1534435</loinc_code>
         <Reference_Unit>g/dL</Reference_Unit>
         <Result_Value>11.3</Result_Value>
     <timestamp>1903-04-16 12:00</timestamp><redcapFormName>cbc</redcapFormName><eventName>2_arm_1</eventName><formDateField/><formCompletedFieldName/><timestamp/><redcapFormName/><eventName/><formDateField/><formCompletedFieldName/></subject>
@@ -204,7 +204,7 @@ class TestUpdateEventName(unittest.TestCase):
         <Collection_Date>10/12/18</Collection_Date>
         <Collection_Time>12:38</Collection_Time>
         <Component_Name>BILIRUBIN DIRECT</Component_Name>
-        <COMPONENT_ID>1558221</COMPONENT_ID>
+        <loinc_code>1558221</loinc_code>
         <Reference_Unit>mg/dL</Reference_Unit>
         <Result_Value>0.8</Result_Value>
     <timestamp>1908-07-01 12:38</timestamp><redcapFormName>chemistry</redcapFormName><eventName>1_arm_1</eventName><formDateField/><formCompletedFieldName/><timestamp/><redcapFormName/><eventName/><formDateField/><formCompletedFieldName/></subject>
@@ -213,7 +213,7 @@ class TestUpdateEventName(unittest.TestCase):
         <Collection_Date>10/12/18</Collection_Date>
         <Collection_Time>16:01</Collection_Time>
         <Component_Name>BILIRUBIN DIRECT</Component_Name>
-        <COMPONENT_ID>1558221</COMPONENT_ID>
+        <loinc_code>1558221</loinc_code>
         <Reference_Unit>mg/dL</Reference_Unit>
         <Result_Value>0.9</Result_Value>
     <timestamp>1908-07-01 16:01</timestamp><redcapFormName>chemistry</redcapFormName><eventName>2_arm_1</eventName><formDateField/><formCompletedFieldName/><timestamp/><redcapFormName/><eventName/><formDateField/><formCompletedFieldName/></subject>
@@ -222,7 +222,7 @@ class TestUpdateEventName(unittest.TestCase):
         <Collection_Date>05/20/20</Collection_Date>
         <Collection_Time>13:50</Collection_Time>
         <Component_Name>HEMATOCRIT</Component_Name>
-        <COMPONENT_ID>1534436</COMPONENT_ID>
+        <loinc_code>1534436</loinc_code>
         <Reference_Unit>%</Reference_Unit>
         <Result_Value>34.5</Result_Value>
     <timestamp>1903-04-16 13:50</timestamp><redcapFormName>undefined</redcapFormName><eventName>undefined</eventName><formDateField/><formCompletedFieldName/><timestamp/><redcapFormName/><eventName/><formDateField/><formCompletedFieldName/></subject>
@@ -231,7 +231,7 @@ class TestUpdateEventName(unittest.TestCase):
         <Collection_Date>07/29/17</Collection_Date>
         <Collection_Time>11:00</Collection_Time>
         <Component_Name>WHITE BLOOD CELL COUNT</Component_Name>
-        <COMPONENT_ID>1577876</COMPONENT_ID>
+        <loinc_code>1577876</loinc_code>
         <Reference_Unit>g/dL</Reference_Unit>
         <Result_Value>8.7</Result_Value>
     <timestamp>1906-03-15 11:00</timestamp><redcapFormName>cbc</redcapFormName><eventName>1_arm_1</eventName><formDateField/><formCompletedFieldName/><timestamp/><redcapFormName/><eventName/><formDateField/><formCompletedFieldName/></subject>
@@ -240,7 +240,7 @@ class TestUpdateEventName(unittest.TestCase):
         <Collection_Date>05/20/20</Collection_Date>
         <Collection_Time>13:50</Collection_Time>
         <Component_Name>HEMOGLOBIN</Component_Name>
-        <COMPONENT_ID>1534435</COMPONENT_ID>
+        <loinc_code>1534435</loinc_code>
         <Reference_Unit>g/dL</Reference_Unit>
         <Result_Value>11.3</Result_Value>
     <timestamp>1903-04-16 13:50</timestamp><redcapFormName>cbc</redcapFormName><eventName>2_arm_1</eventName><formDateField/><formCompletedFieldName/><timestamp/><redcapFormName/><eventName/><formDateField/><formCompletedFieldName/></subject>
@@ -249,7 +249,7 @@ class TestUpdateEventName(unittest.TestCase):
         <Collection_Date>10/12/18</Collection_Date>
         <Collection_Time>12:38</Collection_Time>
         <Component_Name>BILIRUBIN DIRECT</Component_Name>
-        <COMPONENT_ID>1558221</COMPONENT_ID>
+        <loinc_code>1558221</loinc_code>
         <Reference_Unit>mg/dL</Reference_Unit>
         <Result_Value>0.8</Result_Value>
     <timestamp>1908-07-01 12:38</timestamp><redcapFormName>chemistry</redcapFormName><eventName>1_arm_1</eventName><formDateField/><formCompletedFieldName/><timestamp/><redcapFormName/><eventName/><formDateField/><formCompletedFieldName/></subject>
@@ -258,7 +258,7 @@ class TestUpdateEventName(unittest.TestCase):
         <Collection_Date>10/12/18</Collection_Date>
         <Collection_Time>16:01</Collection_Time>
         <Component_Name>BILIRUBIN DIRECT</Component_Name>
-        <COMPONENT_ID>1558221</COMPONENT_ID>
+        <loinc_code>1558221</loinc_code>
         <Reference_Unit>mg/dL</Reference_Unit>
         <Result_Value>0.9</Result_Value>
     <timestamp>1908-07-01 16:01</timestamp><redcapFormName>chemistry</redcapFormName><eventName>2_arm_1</eventName><formDateField/><formCompletedFieldName/><timestamp/><redcapFormName/><eventName/><formDateField/><formCompletedFieldName/></subject>
@@ -267,7 +267,7 @@ class TestUpdateEventName(unittest.TestCase):
         <Collection_Date>05/20/20</Collection_Date>
         <Collection_Time>13:50</Collection_Time>
         <Component_Name>HEMATOCRIT</Component_Name>
-        <COMPONENT_ID>1534436</COMPONENT_ID>
+        <loinc_code>1534436</loinc_code>
         <Reference_Unit>%</Reference_Unit>
         <Result_Value>34.5</Result_Value>
     <timestamp>1903-04-16 13:50</timestamp><redcapFormName>undefined</redcapFormName><eventName>undefined</eventName><formDateField/><formCompletedFieldName/><timestamp/><redcapFormName/><eventName/><formDateField/><formCompletedFieldName/></subject>

@@ -1,0 +1,1 @@
+update redcap_auth set password = md5('password');
