@@ -7,19 +7,18 @@ This file tests for the function parse_raw_xml
 '''
 import unittest
 import os
-import sys
+from lxml import etree
+import redi
+
 file_dir = os.path.dirname(os.path.realpath(__file__))
 goal_dir = os.path.join(file_dir, "../")
 proj_root = os.path.abspath(goal_dir)+'/'
-sys.path.append(proj_root + 'bin/')
-from lxml import etree
-import redi
 
 
 class TestValidateXmlFleAndExtractData(unittest.TestCase):
 
     def setUp(self):
-        redi.configure_logging()
+        redi.configure_logging(proj_root+'log/redi.log')
         
         
     def test_validate_xml_file_and_extract_data_valid_xml(self):
@@ -219,7 +218,7 @@ class TestValidateXmlFleAndExtractData(unittest.TestCase):
         """
         temp_xsd.write(self.sampleXsdData)
         temp_xsd.close()
-        self.assertRaises(redi.LogException,redi.validate_xml_file_and_extract_data,xml_file_name, xsd_file_name)
+        self.assertRaises(Exception,redi.validate_xml_file_and_extract_data,xml_file_name, xsd_file_name)
         os.remove(xml_file_name)
         os.remove(xsd_file_name)
         

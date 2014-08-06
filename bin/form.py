@@ -9,8 +9,8 @@ class Form(object):
     def __init__(self, data):
         try:
             data.xpath('.')
-        except Exception as e:
-            print e
+        except Exception as data_exception:
+            print data_exception
             raise ValueError('"data" should be a valid lxml etree')
 
         self._tree = data
@@ -31,14 +31,17 @@ class Event(object):
         self._node = etree_node
 
     def field(self, name):
-        nodes = self._node.xpath("./field[./name = $fieldName]", fieldName=name)
+        nodes = self._node.xpath(
+            "./field[./name = $fieldName]",
+            fieldName=name)
         nodecount = len(nodes)
         if nodecount == 1:
             return Field(nodes[0])
         elif nodecount == 0:
             return None
         else:
-            raise Exception("Malformed XML: multiple fields with the name {0}".format(name))
+            raise Exception("Malformed XML: multiple fields with the name {0}".
+                            format(name))
 
     @property
     def name(self):
@@ -83,4 +86,3 @@ class Field(object):
 
     def clear_value(self):
         self.value = ''
-

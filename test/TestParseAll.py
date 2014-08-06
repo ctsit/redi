@@ -14,19 +14,15 @@ __email__       = "asura@ufl.edu"
 __status__      = "Development"
 
 import unittest
-import sys
+from lxml import etree
+import logging
 import os
+import redi
+
 file_dir = os.path.dirname(os.path.realpath(__file__))
 goal_dir = os.path.join(file_dir, "../")
 proj_root = os.path.abspath(goal_dir)+'/'
-sys.path.append(proj_root + 'bin/')
-from lxml import etree
-import logging
-import datetime
-import pprint
-import redi
-import redi_lib
-import os
+
 
 class TestParseAll(unittest.TestCase):
 
@@ -44,7 +40,7 @@ class TestParseAll(unittest.TestCase):
     ############################
     # == TEST_1 - config/formEvents.xml
     def test_parse_form_events(self):
-        redi.configure_logging()
+        redi.configure_logging(proj_root+'log/redi.log')
         logger.info("Running " + __name__ 
             + "#test_person_form_event() using xml: " )
         string_1_xml = """<?xml version="1.0" encoding="UTF-8"?>

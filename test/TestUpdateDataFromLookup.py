@@ -1,15 +1,12 @@
-import json
 import unittest
-import tempfile
 import os
-import sys
-
 from lxml import etree
+import redi
+
 file_dir = os.path.dirname(os.path.realpath(__file__))
 goal_dir = os.path.join(file_dir, "../")
 proj_root = os.path.abspath(goal_dir)+'/'
-sys.path.append(proj_root + 'bin/')
-import redi
+
 
 class TestUpdateDataFromLookup(unittest.TestCase):
 
