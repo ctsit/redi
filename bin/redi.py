@@ -36,6 +36,9 @@ sys.path.insert(0, proj_root+'bin/utils/')
 from redcap_transactions import redcap_transactions
 import redi_lib
 
+
+smtp_host_for_outbound_mail = None
+
 # INTERMEDIATE STEPS: XML!
 # step 1: parse raw XML to ElementTree: "data"
     # step 1b: call read-in function to load xml into ElementTree
@@ -75,6 +78,8 @@ def main():
     # read config
     setup_json = proj_root+'config/setup.json'
     setup = read_config(setup_json)
+    global smtp_host_for_outbound_mail
+    smtp_host_for_outbound_mail = setup['smtp_host_for_outbound_mail']
 
     # load custom post-processing rules
     rules = load_rules(setup, proj_root)
@@ -881,7 +886,7 @@ def send_report(sender,receiver,body):
     """
 
     try:
-       smtpObj = smtplib.SMTP('smtp.ufl.edu',25)
+       smtpObj = smtplib.SMTP(smtp_host_for_outbound_mail, 25)
        smtpObj.sendmail(sender, receiver, msg.as_string())
        print "Successfully sent email to: " + str(receiver)
     except Exception:

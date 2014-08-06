@@ -7,7 +7,7 @@ INSTALL_REQUIRES = [
 
 setup(
     name='REDI',
-    version='0.9.0',
+    version='0.9.1',
     author='Christopher P Barnes, Philip Chase, Nicholas Rejack',
     author_email='cpb@ufl.edu, pbc@ufl.edu, nrejack@ufl.edu',
     packages=find_packages(exclude=['test']),
