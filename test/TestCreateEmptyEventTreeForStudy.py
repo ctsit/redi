@@ -1,13 +1,12 @@
-import json
 import unittest
-import tempfile
 import os
-import sys
-
 from lxml import etree
-
-sys.path.append('bin/')
 import redi
+
+file_dir = os.path.dirname(os.path.realpath(__file__))
+goal_dir = os.path.join(file_dir, "../")
+proj_root = os.path.abspath(goal_dir)+'/'
+
 
 class TestCreateEmptyEventTreeForStudy(unittest.TestCase):
 
@@ -46,15 +45,15 @@ class TestCreateEmptyEventTreeForStudy(unittest.TestCase):
 
 
     def test_create_empty_event_tree_for_study_for_zero_subjects(self):
-        redi.configure_logging()
+        redi.configure_logging(proj_root+'log/redi.log')
         self.zero_subjects = """<?xml version='1.0' encoding='US-ASCII'?>
         <study></study>
         """
         self.data_zero_subjects = etree.ElementTree(etree.fromstring(self.zero_subjects))
-        self.assertRaises(redi.LogException,redi.create_empty_event_tree_for_study,self.data_zero_subjects,self.data_all_form_events)
+        self.assertRaises(Exception,redi.create_empty_event_tree_for_study,self.data_zero_subjects,self.data_all_form_events)
         
     def test_create_empty_event_tree_for_study_for_one_subjects(self):
-        redi.configure_logging()
+        redi.configure_logging(proj_root+'log/redi.log')
         self.one_subject = """<?xml version='1.0' encoding='US-ASCII'?>
             <study>
             <subject>
@@ -104,7 +103,7 @@ class TestCreateEmptyEventTreeForStudy(unittest.TestCase):
         self.assertEqual(self.expect_one_subject, self.result)
        
     def test_create_empty_event_tree_for_study_for_two_subjects(self):
-        redi.configure_logging()
+        redi.configure_logging(proj_root+'log/redi.log')
         self.two_subjects = """<?xml version='1.0' encoding='US-ASCII'?>
             <study>
                 <subject>

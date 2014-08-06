@@ -1,18 +1,17 @@
-import json
 import unittest
-import tempfile
 import os
-import sys
-
 from lxml import etree
-
-sys.path.append('bin/')
 import redi
+
+file_dir = os.path.dirname(os.path.realpath(__file__))
+goal_dir = os.path.join(file_dir, "../")
+proj_root = os.path.abspath(goal_dir)+'/'
+
 
 class TestCopyDataToPersonFormEventTree(unittest.TestCase):
 
     def setUp(self):
-        redi.configure_logging()
+        redi.configure_logging(False)
         self.form_event_tree = """<?xml version='1.0' encoding='US-ASCII'?>
         <redcapProject>
         <name>Project</name>
@@ -254,7 +253,7 @@ class TestCopyDataToPersonFormEventTree(unittest.TestCase):
         </study>
             """
         self.data_zero_form= etree.ElementTree(etree.fromstring(self.zero_form))
-        self.assertRaises(redi.LogException,redi.copy_data_to_person_form_event_tree,self.data_zero_form,self.data_person_form_event_tree,self.data_form_event_tree)
+        self.assertRaises(Exception,redi.copy_data_to_person_form_event_tree,self.data_zero_form,self.data_person_form_event_tree,self.data_form_event_tree)
         
         
     def test_copy_data_to_person_form_event_tree_two_forms(self):
@@ -421,8 +420,8 @@ class TestCopyDataToPersonFormEventTree(unittest.TestCase):
             """
         self.data_form_date_value_field= etree.ElementTree(etree.fromstring(self.form_date_value_field))
         
-        self.assertRaises(redi.LogException,redi.copy_data_to_person_form_event_tree,self.data_form_date_field,self.data_person_form_event_tree,self.data_form_event_tree)
-        self.assertRaises(redi.LogException,redi.copy_data_to_person_form_event_tree,self.data_form_date_value_field,self.data_person_form_event_tree,self.data_form_event_tree)
+        self.assertRaises(Exception,redi.copy_data_to_person_form_event_tree,self.data_form_date_field,self.data_person_form_event_tree,self.data_form_event_tree)
+        self.assertRaises(Exception,redi.copy_data_to_person_form_event_tree,self.data_form_date_value_field,self.data_person_form_event_tree,self.data_form_event_tree)
         
     def test_redcap_field_name_pair(self):
         
@@ -459,8 +458,8 @@ class TestCopyDataToPersonFormEventTree(unittest.TestCase):
         </study>
             """
         self.data_redcap_value_field= etree.ElementTree(etree.fromstring(self.redcap_value_field))
-        self.assertRaises(redi.LogException,redi.copy_data_to_person_form_event_tree,self.data_redcap_field_name,self.data_person_form_event_tree,self.data_form_event_tree)
-        self.assertRaises(redi.LogException,redi.copy_data_to_person_form_event_tree,self.data_redcap_value_field,self.data_person_form_event_tree,self.data_form_event_tree)
+        self.assertRaises(Exception,redi.copy_data_to_person_form_event_tree,self.data_redcap_field_name,self.data_person_form_event_tree,self.data_form_event_tree)
+        self.assertRaises(Exception,redi.copy_data_to_person_form_event_tree,self.data_redcap_value_field,self.data_person_form_event_tree,self.data_form_event_tree)
         
     def test_redcap_field_units_pair(self):
         
@@ -497,8 +496,8 @@ class TestCopyDataToPersonFormEventTree(unittest.TestCase):
         </study>
             """
         self.data_redcap_units_value_field= etree.ElementTree(etree.fromstring(self.redcap_units_value_field))
-        self.assertRaises(redi.LogException,redi.copy_data_to_person_form_event_tree,self.data_redcap_field_units_name,self.data_person_form_event_tree,self.data_form_event_tree)
-        self.assertRaises(redi.LogException,redi.copy_data_to_person_form_event_tree,self.data_redcap_units_value_field,self.data_person_form_event_tree,self.data_form_event_tree)
+        self.assertRaises(Exception,redi.copy_data_to_person_form_event_tree,self.data_redcap_field_units_name,self.data_person_form_event_tree,self.data_form_event_tree)
+        self.assertRaises(Exception,redi.copy_data_to_person_form_event_tree,self.data_redcap_units_value_field,self.data_person_form_event_tree,self.data_form_event_tree)
         
     def test_Form_Completed_Field(self):
         self.form_event_tree = """<?xml version='1.0' encoding='US-ASCII'?>
@@ -547,7 +546,7 @@ class TestCopyDataToPersonFormEventTree(unittest.TestCase):
         </study>
             """
         self.data_Form_Completed_Field= etree.ElementTree(etree.fromstring(self.Form_Completed_Field))
-        self.assertRaises(redi.LogException,redi.copy_data_to_person_form_event_tree,self.data_Form_Completed_Field,self.data_person_form_event_tree,self.data_form_event_tree)
+        self.assertRaises(Exception,redi.copy_data_to_person_form_event_tree,self.data_Form_Completed_Field,self.data_person_form_event_tree,self.data_form_event_tree)
         
     def test_Form_Imported_Field(self):
         self.form_event_tree = """<?xml version='1.0' encoding='US-ASCII'?>
@@ -594,7 +593,7 @@ class TestCopyDataToPersonFormEventTree(unittest.TestCase):
         </study>
             """
         self.data_Form_Imported_Field =  etree.ElementTree(etree.fromstring(self.Form_Imported_Field))
-        self.assertRaises(redi.LogException,redi.copy_data_to_person_form_event_tree,self.data_Form_Imported_Field,self.data_person_form_event_tree,self.data_form_event_tree)
+        self.assertRaises(Exception,redi.copy_data_to_person_form_event_tree,self.data_Form_Imported_Field,self.data_person_form_event_tree,self.data_form_event_tree)
         
     def tearDown(self):
         return()
