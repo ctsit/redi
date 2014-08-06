@@ -14,38 +14,41 @@ __email__       = "asura@ufl.edu"
 __status__      = "Development"
 
 import unittest
-import sys
+import logging
 import os
+import tempfile
+from lxml import etree
+from mock import patch
+import redi
+import redi_lib
+from utils.redcapClient import redcapClient
+import utils.SimpleConfigParser as SimpleConfigParser
+
 file_dir = os.path.dirname(os.path.realpath(__file__))
 goal_dir = os.path.join(file_dir, "../")
 proj_root = os.path.abspath(goal_dir)+'/'
-sys.path.append(proj_root + 'bin/')
-from lxml import etree
-import logging
-import datetime
-import pprint
-import redi
-import redi_lib
-import os
+
 
 class TestGenerateOutput(unittest.TestCase):
-
+    
     def setUp(self):
-        global logger
-        logger = logging.getLogger('redi')
-        logging.basicConfig(filename=proj_root+'log/redi.log',
-                        format='%(asctime)s - %(levelname)s - \
-                        %(name)s - %(message)s',
-                        datefmt='%m/%d/%Y %H:%M:%S',
-                        filemode='w',
-                        level=logging.DEBUG)
-        return()
-
-    ############################
-    # == TEST_1
-    def test_person_form_event(self):
         redi.configure_logging()
-        logger.info("Running " + __name__ 
+
+    def dummy_redcapClient_initializer(self,settings):
+        pass
+        
+    class dummyClass:
+        def_field = 'test'
+        
+
+    def dummy_send_data_to_redcap(self, data, overwrite = False):
+        dummy_output = """Data sent"""
+        return dummy_output
+    
+    @patch.multiple(redcapClient, __init__= dummy_redcapClient_initializer,
+            project = dummyClass(), send_data_to_redcap = dummy_send_data_to_redcap)
+    def test_person_form_event(self):
+        redi.logger.info("Running " + __name__ 
             + "#test_person_form_event() using xml: " )
         string_1_xml = """
 <person_form_event>
@@ -171,20 +174,29 @@ class TestGenerateOutput(unittest.TestCase):
             'errors'                : []
         }
         
-        setup_data = {
-            'redcap_uri':"http://localhost:8998/redcap/api/",
-            'token':"121212",
-            'rate_limiter_value_in_redcap':500
-            
-        }
+        # setup_data = {
+        #     'rate_limiter_value_in_redcap':500,
+        #     'redcap_uri':'http://fakeURI:fakeport/',
+        #     'token':'faketoken'
+        # }
+        temporary_settings_file = tempfile.mkstemp()
+        settings_data = """rate_limiter_value_in_redcap = 500\nredcap_uri = http://fakeURI:fakeport/\ntoken = faketoken"""
+        f = open(temporary_settings_file[1], 'r+')
+        f.write(settings_data)       
+        f.close()
+        settings = SimpleConfigParser.SimpleConfigParser()
+        settings.read(temporary_settings_file[1])
+        settings.set_attributes()
 
         etree_1 = etree.ElementTree(etree.fromstring(string_1_xml))
-        result = redi_lib.generate_output(etree_1,setup_data)
+        result = redi_lib.generate_output(etree_1,settings)
         self.assertEqual(report_data['total_subjects'], result['total_subjects'])
         self.assertEqual(report_data['form_details'], result['form_details'])
         self.assertEqual(report_data['subject_details'], result['subject_details'])
         self.assertEqual(report_data['errors'], result['errors'])
-        #self.assertEqual(report_data, result)
+    
+        
+    
 
     def tearDown(self):
         return()

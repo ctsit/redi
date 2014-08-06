@@ -8,10 +8,11 @@ cp $SHARED_FOLDER/aliases /home/vagrant/.bash_aliases
 
 # Install libraries used by python
 apt-get update
-apt-get install -y python-setuptools libxml2 libxslt1-dev
+apt-get install -y python-setuptools libxml2 libxslt1-dev python-dev
 
 # Install utils
 apt-get install -y vim ack-grep
+apt-get install -y sqlite3
 
 # The user provides a copy of the redcap binary folder as a zip file
 REDCAP_ZIP_FILE=redcap.zip

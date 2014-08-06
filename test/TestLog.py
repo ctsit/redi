@@ -11,14 +11,12 @@ Note: the created file is destroyed at the end
 import unittest
 import os
 import sys
-import time
+import redi
+
 file_dir = os.path.dirname(os.path.realpath(__file__))
 goal_dir = os.path.join(file_dir, "../")
 proj_root = os.path.abspath(goal_dir)+'/'
-sys.path.append(proj_root+'test')
-sys.path.append(proj_root+'bin')
-from lxml import etree
-import redi
+
 
 class TestLog(unittest.TestCase):
 
@@ -39,7 +37,7 @@ class TestLog(unittest.TestCase):
                 #print os.path.isfile(file_name)
 
         # call the configure logging function
-        redi.configure_logging()
+        redi.configure_logging(proj_root+'log/redi.log')
 
         #print 'checking if log file was created: ' + file_name
         # check if the file is created

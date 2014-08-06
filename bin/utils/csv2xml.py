@@ -1,4 +1,4 @@
-#! /usr/local/bin/python3
+#!/usr/bin/env python3
 
 # ==============================================================================
 # Conversion from CSV to XML
@@ -80,7 +80,7 @@
 #                   ignored. The default is False.
 #                   eg: When False, 'A, B, C' is read as
 #                         <field>A</field> <field> B</field> <field> C</field>.
-#                       When True, it is read as  
+#                       When True, it is read as
 #                         <field>A</field> <field>B</field> <field> C</field>.
 #
 # header            This option instructs the script to read read the field
@@ -130,9 +130,11 @@
 
 import csv
 import sys
-from optparse import OptionParser, OptionGroup 
+from optparse import OptionParser, OptionGroup
 
 # Replace s by r in text.
+
+
 def replace(text, s, r):
     return r.join(text.split(s))
 
@@ -140,12 +142,14 @@ def replace(text, s, r):
 #       or sys.stdout, uncomment the following.
 #
 # Never close STDIN and STDOUT.
-#def do_not_close(exc_type, exc_value, traceback):
+# def do_not_close(exc_type, exc_value, traceback):
 #    pass
 #sys.stdin.__exit__ = do_not_close
 #sys.stdout.__exit__ = do_not_close
 
 # Open a file or standard input/output from a unified interface.
+
+
 def openio(filename, mode, encoding, newline=None):
     if filename == '-':       # Hyphen is commonly used to designate stdin/out.
         filename = None       # Use filename = None for stdin/out.
@@ -161,10 +165,14 @@ def openio(filename, mode, encoding, newline=None):
 # Sometimes we need to print linebreak elements to the output document, in place
 # of the real linebreaks in the input document. Sometimes we just keep print
 # out the unmodified field content.
+
+
 def field_subst_factory(newline):
     newline_tag = '<{0}/>'.format(newline)
+
     def text_replace(field):
         return replace(field, '\n', newline_tag)
+
     def text_keep(field):
         return field
     if newline:
@@ -173,7 +181,10 @@ def field_subst_factory(newline):
         return text_keep
 
 # This class handles all the creating of the XML file.
+
+
 class Writer:
+
     def __init__(self, ofile, args):
         self.file = ofile
         self.args = args
@@ -184,6 +195,7 @@ class Writer:
             self.fieldname = self.__fieldname_flat
         else:
             self.fieldname = self.__fieldname_indexed
+
     def write_file(self, data):
         if self.args.declaration:
             declaration = ('<?xml version="1.0" encoding="{0}"?>'.
@@ -193,6 +205,7 @@ class Writer:
         for record in data:
             self.write_record(record)
         self.write("</{0}>".format(self.args.root_elem))
+
     def write_record(self, record):
         self.write("{0}<{1}>".
                    format(self.args.indent, self.args.record_elem))
@@ -200,27 +213,36 @@ class Writer:
             self.write_field(field, index)
         self.write("{0}</{1}>".
                    format(self.args.indent, self.args.record_elem))
+
     def write_field(self, field, index):
         self.write("{0}{0}<{1}>{2}</{1}>".
                    format(self.args.indent, self.fieldname(index),
                           self.newline_subst(field)))
+
     def write(self, text):
         print(text, file=self.file, end=self.args.linebreak)
+
     def __fieldname_header(self, index):
         return self.args.header[index]
+
     def __fieldname_flat(self, index):
         return self.args.field_elem
+
     def __fieldname_indexed(self, index):
         return self.args.field_elem + str(index)
 
 # Custom callback function for the command-line parser.
 # Store tabs and newlines as "real" tabs and newlines.
+
+
 def cleanup_callback(option, opt, value, parser):
     result = replace(value, '\\n', '\n')
     result = replace(result, '\\t', '\t')
     setattr(parser.values, option.dest, result)
 
 # Parse the huge amount of command-line options.
+
+
 def parse_cmdline():
     usage = "usage: %prog [options] IFILE"
     parser = OptionParser(usage)
