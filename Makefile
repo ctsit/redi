@@ -19,7 +19,7 @@ compile:
 
 test: tests
 tests:
-	PYTHONPATH=bin python test/TestSuite.py
+	PYTHONPATH=bin python setup.py test
 	[ ! -d config/rules ] || PYTHONPATH=bin python -munittest discover config/rules
 
 coverage:
