@@ -10,7 +10,8 @@ Quick install:
 
 Prerequisites on Debian Wheezy:
 
-  apt-get install setuptools python-dev libxml2 libxslt1-dev
+  apt-get install python-setuptools python-dev libxml2 libxslt1-dev
+
 """
 
 from setuptools import setup, find_packages
