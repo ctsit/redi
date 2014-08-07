@@ -1,3 +1,18 @@
+2014-08-07 v0.10.0
+
+ * Revised configuration architecture
+ * Updated code to better conform to our Logging Guidelines
+ * Added PyCap-based import-export tool
+ * Moved temporary files to dynamically-generated, secure temporary folder
+ * Added tests for REDCap connection and alerts when it fails
+ * Added check for data freshness
+ * Added example configuration content
+ * Improved Python packaging
+ * Cleaned up code to PEP-8 standards
+ * Added configuration file documentation
+ * Added dry-run functionality
+ * Added default configuration values where appropriate
+
 2014-08-01 v0.9.0
 
  * Testing: Added Vagrant-based testing VM and documentation for how to use it
