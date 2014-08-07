@@ -21,13 +21,13 @@ Note: The login credentials for the RedCAP web application on the testing VM at 
       git clone git@repo_config config
       cd config && git checkout develop
       
-* If needed, revise the setup.json lines that identify the host and authorize access.  For this VM, the lines are
+* If needed, revise the settings.ini lines that identify the host and authorize access.  For this VM, the lines are
 
 		"redcap_uri": "http://localhost:8998/redcap/api/",
       	"token": "121212",
 
-		$ sed -i 's/^\s\+"redcap_uri.*/\t"redcap_uri" : "http:\/\/localhost:8998\/redcap\/api\/",/' setup.json
-		$ sed -i 's/^\s\+"token.*/\t"token" : "121212",/' setup.json
+		$ sed -i 's/^\s\+"redcap_uri.*/\t"redcap_uri" : "http:\/\/localhost:8998\/redcap\/api\/",/' settings.ini
+		$ sed -i 's/^\s\+"token.*/\t"token" : "121212",/' settings.ini
 	
 * Go to the vagrant folder and remove the old virtual machine (VM) instance if necessary:
 

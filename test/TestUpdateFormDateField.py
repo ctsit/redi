@@ -8,13 +8,12 @@ formDateField of the resulting element tree is filled or not
 '''
 import unittest
 import os
-import sys
+from lxml import etree
+import redi
+
 file_dir = os.path.dirname(os.path.realpath(__file__))
 goal_dir = os.path.join(file_dir, "../")
 proj_root = os.path.abspath(goal_dir)+'/'
-sys.path.append(proj_root + 'bin/')
-from lxml import etree
-import redi
 
 
 class TestUpdateFormDateField(unittest.TestCase):
@@ -108,7 +107,7 @@ class TestUpdateFormDateField(unittest.TestCase):
         self.form_events_tree = etree.ElementTree(etree.fromstring(self.form_events))
 
     def test_update_formdatefield(self):
-        redi.configure_logging()
+        redi.configure_logging(proj_root+'log/redi.log')
         redi.update_formdatefield(self.data, self.form_events_tree)
 
 	    # output raw file to check it

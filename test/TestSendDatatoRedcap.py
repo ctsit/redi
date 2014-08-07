@@ -8,23 +8,20 @@ This file should be run from the project level folder (one level up from /bin)
 '''
 import unittest
 import os
-import sys
+from wsgiref.simple_server import make_server
+import redi
+import thread
+
 file_dir = os.path.dirname(os.path.realpath(__file__))
 goal_dir = os.path.join(file_dir, "../")
 proj_root = os.path.abspath(goal_dir)+'/'
-sys.path.append(proj_root+'test')
-sys.path.append(proj_root+'bin')
 
-from wsgiref.simple_server import make_server
-import requests
-import redi
-import thread
 
 class TestSendDatatoRedcap(unittest.TestCase):
 
     def setUp(self):
         # configure logging
-        redi.configure_logging()
+        redi.configure_logging(proj_root+'log/redi.log')
         # start a server in seperate thread
         thread.start_new_thread(self.server_setup,())
 
