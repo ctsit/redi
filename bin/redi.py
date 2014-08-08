@@ -78,6 +78,10 @@ DEFAULT_REPORT_FILE_PATH2 = "report.html"
 DEFAULT_SENDER_EMAIL = "please-do-not-reply@ufl.edu"
 DEFAULT_PROJECT = "DEFAULT_PROJECT"
 
+
+smtp_host_for_outbound_mail = None
+smtp_port_for_outbound_mail = 25
+
 # INTERMEDIATE STEPS: XML!
 # step 1: parse raw XML to ElementTree: "data"
 # step 1b: call read-in function to load xml into ElementTree
@@ -158,6 +162,12 @@ def main():
 
     # read config
     read_config(config_file, configuration_directory, settings)
+
+    global smtp_host_for_outbound_mail
+    smtp_host_for_outbound_mail = settings.smtp_host_for_outbound_mail
+
+    global smtp_port_for_outbound_mail
+    smtp_port_for_outbound_mail = settings.smtp_port_for_outbound_mail
 
     # load custom post-processing rules
     rules = load_rules(settings, configuration_directory)
@@ -1203,8 +1213,8 @@ def send_report(sender, receiver, body):
     """
 
     try:
-        smtpObj = smtplib.SMTP('smtp.ufl.edu', 25)
-        smtpObj.sendmail(sender, receiver, msg.as_string())   
+        smtpObj = smtplib.SMTP(smtp_host_for_outbound_mail, smtp_port_for_outbound_mail)
+        smtpObj.sendmail(sender, receiver, msg.as_string())
         logger.info("Successfully sent email to: " + str(receiver))
     except Exception:
         logger.info("Error: unable to send report email to: " + str(receiver))

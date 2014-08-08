@@ -13,6 +13,10 @@
  * Added dry-run functionality
  * Added default configuration values where appropriate
 
+2014-08-05 v0.9.1
+
+ * HOTFIX to replace smtp.ufl.edu with configurable option in setup.json
+
 2014-08-01 v0.9.0
 
  * Testing: Added Vagrant-based testing VM and documentation for how to use it
