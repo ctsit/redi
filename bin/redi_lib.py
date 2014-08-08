@@ -351,6 +351,7 @@ def create_empty_md5_database(db_path) :
         fresh_file = open(db_path, 'w')
         fresh_file.close()
         os.chmod(db_path, stat.S_IRUSR | stat.S_IWUSR)
+        time.sleep(2)
 
     except IOError as e:
         logger.error("I/O error: " + e.strerror + ' for file: ' + db_path)
