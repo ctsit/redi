@@ -2,7 +2,6 @@
 help:
 	@echo "\n Available tasks:"
 	@echo "\t rc_check      - checks if REDCap is running"
-	@echo "\t rc_list       - list the id of the default test project"
 	@echo "\t rc_save       - save a backup of REDCap database"
 	@echo "\t rc_clean      - remove data for default test project"
 	@echo "\t rc_clean_hcv  - truncates the extra 'hcv' tables such as: _hcvt2_ae, ..."
@@ -19,7 +18,7 @@ rc_check:
 	curl -s http://localhost:8998/redcap/ | grep -i  'Welcome\|Critical Error' 
 
 rc_list:
-	vagrant ssh -c 'cd /vagrant/scripts && php redcapdbm.php -l | grep hcvtarget_20_development'
+	vagrant ssh -c 'cd /vagrant/scripts && php redcapdbm.php -l | grep example_proj_id_12'
 
 rc_save:
 	vagrant ssh -c 'cd /vagrant/scripts && php redcapdbm.php -b'
@@ -27,11 +26,6 @@ rc_save:
 rc_clean:
 	vagrant ssh -c 'cd /vagrant/scripts && php redcapdbm.php -d 12'	
 
-rc_clean_hcv:
-	vagrant ssh -c 'mysql -uroot -ppassword redcap -e " truncate _hcvt2_ae; truncate _hcvt2_cm; truncate _hcvt2_dm; truncate _hcvt2_ie; truncate _hcvt2_lb; truncate _hcvt2_mh; truncate _hcvt2_su; truncate _hcvt2_suppae; truncate _hcvt2_suppcm; truncate _hcvt2_suppdm; truncate _hcvt2_suppds; truncate _hcvt2_suppfa; truncate _hcvt2_suppie; truncate _hcvt2_supplb; truncate _hcvt2_suppmh; truncate _hcvt2_suppsu; truncate _hcvt2_suppvs; truncate _test_view_dm; truncate _tvrsp_ae;" ' 
-
-rc_clean_who:
-	vagrant ssh -c 'mysql -uroot -ppassword redcap -e " truncate _whodrug_atc; truncate _whodrug_dd; truncate _whodrug_dda; truncate _whodrug_ddsource; truncate _whodrug_ina; truncate _whodrug_mp; truncate _whodrug_mp_us; truncate _whodrug_thg; " '
 
 rc_demographics:
 	../bin/utils/redcap_records.py --token=121212 --url=http://localhost:8998/redcap/api/ -i demographic_test_data.csv
@@ -67,3 +61,5 @@ egg_test:
 	make rc_demographics
 	vagrant ssh -c 'redi -c /vagrant/config'
 
+clean:
+	rm -f report.html 
