@@ -8,7 +8,7 @@ install:
   - pip install lxml
   - pip install appdirs
 
-script: python test/TestSuite.py
+script: make test
 
 branches:
   only:
