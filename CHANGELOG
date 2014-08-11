@@ -1,3 +1,7 @@
+2014-08-11 v0.10.1
+
+ * Add Travis CI configuration and documentation for activating Travis in forks of this repo.
+
 2014-08-07 v0.10.0
 
  * Revised configuration architecture
