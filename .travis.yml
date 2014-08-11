@@ -1,0 +1,18 @@
+language: python
+python:
+  - "2.7"
+before_install:
+  sudo apt-get install -y python-setuptools libxml2 libxslt1-dev python-dev
+install:
+  - pip install requests
+  - pip install lxml
+  - pip install appdirs
+
+script: make test
+
+branches:
+  only:
+    - master
+    - develop
+
+
