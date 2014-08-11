@@ -7,14 +7,14 @@ help:
 	@echo "\t rc_check      - checks if REDCap is running"
 	@echo "\t rc_save       - save a backup of REDCap database"
 	@echo "\t rc_clean      - remove data for default test project"
-	@echo "\t rc_clean_hcv  - truncates the extra 'hcv' tables such as: _hcvt2_ae, ..."
-	@echo "\t rc_clean_who  - truncates the extra 'who' tables such as: _whodrug_atc, ..."
 	@echo "\t rc_post       - send test data to REDCap"
 	@echo "\t rc_get        - get stored test data from REDCap"
 	@echo "\t rc_fresh      - erase/insert/retrieve test data from REDCap"
 	@echo "\t rc_get_rate   - shows the config option value: 'page_hit_threshold_per_minute' "
 	@echo "\t rc_set_rate   - set the value for: 'page_hit_threshold_per_minute' "
 	@echo "\t egg_test      - deploy the redi egg file to the vagrant box and run redi"
+
+	@echo "\t get_extras    - copy the redcap.zip and projectDataBootstrap.sql files from ../config/vagrant-data'"
 
 	@echo "\t db_tables     : list the tables in the database"
 	@echo "\t db_schema     : show the columns in the RediBatch table"
@@ -72,7 +72,6 @@ egg_test:
 	make rc_clean
 	make rc_demographics
 	vagrant ssh -c 'redi -c /vagrant/config'
-
 
 
 get_extras:
