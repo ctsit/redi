@@ -92,6 +92,11 @@ Vagrant.configure("2") do |config|
       }
     }
   end
+
   # Provision things we cannot yet do with chef
+  system 'cat bootstrap_functions.sh > /tmp/bootstrap.sh'
+  system 'cat bootstrap.sh >> /tmp/bootstrap.sh'
+  system 'echo "Executing /tmp/bootstrap.sh" '
+
   config.vm.provision :shell, :path => "bootstrap.sh"
 end
