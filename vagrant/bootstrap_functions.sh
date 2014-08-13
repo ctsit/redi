@@ -126,6 +126,7 @@ function create_redcap_tables() {
 
    if [ -f $REDCAP_SCHEMA_FILE ]; then
       create_redcap_tables_from_custom_file
+      patch_redcap_tables
    else
       create_redcap_tables_from_distribution
    fi

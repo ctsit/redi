@@ -21,7 +21,6 @@ fi
 extract_redcap
 create_redcap_user
 create_redcap_tables
-patch_redcap_tables
 update_redcap_connection_settings
 run_environment_updates
 check_redcap_status
