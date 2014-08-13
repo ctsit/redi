@@ -28,9 +28,9 @@ function extract_redcap() {
    # Note: use `-o` option to overwrite existing files
    rm -rf /var/www/*
 
-   unzip -q $SHARED_FOLDER/$REDCAP_ZIP_FILE -d /var/www/
+   unzip -q $REDCAP_ZIP_FILE -d /var/www/
 
-   REDCAP_VERSION_DETECTED=`ls /var/www/redcap | grep redcap_v | cut -d 'v' -f2`
+   REDCAP_VERSION_DETECTED=`ls /var/www/redcap | grep redcap_v | cut -d 'v' -f2 | sort -n | tail -n 1`
    echo "$REDCAP_ZIP_FILE content indicates Redcap version: $REDCAP_VERSION_DETECTED"
 
    # adjust ownership so apache can write to the temp folders
@@ -95,9 +95,9 @@ function create_redcap_tables_from_custom_file() {
    fi
 
    echo "SET foreign_key_checks = 0;" > $SCRATCH_SQL
-   cat $SHARED_FOLDER/$REDCAP_SCHEMA_FILE >> $SCRATCH_SQL
+   cat $REDCAP_SCHEMA_FILE >> $SCRATCH_SQL
    echo "SET foreign_key_checks = 1;" >> $SCRATCH_SQL
-   echo "Executing queries from: $SHARED_FOLDER/$REDCAP_SCHEMA_FILE this will take a few minutes"
+   echo "Executing queries from: $REDCAP_SCHEMA_FILE this will take a few minutes"
    mysql -uredcap -ppassword redcap < $SCRATCH_SQL
 }
 
@@ -107,10 +107,10 @@ function create_redcap_tables_from_custom_file() {
 #
 # @see install.php for details
 function create_redcap_tables_from_distribution() {
-   SQL_DIR=/var/www/redcap/redcap_v$REDCAP_VERSION/Resources/sql/
+   SQL_DIR=/var/www/redcap/redcap_v$REDCAP_VERSION_DETECTED/Resources/sql/
    mysql -ppassword redcap < $SQL_DIR/install.sql
    mysql -ppassword redcap < $SQL_DIR/install_data.sql
-   mysql -ppassword redcap -e "UPDATE redcap.redcap_config SET value = '$REDCAP_VERSION' WHERE field_name = 'redcap_version' "
+   mysql -ppassword redcap -e "UPDATE redcap.redcap_config SET value = '$REDCAP_VERSION_DETECTED' WHERE field_name = 'redcap_version' "
 
    files=$(ls -v $SQL_DIR/create_demo_db*.sql)
       for i in $files;do

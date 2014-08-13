@@ -4,15 +4,14 @@
 SHARED_FOLDER=/vagrant
 
 # The user provides a copy of the redcap binary folder as a zip file
-REDCAP_ZIP_FILE=redcap.zip
-REDCAP_VERSION=5.7.4
-REDCAP_SCHEMA_FILE=projectDataBootstrap.sql
+REDCAP_ZIP_FILE=$SHARED_FOLDER/redcap.zip
+REDCAP_SCHEMA_FILE=$SHARED_FOLDER/projectDataBootstrap.sql
 
 # import helper functions
-. bootstrap_functions.sh
+. $SHARED_FOLDER/bootstrap_functions.sh
 
 # verify availability of redcap.zip
-if [ ! -e "$SHARED_FOLDER/$REDCAP_ZIP_FILE" ]; then
+if [ ! -e "$REDCAP_ZIP_FILE" ]; then
    echo "Expecting the redcap binary files as a zip file: '$REDCAP_ZIP_FILE'"
    exit 1
 fi
