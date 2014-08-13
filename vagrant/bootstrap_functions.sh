@@ -76,7 +76,7 @@ CREATE DATABASE redcap;
 CREATE USER
    'redcap'@'localhost';
 GRANT
-   SELECT, INSERT, UPDATE, DELETE, CREATE, DROP, ALTER, EXECUTE
+   SELECT, INSERT, UPDATE, DELETE, CREATE, DROP, ALTER, EXECUTE, CREATE VIEW, SHOW VIEW
 ON
    redcap.*
 TO
@@ -97,6 +97,8 @@ function create_redcap_tables_from_custom_file() {
    echo "SET foreign_key_checks = 0;" > $SCRATCH_SQL
    cat $REDCAP_SCHEMA_FILE >> $SCRATCH_SQL
    echo "SET foreign_key_checks = 1;" >> $SCRATCH_SQL
+   echo "Rewriting DEFINER for all views to redcap@localhost"
+   sed -e "s/DEFINER=\`.\+\`@\`[0-9.]\+\`/DEFINER=\`redcap\`@\`localhost\`/g;" -i $SCRATCH_SQL
    echo "Executing queries from: $REDCAP_SCHEMA_FILE this will take a few minutes"
    mysql -uredcap -ppassword redcap < $SCRATCH_SQL
 }
