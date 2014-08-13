@@ -32,3 +32,4 @@ vagrant/REDI-*.egg
 
 vagrant/redcap.zip
 vagrant/projectDataBootstrap.sql
+vagrant/sqlPatches

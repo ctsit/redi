@@ -63,7 +63,6 @@ egg_test:
 clean:
 	rm -f report.html
 
-
 copy_redcap_code:
 	@test -d ../config    || (echo 'Please create a "config" folder with necessary files first'     && exit 1)
 	@test -f ../config/vagrant-data/redcap.zip || (echo 'Please obtain the redcap software zip file first' && exit 1)
@@ -72,5 +71,6 @@ copy_redcap_code:
 copy_project_data:
 	@test -d ../config    || (echo 'Please create a "config" folder with necessary files first'     && exit 1)
 	@test -f ../config/vagrant-data/projectDataBootstrap.sql || (echo 'Please obtain the project sql dump first' && exit 1)
-	cp -i ../config/vagrant-data/projectDataBootstrap.sql .
+	cp ../config/vagrant-data/projectDataBootstrap.sql .
+	test ! -d ../config/vagrant-data/sqlPatches || (echo "Copying sqlPatches folder from project configuration to vagrant folder" && cp -r ../config/vagrant-data/sqlPatches .)
 
