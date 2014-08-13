@@ -2,11 +2,9 @@
 help:
 	@echo "\n Available tasks:"
 	@echo "\t rc_check      - checks if REDCap is running"
-	@echo "\t rc_list       - list the id of the default test project"
+	@echo "\t rc_list       - list the id of all REDCap projects"
 	@echo "\t rc_save       - save a backup of REDCap database"
 	@echo "\t rc_clean      - remove data for default test project"
-	@echo "\t rc_clean_hcv  - truncates the extra 'hcv' tables such as: _hcvt2_ae, ..."
-	@echo "\t rc_clean_who  - truncates the extra 'who' tables such as: _whodrug_atc, ..."
 	@echo "\t rc_post       - send test data to REDCap"
 	@echo "\t rc_get        - get stored test data from REDCap"
 	@echo "\t rc_fresh      - erase/insert/retrieve test data from REDCap"
@@ -19,19 +17,14 @@ rc_check:
 	curl -s http://localhost:8998/redcap/ | grep -i  'Welcome\|Critical Error' 
 
 rc_list:
-	vagrant ssh -c 'cd /vagrant/scripts && php redcapdbm.php -l | grep hcvtarget_20_development'
+	vagrant ssh -c 'cd /vagrant/scripts && php redcapdbm.php -l'
 
 rc_save:
 	vagrant ssh -c 'cd /vagrant/scripts && php redcapdbm.php -b'
 
 rc_clean:
+	# TODO: add support for project id as parameter
 	vagrant ssh -c 'cd /vagrant/scripts && php redcapdbm.php -d 12'	
-
-rc_clean_hcv:
-	vagrant ssh -c 'mysql -uroot -ppassword redcap -e " truncate _hcvt2_ae; truncate _hcvt2_cm; truncate _hcvt2_dm; truncate _hcvt2_ie; truncate _hcvt2_lb; truncate _hcvt2_mh; truncate _hcvt2_su; truncate _hcvt2_suppae; truncate _hcvt2_suppcm; truncate _hcvt2_suppdm; truncate _hcvt2_suppds; truncate _hcvt2_suppfa; truncate _hcvt2_suppie; truncate _hcvt2_supplb; truncate _hcvt2_suppmh; truncate _hcvt2_suppsu; truncate _hcvt2_suppvs; truncate _test_view_dm; truncate _tvrsp_ae;" ' 
-
-rc_clean_who:
-	vagrant ssh -c 'mysql -uroot -ppassword redcap -e " truncate _whodrug_atc; truncate _whodrug_dd; truncate _whodrug_dda; truncate _whodrug_ddsource; truncate _whodrug_ina; truncate _whodrug_mp; truncate _whodrug_mp_us; truncate _whodrug_thg; " '
 
 rc_demographics:
 	../bin/utils/redcap_records.py --token=121212 --url=http://localhost:8998/redcap/api/ -i demographic_test_data.csv
@@ -66,4 +59,18 @@ egg_test:
 	make rc_clean
 	make rc_demographics
 	vagrant ssh -c 'redi -c /vagrant/config'
+
+clean:
+	rm -f report.html
+
+copy_redcap_code:
+	@test -d ../config    || (echo 'Please create a "config" folder with necessary files first'     && exit 1)
+	@test -f ../config/vagrant-data/redcap.zip || (echo 'Please obtain the redcap software zip file first' && exit 1)
+	cp -i ../config/vagrant-data/redcap.zip .
+
+copy_project_data:
+	@test -d ../config    || (echo 'Please create a "config" folder with necessary files first'     && exit 1)
+	@test -f ../config/vagrant-data/projectDataBootstrap.sql || (echo 'Please obtain the project sql dump first' && exit 1)
+	cp ../config/vagrant-data/projectDataBootstrap.sql .
+	test ! -d ../config/vagrant-data/sqlPatches || (echo "Copying sqlPatches folder from project configuration to vagrant folder" && cp -r ../config/vagrant-data/sqlPatches .)
 
