@@ -11,6 +11,8 @@ help:
 	@echo "\t rc_get_rate   - shows the config option value: 'page_hit_threshold_per_minute' "
 	@echo "\t rc_set_rate   - set the value for: 'page_hit_threshold_per_minute' "
 	@echo "\t egg_test      - deploy the redi egg file to the vagrant box and run redi"
+	@echo "\t copy_redcap_code: - copy the redcap.zip file from the 'config' folder if available"
+	@echo "\t copy_project_data: - copy *.sql files from the 'config' folder if available"
 	
 
 rc_check:
