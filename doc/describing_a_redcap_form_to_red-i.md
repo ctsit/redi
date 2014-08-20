@@ -64,7 +64,7 @@ Optional | ```formImportedFieldValue``` | Value written to the imported status f
 Optional | ```event``` | One or many ```<event>``` elements to describe **REDCap Events** | |
 
 ### Event Elements
-The follow are children elements of each ```redcap/form/event``` element.
+The following are children elements of each ```redcap/form/event``` element.
 
 Required? | Name or Path | Description | Max
 -|-
@@ -125,7 +125,7 @@ Optional | ```redcapStatusFieldName``` | ID of the REDCap Field that holds the o
 Optional | ```redcapStatusFieldValue``` | Value of the REDCap Field that represents the default Status | 1
 
 ## [How to Add a Simple REDCap Form to RED-I](id:howto)
-Remeber, when "adding a form" you are describing it to RED-I. So, you can open your browser and use the actual REDCap Form to guide you.
+Remember, when "adding a form" you are describing it to RED-I. So, you can open your browser and use the actual REDCap Form to guide you.
 
 1. Edit ```formEvents.xml```
    1. Copy the contents of the sample data for a ```form``` element.

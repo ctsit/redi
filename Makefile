@@ -1,38 +1,47 @@
-all: compile
+ARCHFLAGS=-Wno-error=unused-command-line-argument-hard-error-in-future
 
-build: compile
-
+all: build
+build: egg
 egg:
 	python setup.py bdist_egg
 
-egg-test: egg
-	bash scripts/egg-test.bash
-
-bdist:
-	python setup.py bdist
-
-sdist:
-	python setup.py sdist
-compile:
-	python -m compileall bin
-	python -m compileall test
+install:
+	easy_install dist/REDI*.egg
 
 test: tests
-tests:
-	PYTHONPATH=bin python setup.py test
-	[ ! -d config/rules ] || PYTHONPATH=bin python -munittest discover config/rules
+tests: coverage
+	[ ! -d config/rules ] || PYTHONPATH=bin \
+		python -munittest discover config/rules
 
 coverage:
-	which figleaf || sudo easy_install figleaf
-	figleaf test/TestSuite.py
-	figleaf2html -d coverage .figleaf
-	ls coverage/index.html
+	ARCHFLAGS=$(ARCHFLAGS) PYTHONPATH=bin \
+		python setup.py nosetests
+
+lint:
+	which pylint || sudo easy_install pylint
+	ARCHFLAGS=$(ARCHFLAGS) PYTHONPATH=bin \
+		pylint -f parseable bin | tee pylint.out
 
 clean:
-	rm -rf coverage
-	rm -f .figleaf
-	find . -type f -name *.pyc -print | xargs rm -f
-	rm -rf out/*
+	find . -type f -name "*.pyc" -print | xargs rm -f
+	rm -rf out
 	rm -rf dist
 	rm -rf build
 	rm -rf REDI.egg-info
+	rm -rf nosetests.xml cover .coverage coverage.xml
+	rm -rf *.egg
+	rm -f pylint.out
+	rm -f formData.xml
+	rm -f rawData.xml
+	rm -f translationalData.xml
+	rm -f rawDataWithFormName.xml
+	rm -f rawDataWithFormCompletedField.xml
+	rm -f rawDataWithDatumAndUnitsFieldNames.xml
+	rm -f rawDataSorted.xml
+	rm -f rawDataWithAllUpdates.xml
+	rm -f rawDataWithFormImported.xml
+	rm -f rawDataWithFormStatus.xml
+	rm -f all_form_events.xml
+	rm -f person_form_event_tree.xml
+	rm -f person_form_event_tree_with_data.xml
+

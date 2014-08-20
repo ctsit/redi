@@ -53,12 +53,73 @@ __version__ = '0.02'
 
 import ConfigParser
 import StringIO
+import logging
+import os
+import sys
+logger = logging.getLogger(__name__)
+logger.addHandler(logging.NullHandler())
 
 #=== CONSTANTS ================================================================
 
 # section name for options without section:
 NOSECTION = 'NOSECTION'
 
+DEFAULT_MESSAGE_NO_VALUE = "Required parameter '{0}' does not have a"\
+                           " value in {1}."
+
+DEFAULT_MESSAGE = "\nPlease set it with the appropriate value. Refer to "\
+                  "config-example/settings.ini for assistance.\nProgram "\
+                  "will now terminate..."
+
+# Dictionary containing required file-related parameters along with custom 
+# message to be displayed in case of error
+required_files_dict = {
+    "raw_xml_file": "\nIt should specify the name of the file containing raw"\
+    " data. ",
+    "translation_table_file": "\nIt should specify the name of the required "\
+    "xml file containing translation table. ",
+    "form_events_file": "\nIt should specify the name of the required xml "\
+    "file containing empty form events. ",
+    "research_id_to_redcap_id": "\nIt should specify the name of the xml "\
+    "file containing mapping of research ids to redcap ids. ",
+    "component_to_loinc_code_xml": "\nIt should specify the name of the "\
+    "required xml file  containing a mapping of clinical component ids to "\
+    "loinc codes. "
+}
+
+required_server_parameters_list = [
+    'redcap_uri', 
+    'token', 
+    'redcap_server', 
+    'redcap_support_receiver_email',
+    'smtp_host_for_outbound_mail', 
+    'smtp_port_for_outbound_mail',
+    'emr_sftp_server_hostname', 
+    'emr_sftp_server_username', 
+    'emr_sftp_server_password', 
+    'emr_sftp_project_name', 
+    'emr_data_file']
+
+# Dictionary containing optional parameters along with their default values
+optional_parameters_dict = {
+    "report_file_path": "report.xml",
+    "input_date_format": "%Y-%m-%d %H:%M:%S",
+    "output_date_format": "%Y-%m-%d",
+    "report_file_path2": "report.html",
+    "sender_email": "please-do-not-reply@example.com",
+    "project": "DEFAULT_PROJECT",
+    "rules": {},
+    "batch_warning_days": 13,
+    "rate_limiter_value_in_redcap": 600,
+    "batch_info_database": "redi.db",
+    "send_email": 'N',
+    "replace_fields_in_raw_data_xml": None,
+    "include_rule_errors_in_report": False,
+    "redcap_support_sender_email": 'please-do-not-reply@example.com',
+}
+
+class ConfigurationError(Exception):
+    pass
 
 #=== CLASSES ==================================================================
 
@@ -70,9 +131,15 @@ class SimpleConfigParser(ConfigParser.RawConfigParser):
 
     Inspired from an idea posted by Fredrik Lundh:
     http://mail.python.org/pipermail/python-dev/2002-November/029987.html
-    """
+    """    
 
     def read(self, filename):
+        if not os.path.exists(filename):
+            logger.exception("Cannot find settings file: {0}. Program will "\
+                             "now terminate...".format(filename))
+            sys.exit()
+
+        self.filename = filename
         text = open(filename).read()
         f = StringIO.StringIO("[%s]\n" % NOSECTION + text)
         self.readfp(f, filename)
@@ -93,8 +160,64 @@ class SimpleConfigParser(ConfigParser.RawConfigParser):
         return self.has_option(NOSECTION, option)
 
     def set_attributes(self):
-        for option in self.getoptionslist():
-            setattr(self, option, self.getoption(option))
+        # Check if configuration file is empty
+        if not self.getoptionslist():
+            message = "ERROR: Configuration file '{0}' is empty! Program "\
+                      "will now terminate...".format(self.filename)
+            logging.error(message)
+            sys.exit()
+
+        else:
+            self.check_parameters()            
+
+    def check_parameters(self):
+        """
+        handle required and default optional_parameters_dict
+        """
+        # check for required file parameters
+        # handled separately as these need a custom message to be displayed
+        for option in required_files_dict:
+            if not self.hasoption(option) or self.getoption(option) == "":
+                message = DEFAULT_MESSAGE_NO_VALUE.format(option, \
+                    self.filename) + required_files_dict[option] +\
+                     DEFAULT_MESSAGE
+                logging.error(message)
+                sys.exit()
+            else:
+                setattr(self, option, self.getoption(option))
+
+        # check for required server and emr parameters
+        for option in required_server_parameters_list:
+            if not self.hasoption(option) or self.getoption(option) == "":
+                message = DEFAULT_MESSAGE_NO_VALUE.format(option, \
+                    self.filename) + DEFAULT_MESSAGE
+                logging.error(message)
+                sys.exit()
+            else:
+                setattr(self, option, self.getoption(option))
+
+        # check for receiver email if send_email = 'Y'
+        if self.hasoption('send_email') and \
+        self.getoption('send_email') == 'Y':
+            if not self.hasoption('receiver_email') or \
+            self.getoption('receiver_email') == "":
+                message = DEFAULT_MESSAGE_NO_VALUE.format(option, \
+                    self.filename) + DEFAULT_MESSAGE
+                logging.error(message)
+                sys.exit()
+            else:
+                setattr(self, 'receiver_email', self.getoption('receiver_email'))
+
+        # set optional parameters with default values if missing
+        for option in optional_parameters_dict:
+            if not self.hasoption(option) or self.getoption(option) == "":
+                logging.info("Parameter '{0}' in {1} does not have"\
+                " a value. Default value '{2}' applied.".format(option, \
+                    self.filename, optional_parameters_dict[option]))
+                setattr(self, option, optional_parameters_dict[option])
+            else:
+                setattr(self, option, self.getoption(option))
+
 
 #=== MAIN =====================================================================
 

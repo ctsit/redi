@@ -42,6 +42,10 @@ from TestValidateXmlFleAndExtractData import TestValidateXmlFleAndExtractData
 from TestConvertComponentIdToLoincCode import TestConvertComponentIdToLoincCode
 from TestCopyDataToPersonFormEventTree import TestCopyDataToPersonFormEventTree
 from TestGetEMRData import TestGetEMRData
+from TestResume import TestResume
+from TestPersonFormEventsRepository import TestPersonFormEventsRepository
+from TestVerifyAndCorrectCollectionDate import TestVerifyAndCorrectCollectionDate
+
 
 class redi_suite(unittest.TestSuite):
 
@@ -67,6 +71,7 @@ class redi_suite(unittest.TestSuite):
         redi_test_suite.addTest(TestUpdateStatusField)
         redi_test_suite.addTest(TestCreateEmptyEventsForOneSubject)
         redi_test_suite.addTest(TestCreateEmptyEventTreeForStudy)
+        redi_test_suite.addTest(TestVerifyAndCorrectCollectionDate)
         redi_test_suite.addTest(TestParseAll)
 
         # The redesign functions May 2014
@@ -78,6 +83,8 @@ class redi_suite(unittest.TestSuite):
         redi_test_suite.addTest(TestConvertComponentIdToLoincCode)
         redi_test_suite.addTest(TestCopyDataToPersonFormEventTree)
         redi_test_suite.addTest(TestGetEMRData)
+        redi_test_suite.addTest(TestResume)
+        redi_test_suite.addTest(TestPersonFormEventsRepository)
 
         # return the suite
         return unittest.TestSuite([redi_test_suite])

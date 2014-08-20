@@ -1,3 +1,19 @@
+2014-08-20 v0.11.0
+
+ * Introduced Data Directories (see documentation for --datadir)
+ * Resumable RED-I (see documentation for --resume)
+ * Serialize Collection Date Summary
+ * Included Debian 7.4 installation script (see scripts/install_deb_7_4.sh)
+ * Updated settings: removed emr_log_file since it wasn't used
+ * Removed dependency on Python3 (converted csv2xml.py)
+ * BUG: Fixed SQLite issue
+ * BUG: event count 15 exceeds maximum of 74
+ * Other minor bug fixes
+ * Updated documentation and example configuration
+ * Cleaned up comments in code
+ * DEV: Added coverage and lint goals to Makefile
+ * DEV: Added the generated files to the list of files to remove by `make clean`
+
 2014-08-11 v0.10.1
 
  * Add Travis CI configuration and documentation for activating Travis in forks of this repo.

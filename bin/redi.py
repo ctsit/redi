@@ -12,27 +12,30 @@ __version__ = "0.10.0"
 __email__ = "nrejack@ufl.edu"
 __status__ = "Development"
 
-from lxml import etree
 import ast
+import errno
 import logging
+import pickle
 import time
+from datetime import date, datetime, timedelta
 from collections import defaultdict
 from collections import Counter
 import string
 import smtplib
 import xml.etree.ElementTree as ET
-import os
 import sys
 import imp
 import argparse
-from appdirs import AppDirs
+import os
 
-MSG_QUIT = "The program will now terminate since required parameters are missing."
-ERR_MISSING_PARAM = "Please set the required parameters and restart execution. \
-Please refer to 'config-example/settings.ini' file for assistance."
+from requests import RequestException
+from lxml import etree
 
-MSG_HELP_AND_QUIT = ERR_MISSING_PARAM + ' ' + ERR_MISSING_PARAM
-#check_for_required_files
+from utils import redi_email
+from utils.redcapClient import redcapClient
+import utils.SimpleConfigParser as SimpleConfigParser
+import utils.GetEmrData as GetEmrData
+from utils.GetEmrData import EmrConnectionDetails
 
 
 def get_proj_root():
@@ -41,91 +44,81 @@ def get_proj_root():
     return proj_root
 
 
-def get_db_path(settings) :
-    if (not settings.hasoption('batch_info_database') or '' == settings.batch_info_database) :
-        batch_info_database = "redi.db"
-        logger.warn("Missing parameter in settings.ini: 'batch_info_database'.")
-        logger.warn("Using default value: batch_info_database = 'db/redi.db'")
-    else :
-        batch_info_database = settings.batch_info_database
+def get_db_path(batch_info_database, database_path):
+    if not os.path.exists(database_path):
+        os.makedirs(database_path)
 
-    dirs = AppDirs('redi', version = __version__)
-    if not os.path.exists(dirs.user_data_dir) :
-        os.makedirs(dirs.user_data_dir)
-
-    db_path = os.path.join(dirs.user_data_dir, batch_info_database)
+    db_path = os.path.join(database_path, batch_info_database)
     return db_path
 
 
 proj_root = get_proj_root()
-
-from utils.redcapClient import redcapClient
 import redi_lib
-import utils.SimpleConfigParser as SimpleConfigParser
-import utils.GetEmrData as GetEmrData
 
 
 # Command line default argument values
-default_configuration_directory = proj_root + "config/"
 default_do_keep_gen_files = None
 
-# Default values for optional parameters
-DEFAULT_SYSTEM_LOG_FILE = "redi_log/redi.log"
-DEFAULT_REPORT_FILE_PATH = "report.xml"
-DEFAULT_INPUT_DATE_FORMAT = "%Y-%m-%d %H:%M:%S"
-DEFAULT_OUTPUT_DATE_FORMAT = "%Y-%m-%d"
-DEFAULT_REPORT_FILE_PATH2 = "report.html"
-DEFAULT_SENDER_EMAIL = "please-do-not-reply@ufl.edu"
-DEFAULT_PROJECT = "DEFAULT_PROJECT"
+_person_form_events_service = None
 
+translational_table_tree = None
 
-smtp_host_for_outbound_mail = None
-smtp_port_for_outbound_mail = 25
-
-# INTERMEDIATE STEPS: XML!
-# step 1: parse raw XML to ElementTree: "data"
-# step 1b: call read-in function to load xml into ElementTree
-# step 2: parse formEvents.xml to ElementTree
-# step 2b: call read-in function to load xml into ElementTree
-# step 3: parse translationTable.xml to ElementTree
-# step 3b: call read-in function to load xml into ElementTree
-# step 4: add element to data ElementTree for timestamp, redcap form name,
-#    eventName,    formDateField, and formCompletedFieldName
-# step 4a: write out ElementTree as an XML file
-# step 4b: call read-in function to load xml into ElementTree
-# step 5: update timestamp using collection_date and collection_time
-# step 7: write redcapForm name to data ElementTree by a lookup of component ID
-#            in translationTable.xml
-# step 8: sort data by: study_id, form name, then timestamp, ascending order
-# step 10: write formDateField to data ElementTree via lookup of formName
-#                in formEvents.xml
-# step 11: write formCompletedFieldName to data ElementTree via lookup of
-#        formName in formEvents.xml
-# step 12: write eventName to data ElementTree via lookup of formName in
-#                    formEvents.xml
-#    ex: <formName value="chemistry">
-#            <event name="1_arm_1" />
-#        </formName>
-# step 13: write the Final ElementTree to EAV
+DEFAULT_DATA_DIRECTORY = os.getcwd()
 
 
 def main():
-    global translational_table_tree
+    """
+    Data processing steps:
+
+    - parse raw XML to ElementTree: "data"
+    - call read-in function to load xml into ElementTree
+
+    - parse formEvents.xml to ElementTree
+    - call read-in function to load xml into ElementTree
+
+    - parse translationTable.xml to ElementTree
+    - call read-in function to load xml into ElementTree
+
+    - add element to data ElementTree for timestamp, redcap form name,
+        eventName, formDateField, and formCompletedFieldName
+    - write out ElementTree as an XML file
+    - call read-in function to load xml into ElementTree
+
+    - update timestamp using collection_date and collection_time
+    - write redcapForm name to data ElementTree by a lookup of component ID in translationTable.xml
+
+    - sort data by: study_id, form name, then timestamp, ascending order
+    - write formDateField to data ElementTree via lookup of formName in formEvents.xml
+
+    - write formCompletedFieldName to data ElementTree via lookup of formName in formEvents.xml
+    - write eventName to data ElementTree via lookup of formName in formEvents.xml
+
+    Example:
+    <formName value="chemistry">
+        <event name="1_arm_1" />
+    </formName>
+
+    - write the Final ElementTree to EAV
+    """
+    global _person_form_events_service
 
     # obtaining command line arguments for path to configuration directory
     args = parse_args()
 
-    configuration_directory = args['configuration_directory_path'] + '/'
+    data_directory = args['datadir']
+    configuration_directory = args['configuration_directory_path']
+    if configuration_directory is None:
+        configuration_directory = os.path.join(data_directory, "config")
     do_keep_gen_files = False if args['keep'] is None else True
     get_emr_data = False if args['emrdata'] is None else True
     dry_run = args['dryrun']
 
     #configure logger
-    logger = configure_logging(args['verbose'])
-    logger.info('Logger configured')
+    logger = configure_logging(data_directory, args['verbose'])
+
     # Parsing the config file using a method from module SimpleConfigParser
     settings = SimpleConfigParser.SimpleConfigParser()
-    config_file = configuration_directory + 'settings.ini'
+    config_file = os.path.join(configuration_directory, 'settings.ini')
     settings.read(config_file)
     # this method reduces the syntax
     settings.set_attributes()
@@ -139,110 +132,215 @@ def main():
     if dry_run:
         get_emr_data = False
 
-    tmp_folder = redi_lib.get_temp_path(do_keep_gen_files)
+    db_path = get_db_path(settings.batch_info_database, data_directory)
 
-    if (not settings.hasoption('system_log_file') or settings.system_log_file ==  '') :
-        system_log_file_full_path = DEFAULT_SYSTEM_LOG_FILE
-    else:
-        system_log_file_full_path = settings.system_log_file
+    output_files = os.path.join(data_directory, "data")
+    _makedirs(output_files)
+
+    # Check if files mentioned in the configuration file exist
+    file_list = [
+        settings.translation_table_file,
+        settings.form_events_file,
+        settings.research_id_to_redcap_id,
+        settings.component_to_loinc_code_xml
+    ]
+    read_config(config_file, configuration_directory, file_list)
+
+    _person_form_events_service = PersonFormEventsRepository(\
+        os.path.join(output_files, 'person_form_event_tree_with_data.xml'),\
+         logger)
+
+    _run(config_file, configuration_directory, do_keep_gen_files, dry_run,
+         get_emr_data, settings, output_files, db_path, args['resume'])
+
+
+def _makedirs(data_folder):
+    # Like os.makedirs() but suppresses error if path already exists.
+    try:
+        os.makedirs(data_folder)
+    except OSError as e:
+        if e.errno != errno.EEXIST:
+            raise e
+
+
+def _delete_last_runs_data(data_folder):
+    _person_form_events_service.delete()
+    _remove(os.path.join(data_folder, 'alert_summary.obj'))
+    _remove(os.path.join(data_folder, 'rule_errors.obj'))
+    _remove(os.path.join(data_folder, 'collection_date_summary_dict.obj'))
+
+
+def _remove(path):
+    # Like os.remove() but suppresses error if path does not exist
+    try:
+        os.remove(path)
+    except OSError as e:
+        if e.errno != errno.ENOENT:
+            raise e
+
+
+def _fetch_run_data(data_folder):
+    person_form_event_tree_with_data = _person_form_events_service.fetch()
+    alert_summary = _load(os.path.join(data_folder, 'alert_summary.obj'))
+    rule_errors = _load(os.path.join(data_folder, 'rule_errors.obj'))
+    collection_date_summary_dict = _load(os.path.join(data_folder, 'collection_date_summary_dict.obj'))
+
+    return alert_summary, person_form_event_tree_with_data, rule_errors,\
+     collection_date_summary_dict
+
+
+def _load(path):
+    with open(path, 'rb') as fp:
+        return pickle.load(fp)
+
+
+def _store_run_data(data_folder, alert_summary,\
+ person_form_event_tree_with_data, rule_errors, collection_date_summary_dict):
+    _person_form_events_service.store(person_form_event_tree_with_data)
+    _save(alert_summary, os.path.join(data_folder, 'alert_summary.obj'))
+    _save(rule_errors, os.path.join(data_folder, 'rule_errors.obj'))
+    _save(collection_date_summary_dict, os.path.join(data_folder, 'collection_date_summary_dict.obj'))
+
+
+def _save(obj, path):
+    with open(path, 'wb') as fp:
+        pickle.dump(obj, fp)
+
+
+def _run(config_file, configuration_directory, do_keep_gen_files, dry_run,
+         get_emr_data, settings, data_folder, database_path, resume=False):
+    global translational_table_tree
+
+    assert _person_form_events_service is not None
 
     # Getting EMR data
     if get_emr_data:
-        check_for_required_emr_parameters(settings, dry_run)
-        GetEmrData.get_emr_data(configuration_directory, settings)
-
-    # Check if parameters which are required and cannot have default values \
-    # are present in settings.ini
-    check_for_required_files(settings)
-
-    # Check if parameters required for connecting to servers and \
-    # sending/receiving email are present in settings.ini (if program \
-    # is not running in dry run state)
-    check_for_required_server_parameters(settings, dry_run)
-
-    # read config
-    read_config(config_file, configuration_directory, settings)
-
-    global smtp_host_for_outbound_mail
-    smtp_host_for_outbound_mail = settings.smtp_host_for_outbound_mail
-
-    global smtp_port_for_outbound_mail
-    smtp_port_for_outbound_mail = settings.smtp_port_for_outbound_mail
+        props = EmrConnectionDetails(
+            settings.emr_sftp_server_hostname,
+            settings.emr_sftp_server_username,
+            settings.emr_sftp_server_password,
+            settings.emr_sftp_project_name,
+            settings.emr_data_file)
+        print props
+        GetEmrData.get_emr_data(configuration_directory, props)
 
     # load custom post-processing rules
-    rules = load_rules(settings, configuration_directory)
+    rules = load_rules(settings.rules, configuration_directory)
 
     # read in 3 main data files / translation tables
 
-    raw_xml_file = configuration_directory + settings.raw_xml_file
+    raw_xml_file = os.path.join(configuration_directory, settings.raw_xml_file)
     # we need the batch information to set the
     # status to `completed` an ste the `rbEndTime`
-    batch = redi_lib.check_input_file(settings, raw_xml_file)
+    email_settings = get_email_settings(settings)
+    redcap_settings = get_redcap_settings(settings)
+    db_path = database_path
+    batch = _check_input_file(db_path, email_settings, raw_xml_file, settings)
 
-    form_events_file = configuration_directory + settings.form_events_file
+    form_events_file = os.path.join(configuration_directory,\
+     settings.form_events_file)
 
-    translation_table_file = configuration_directory + \
-    settings.translation_table_file
+    translation_table_file = os.path.join(configuration_directory, \
+        settings.translation_table_file)
 
-    # Checking in settings.ini for path to output report xml file
-    if (not settings.hasoption('report_file_path') or '' == settings.report_file_path) :
-        logger.info("Missing parameter in settings.ini: 'report_file_path'. \
-            Using default value: " + DEFAULT_REPORT_FILE_PATH)
-        report_file_path = configuration_directory + DEFAULT_REPORT_FILE_PATH
-    else:
-        report_file_path = configuration_directory + settings.report_file_path
-
-    # Checking in settings.ini for path to output report html file
-    if (not settings.hasoption('project') or '' == settings.project) :
-        project = DEFAULT_PROJECT
-        logger.warn("Missing parameter in settings.ini: 'project'. \
-            Using default value: " + DEFAULT_PROJECT)
-    else:
-        project = settings.project
+    report_file_path = os.path.join(configuration_directory,\
+     settings.report_file_path)
 
     report_parameters = {
         'report_file_path': report_file_path,
-        'project': project,
+        'project': settings.project,
         'redcap_server': settings.redcap_server}
-    # report_xsl = proj_root+ settings.report_xsl_path')
-    report_xsl = proj_root + "bin/utils/report.xsl"
 
+    report_xsl = proj_root + "bin/utils/report.xsl"
     send_email = settings.send_email
 
-    if (not settings.hasoption('input_date_format') or '' == settings.input_date_format) :
-        input_date_format = DEFAULT_INPUT_DATE_FORMAT
-        logger.info("Missing parameter in settings.ini: 'input_date_format'. \
-Default value '" + DEFAULT_INPUT_DATE_FORMAT + "' applied.")
-    else:
-        input_date_format = settings.input_date_format
+    if not resume:
+        _delete_last_runs_data(data_folder)
 
-    if (not settings.hasoption('output_date_format') or '' == settings.output_date_format) :
-        output_date_format = DEFAULT_OUTPUT_DATE_FORMAT
-        logger.info("Missing parameter in settings.ini: 'output_date_format'.\
-                Default value '" + DEFAULT_OUTPUT_DATE_FORMAT + "' applied.")
-    else:
-        output_date_format = settings.output_date_format
+        alert_summary, person_form_event_tree_with_data, rule_errors, \
+        collection_date_summary_dict = _create_person_form_event_tree_with_data(
+            config_file, configuration_directory, email_settings,\
+             form_events_file, raw_xml_file, redcap_settings, rules,\
+              settings, data_folder, translation_table_file, dry_run)
 
-    if (not settings.hasoption('include_rule_errors_in_report') or '' == settings.include_rule_errors_in_report) :
-        include_rule_errors_in_report = 'N'
-        logger.info("Missing parameter in settings.ini: \
-                'include_rule_errors_in_report'. Default value 'N' applied")
-    else:
-        include_rule_errors_in_report = settings.include_rule_errors_in_report
+        _store_run_data(data_folder, alert_summary,
+                        person_form_event_tree_with_data, rule_errors,
+                        collection_date_summary_dict)
 
-    if (not settings.hasoption('report_file_path2') or '' == settings.report_file_path2) :
-        report_file_path2 = DEFAULT_REPORT_FILE_PATH2
-        logger.info("Missing parameter in settings.ini: 'report_file_path2'. \
-                Default value '" + DEFAULT_REPORT_FILE_PATH2 + "' applied")
-    else:
-        report_file_path2 = settings.report_file_path2
+    alert_summary, person_form_event_tree_with_data, rule_errors, collection_date_summary_dict = \
+        _fetch_run_data(data_folder)
 
-    # Set path to log file
-    # system_log_file = setup['system_log_file']
+    # Data will be sent to REDCap server and email will be sent only if
+    # redi.py is not executing in dry run state.
+    if not dry_run:
+        unsent_events = person_form_event_tree_with_data.xpath("//event/status[.='unsent']")
+        # Use the new method to communicate with RedCAP
+        report_data = redi_lib.generate_output(
+            person_form_event_tree_with_data, redcap_settings, email_settings,
+            _person_form_events_service)
+        # write person_form_event_tree to file
+        write_element_tree_to_file(person_form_event_tree_with_data,\
+         os.path.join(data_folder, 'person_form_event_tree_with_data.xml'))
+        sent_events = person_form_event_tree_with_data.xpath("//event/status[.='sent']")
+        if len(unsent_events) != len(sent_events):
+            logger.warning('Some of the events are not sent to the redcap. Please check event statuses in '+data_folder+'person_form_event_tree_with_data.xml')
+
+        # Add any errors from running the rules to the report
+        map(logger.warning, rule_errors)
+
+        if settings.include_rule_errors_in_report:
+            report_data['errors'].extend(rule_errors)
+
+        # create summary report
+        xml_report_tree = create_summary_report(report_parameters,
+                                            report_data, alert_summary,
+                                            collection_date_summary_dict)
+        # print ElementTree.tostring(xml_report_tree)
+
+        xslt = etree.parse(report_xsl)
+        transform = etree.XSLT(xslt)
+        html_report = transform(xml_report_tree)
+        html_str = etree.tostring(html_report, method='html', pretty_print=True)
+
+        # send report via email
+        if 'Y' == settings.send_email:
+            sender = settings.sender_email
+            receiver = settings.receiver_email.split()
+            send_report(sender, receiver, html_str)
+        else:
+            logger.info("Email will not be sent as 'send_email' parameter"\
+            " in {0} is set to 'N'".format(config_file))
+            try:
+                report_file = open(settings.report_file_path2, 'w')
+            except IOError:
+                logger.exception('could not open file %s' % settings.report_file_path2)
+                raise
+            report_file.write(html_str)
+
+    if batch:
+        # Update the batch row
+        done_timestamp = redi_lib.get_db_friendly_date_time()
+        redi_lib.update_batch_entry(db_path,
+                                    batch['rbID'], 'Completed', done_timestamp)
+
+    if dry_run:
+        logger.info("End of dry run. All output files are ready for review"\
+        " in " + data_folder)
+
+    if not do_keep_gen_files:
+        redi_lib.delete_temporary_folder(data_folder)
+
+
+def _create_person_form_event_tree_with_data(config_file, \
+    configuration_directory, email_settings, form_events_file, raw_xml_file,\
+     redcap_settings, rules, settings, data_folder, translation_table_file,\
+      dry_run):
+    global translational_table_tree
     # parse the raw.xml file and fill the etree rawElementTree
     data = parse_raw_xml(raw_xml_file)
 
-    data = verify_and_correct_collection_date(data)
+    data, collection_date_summary_dict = \
+    verify_and_correct_collection_date(data, settings.input_date_format)
     # write_element_tree_to_file(data, proj_root+'raw_with_proper_dates.xml')
     # check if raw element tree is empty
     if not data:
@@ -251,29 +349,27 @@ Default value '" + DEFAULT_INPUT_DATE_FORMAT + "' applied.")
 
     # add blank elements to each subject in data tree
     add_elements_to_tree(data)
-
     # replace fields in raw_xml
-    if (not settings.hasoption('replace_fields_in_raw_data_xml') or '' == settings.replace_fields_in_raw_data_xml) :
-        message = "Warning! Missing parameter in settings.ini: 'replace_fields_in_raw_data_xml'.\
-                Fields in raw xml will not be replaced"
-        logger.warn(message)
-    else:
-        replace_fields_in_raw_data_xml = configuration_directory + \
-        settings.replace_fields_in_raw_data_xml
+    if settings.replace_fields_in_raw_data_xml:
+        replace_fields_in_raw_data_xml = os.path.join(\
+            configuration_directory, settings.replace_fields_in_raw_data_xml)
         data = replace_fields_in_raw_xml(data, replace_fields_in_raw_data_xml)
+    else:
+        logger.warning("Parameter 'replace_fields_in_raw_data_xml' missing"\
+        " in {0}. Fields will not be replaced".format(config_file))
 
     # Convert COMPONENT_ID to loinc_code in the raw data
-    component_to_loinc_code_xml = configuration_directory +\
-        settings.component_to_loinc_code_xml
+    component_to_loinc_code_xml = os.path.join(configuration_directory, \
+                                  settings.component_to_loinc_code_xml)
     component_to_loinc_code_xsd = proj_root + \
-        "bin/utils/component_id_to_loinc_code.xsd"
-    component_to_loinc_code_xml_tree = validate_xml_file_and_extract_data\
+                                  "bin/utils/component_id_to_loinc_code.xsd"
+    component_to_loinc_code_xml_tree = validate_xml_file_and_extract_data \
         (component_to_loinc_code_xml, component_to_loinc_code_xsd)
     convert_component_id_to_loinc_code(data, component_to_loinc_code_xml_tree)
     # parse the formEvents.xml file and fill the etree 'form_events_file'
     form_events_tree = parse_form_events(form_events_file)
     forms = form_events_tree.findall("form/name")
-    form_Completed_Field_Names = form_events_tree.\
+    form_Completed_Field_Names = form_events_tree. \
         findall("form/formCompletedFieldName")
     form_data = {}
     for i in range(len(forms)):
@@ -283,63 +379,56 @@ Default value '" + DEFAULT_INPUT_DATE_FORMAT + "' applied.")
     if not form_events_tree:
         # raise an exception if empty
         raise Exception('form_events_tree is empty')
-    write_element_tree_to_file(form_events_tree, tmp_folder + 'formData.xml')
-
+    write_element_tree_to_file(form_events_tree, os.path.join(data_folder,\
+     'formData.xml'))
     # Create empty events for one subject and save it to the
     # all_form_events.xml
-    all_form_events_per_subject = create_empty_events_for_one_subject_helper\
+    all_form_events_per_subject = create_empty_events_for_one_subject_helper \
         (form_events_file, translation_table_file)
-    write_element_tree_to_file(all_form_events_per_subject,
-                               tmp_folder + 'all_form_events.xml')
-
+    write_element_tree_to_file(all_form_events_per_subject,\
+     os.path.join(data_folder, 'all_form_events.xml'))
     # parse the translationTable.xml file and fill the
-    #    etree 'translation_table_file'
+    # etree 'translation_table_file'
     translational_table_tree = parse_translation_table(translation_table_file)
-
     # check if translational table element tree is empty
     if not translational_table_tree:
         # raise an exception if empty
         raise Exception('translational_table_tree is empty')
-    write_element_tree_to_file(translational_table_tree,
-                               tmp_folder + 'translationalData.xml')
-
+    write_element_tree_to_file(translational_table_tree,\
+     os.path.join(data_folder, 'translationalData.xml'))
     # update the timestamp for the global element tree
-    update_time_stamp(data, input_date_format, output_date_format)
+    update_time_stamp(data, settings.input_date_format, settings.output_date_format)
     # write back the changed global Element Tree
-    write_element_tree_to_file(data, tmp_folder + 'rawData.xml')
-
+    write_element_tree_to_file(data, os.path.join(data_folder,\
+     'rawData.xml'))
     # update the redcap form name
     update_redcap_form(data, translational_table_tree, 'undefined')
     # write the element tree
-    write_element_tree_to_file(data, tmp_folder + 'rawDataWithFormName.xml')
-
+    write_element_tree_to_file(data, os.path.join(data_folder,\
+     'rawDataWithFormName.xml'))
     # set all formImportedFieldName value to the value mapped from
     # formEvents.xml
     update_form_imported_field(data, form_events_tree, 'undefined')
     # output raw file to check it
     write_element_tree_to_file(
         data,
-        tmp_folder +
-        'rawDataWithFormImported.xml')
-
+        os.path.join(data_folder, 'rawDataWithFormImported.xml'))
     # update the redcapStatusFieldName
     update_recap_form_status(data, translational_table_tree, 'undefined')
     # output raw file to check it
-    write_element_tree_to_file(data, tmp_folder + 'rawDataWithFormStatus.xml')
-
+    write_element_tree_to_file(data, os.path.join(data_folder,\
+     'rawDataWithFormStatus.xml'))
     # update formDateField
     update_formdatefield(data, form_events_tree)
     # write back the changed global Element Tree
-    write_element_tree_to_file(data, tmp_folder + 'rawData.xml')
-
+    write_element_tree_to_file(data, os.path.join(data_folder,\
+     'rawData.xml'))
     # update formCompletedFieldName
     update_formcompletedfieldname(data, form_events_tree, 'undefined')
     # write back the changed global Element Tree
     write_element_tree_to_file(
         data,
-        tmp_folder +
-        'rawDataWithFormCompletedField.xml')
-
+        os.path.join(data_folder, 'rawDataWithFormCompletedField.xml'))
     # update element that holds the name of the redcap field that will hold
     # the datum or value.
     # Also update the name of the redcap field that will hold the units
@@ -348,122 +437,71 @@ Default value '" + DEFAULT_INPUT_DATE_FORMAT + "' applied.")
     # write back the changed global Element Tree
     write_element_tree_to_file(
         data,
-        tmp_folder +
-        'rawDataWithDatumAndUnitsFieldNames.xml')
-
+        os.path.join(data_folder, 'rawDataWithDatumAndUnitsFieldNames.xml'))
     # sort the data tree
     sort_element_tree(data)
-    write_element_tree_to_file(data, tmp_folder + 'rawDataSorted.xml')
-
+    write_element_tree_to_file(data, os.path.join(data_folder, \
+        'rawDataSorted.xml'))
     # update eventName element
     alert_summary = update_event_name(data, form_events_tree, 'undefined')
     # write back the changed global Element Tree
-    write_element_tree_to_file(data, tmp_folder + 'rawDataWithAllUpdates.xml')
-
+    write_element_tree_to_file(data, os.path.join(data_folder, \
+        'rawDataWithAllUpdates.xml'))
     # Research ID - to - Redcap ID converter
-    research_id_to_redcap_id_converter(data, settings, configuration_directory)
-
+    research_id_to_redcap_id_converter(
+        data,
+        redcap_settings,
+        email_settings,
+        settings.research_id_to_redcap_id,dry_run,
+        configuration_directory)
     # create person_form_event_tree.xml
     person_form_event_tree = create_empty_event_tree_for_study(
         data,
         all_form_events_per_subject)
     # write person_form_event_tree to file
     write_element_tree_to_file(person_form_event_tree,
-                               tmp_folder + 'person_form_event_tree.xml')
+                               os.path.join(data_folder,\
+                                'person_form_event_tree.xml'))
     # copy data to person form event tree
-    person_form_event_tree_with_data = copy_data_to_person_form_event_tree\
+    person_form_event_tree_with_data = copy_data_to_person_form_event_tree \
         (data, person_form_event_tree, form_events_tree)
     # update status field in person form event tree
-    updateStatusFieldValueInPersonFormEventTree\
+    updateStatusFieldValueInPersonFormEventTree \
         (person_form_event_tree_with_data, translational_table_tree)
     # write person form event tree with data (both regular fields\
     # and status fields) to file
     write_element_tree_to_file(
         person_form_event_tree_with_data,
-        tmp_folder +
-        'person_form_event_tree_with_data.xml')
-
+        os.path.join(data_folder, 'person_form_event_tree_with_data.xml'))
     # run custom post-processing rules
     person_form_event_tree_with_data, rule_errors = run_rules(
         rules, person_form_event_tree_with_data)
+    return alert_summary, person_form_event_tree_with_data, rule_errors, \
+    collection_date_summary_dict
 
-    # Data will be sent to REDCap server and email will be sent only if \
-    # redi.py is not executing in dry run state.
-    if not dry_run:
-        # Use the new method to communicate with RedCAP
-        report_data = redi_lib.generate_output(person_form_event_tree_with_data,
-                                           settings)
-        """
-        report_data = {
-            'total_subjects': 3,
-            'subject_details': {
-                '98':   {'Total_inr_Forms': 1, 'Total_cbc_Forms': 0},
-                '99':   {'Total_inr_Forms': 1, 'Total_cbc_Forms': 1},
-                '100':  {'Total_inr_Forms': 1, 'Total_cbc_Forms': 1}},
-                'errors': ['RedCap Error','Test RedCap Error','Third Redcap error'],
-            'form_details':
-                {'Total_inr_Forms': 3, 'Total_cbc_Forms': 2}
-        }
-        pprint.pprint(report_data)
-        """
 
-        # Add any errors from running the rules to the report
-        map(logger.warning, rule_errors)
+def _check_input_file(db_path, email_settings, raw_xml_file, settings):
+    return redi_lib.check_input_file(settings.batch_warning_days, db_path, email_settings, raw_xml_file)
 
-        if include_rule_errors_in_report:
-            report_data['errors'].extend(rule_errors)
 
-        # create summary report
-        xml_report_tree = create_summary_report(report_parameters,
-                                            report_data, alert_summary)
-        # print ElementTree.tostring(xml_report_tree)
+def read_config(config_file, configuration_directory, file_list):
+    """function to check if files mentioned in configuration files exist
+        Philip
 
-        xslt = etree.parse(report_xsl)
-        transform = etree.XSLT(xslt)
-        html_report = transform(xml_report_tree)
-        html_str = etree.tostring(html_report, method='html', pretty_print=True)
+    """
+    for item in file_list:
+        if not os.path.exists(os.path.join(configuration_directory, item)):
+            logger.error("Required file '{0}' specified in {1} does not "\
+                "exist in {2}. Please refer config-example/{3} for sample "\
+                "contents of this file. Program will now terminate..."\
+                .format(item, config_file, configuration_directory, item))
+            sys.exit()
 
-        # send report via email
-        if send_email == 'Y':
-            if (not settings.hasoption('sender_email') or '' == settings.sender_email) :
-                sender = DEFAULT_SENDER_EMAIL
-                logger.warn("Missing parameter in settings.ini: 'sender_email'.\
-                    Using default value: " + DEFAULT_SENDER_EMAIL)
-            else:
-                sender = settings.sender_email
-            receiver = settings.receiver_email.split()
-            send_report(sender, receiver, html_str)
-        else:
-            try:
-                report_file = open(report_file_path2, 'w')
-            except IOError:
-                logger.exception('could not open ' +
-                               report_file_path2 + ' file not found')
-                raise
-            report_file.write(html_str)
-
-    # delete temporary folder
-    if not do_keep_gen_files:
-        redi_lib.delete_temporary_folder(tmp_folder)
-
-    if batch:
-        # Update the batch row
-        done_timestamp = redi_lib.get_db_friendly_date_time()
-        db_path = get_db_path(settings)
-        redi_lib.update_batch_entry(db_path,
-                                    batch['rbID'], 'Completed', done_timestamp)
-
-    if dry_run:
-        logger.info("End of dry run. All output files are ready for review in " + \
-        tmp_folder)
-    # ------------------------ end main -----------------------------------
-
-def parse_args():
+def parse_args(arguments=None):
     """Parses command line arguments"""
     parser = argparse.ArgumentParser()
     parser.add_argument(
         '-c', dest='configuration_directory_path',
-        default=default_configuration_directory,
         required=False,
         help='Specify the path to the configuration directory')
 
@@ -487,53 +525,45 @@ def parse_args():
         default=False,
         action='store_true',
         required=False,
-        help='To execute redi.py in dry run state. This is to be able to test each\
-         release by doing a dry run, where the data is fetched and processed but not\
-          transferred to the production REDCap. Email is also not sent. The processed\
-           data is stored as output files under the "out" folder under project root.\
-           No need to use -k or provide any input when -d is used.')
+        help='To execute redi.py in dry run state. This is to be able to '\
+        'test each release by doing a dry run, where the data is fetched '\
+        'and processed but not transferred to the production REDCap. Email '\
+        'is also not sent. The processed data is stored as output files '\
+        'under the "out" folder under project root. No need to use -k or '\
+        'provide any input when -d is used.')
+
+    parser.add_argument('-r', '--resume', default=False, action='store_true',
+                        help='WARNING!!! Resumes the last run of the program. '
+                             'This switch is for a specific scenario. Check '
+                             'the documentation before using it.')
 
     parser.add_argument('-v', '--verbose', required=False,
                         default=False, action='store_true',
                         help='increase verbosity of output')
 
-    return vars(parser.parse_args())
+    parser.add_argument(
+        '--datadir',
+        default=DEFAULT_DATA_DIRECTORY,
+        required=False,
+        help='Specify the path to the directory containing project specific '\
+        'input and output data which will help in running multiple'\
+        ' simultaneous instances of redi for different projects')
 
-"""
-    Read the config data from config_file using SimpleConfigParser class
-"""
+    if arguments:
+        parsed = parser.parse_args(arguments)
+    else:
+        parsed = parser.parse_args()
 
-
-def read_config(config_file, configuration_directory, settings):
-    settings.read(config_file)
-
-    # test for required files but only for the parameters that are set
-    files = ['translation_table_file', 'form_events_file', 'raw_xml_file']
-
-    for item in files:
-        if settings.hasoption(item):
-            if not os.path.exists(
-                    configuration_directory +
-                    settings.getoption(item)):
-                raise Exception(
-                    "read_config: " +
-                    item +
-                    " file, '" +
-                    settings.getoption(item) +
-                    "', specified in " +
-                    config_file +
-                    " does not exist")
-
-
-"""
-  Generate an ElementTree from a raw XML file.
-
-  Keyword argument:
-  raw_xml_file: the input file.
-"""
+    return vars(parsed)
 
 
 def parse_raw_xml(raw_xml_file):
+    """
+    Generate an ElementTree from a raw XML file.
+
+    :param raw_xml_file: the input file.
+    :return: parsed XML data
+    """
     if not os.path.exists(raw_xml_file):
         raise Exception\
             ("Error: raw xml file not found at file not found at "
@@ -551,15 +581,14 @@ def parse_raw_xml(raw_xml_file):
     logger.info("Raw XML file closed.")
     return data
 
-'''
-Parse the form_events file into an ElementTree
-
-@arg form_events_file: the name of the input file (from the json configuration)
-@return ElementTree
-'''
-
 
 def parse_form_events(form_events_file):
+    """
+    Parse the form_events file into an ElementTree
+
+    :param form_events_file: the name of the input file (from the json configuration)
+    :return: ElementTree
+    """
     if not os.path.exists(form_events_file):
         raise Exception("Error: form events file not found at "
                            + form_events_file)
@@ -574,15 +603,14 @@ def parse_form_events(form_events_file):
     logger.info("Form events file closed.")
     return data
 
-'''
-Parse the translationTable.xml into an ElementTree
-
-@arg translation_table_file: the name of the input file
-@return ElementTree
-'''
-
 
 def parse_translation_table(translation_table_file):
+    """
+    Parse the translationTable.xml into an ElementTree
+
+    :param translation_table_file: the name of the input file
+    :return: ElementTree
+    """
     if not os.path.exists(translation_table_file):
         raise Exception("Error: translation table file not found at "
                            + translation_table_file)
@@ -598,17 +626,15 @@ def parse_translation_table(translation_table_file):
     return data
 
 
-'''
-Add blank elements to fill out in ElementTree.
-
-@arg data: the input ElementTree from the parsed raw XML file.
-
-Add element to data ElementTree for timestamp, redcap form name, eventName,
-formDateField, and formCompletedFieldName.
-'''
-
-
 def add_elements_to_tree(data):
+    """
+    Add blank elements to fill out in ElementTree.
+
+    Add element to data ElementTree for timestamp, redcap form name, eventName,
+    formDateField, and formCompletedFieldName.
+
+    :param data: the input ElementTree from the parsed raw XML file.
+    """
     for element in data.iter('subject'):
         element.append(etree.Element("timestamp"))
         element.append(etree.Element("redcapFormName"))
@@ -621,12 +647,8 @@ def add_elements_to_tree(data):
         element.append(etree.Element("redcapStatusFieldName"))
 
 
-'''
-Update the redcapStatusFieldName value to all subjects
-'''
-
-
 def update_recap_form_status(data, lookup_data, undefined):
+    """Update the redcapStatusFieldName value to all subjects"""
     # make a dictionary of the relevant elements from the form_events
     element_to_set_in_data = 'redcapStatusFieldName'
     index_element_in_data = 'loinc_code'
@@ -644,12 +666,9 @@ def update_recap_form_status(data, lookup_data, undefined):
         value_in_lookup_data,
         undefined)
 
-'''
-Update the formImportedFieldName value for all subjects
-'''
-
 
 def update_form_imported_field(data, lookup_data, undefined):
+    """Update the formImportedFieldName value for all subjects"""
     # make a dictionary of the relevant elements from the form_events
     element_to_set_in_data = 'formImportedFieldName'
     index_element_in_data = 'redcapFormName'
@@ -667,12 +686,9 @@ def update_form_imported_field(data, lookup_data, undefined):
         value_in_lookup_data,
         undefined)
 
-'''
-Write an ElementTree to a file whose name is provided as an argument
-'''
-
 
 def write_element_tree_to_file(element_tree, file_name):
+    """Write an ElementTree to a file whose name is provided as an argument"""
     logger.debug('Writing ElementTree to %s', file_name)
     element_tree.write(
         file_name,
@@ -681,13 +697,12 @@ def write_element_tree_to_file(element_tree, file_name):
         method="xml",
         pretty_print=True)
 
-'''
-Update timestamp using input and output data formats
-reads from raw ElementTree and writes to it
-'''
-
 
 def update_time_stamp(data, input_date_format, output_date_format):
+    """
+    Update timestamp using input and output data formats reads from raw
+    ElementTree and writes to it
+    """
     logger.info('Updating timestamp to ElementTree')
     for subject in data.iter('subject'):
         # New EMR field SPECIMN_TAKEN_TIME is used in place of Collection Date
@@ -708,14 +723,13 @@ def update_time_stamp(data, input_date_format, output_date_format):
             # write the dateTime to ElementTree
             subject.find('timestamp').text = format(date_time)
 
-'''
-Lookup component ID in translationTable to get the redcapFormName.
-Write the redcapForm name to data
-If component lookup fails, sets formName to undefinedForm
-'''
-
 
 def update_redcap_form(data, lookup_data, undefined):
+    """
+    Lookup component ID in translationTable to get the redcapFormName.
+    Write the redcapForm name to data
+    If component lookup fails, sets formName to undefinedForm
+    """
     # make a dictionary of the relevant elements from the form_events
     element_to_set_in_data = 'redcapFormName'
     index_element_in_data = 'loinc_code'
@@ -763,11 +777,11 @@ def getkey(elem):
 
 
 def update_formdatefield(data, form_events_tree):
-    '''function to write formDateField to data ElementTree via lookup of
+    """function to write formDateField to data ElementTree via lookup of
         formName in formEvents ElementTree
         Radha
 
-    '''
+    """
     logger.info('updating the formDateField')
     # make a dictionary of the relevant elements from the translationTable
     form_event_root = form_events_tree.getroot()
@@ -802,10 +816,10 @@ def update_formdatefield(data, form_events_tree):
 
 
 def update_formcompletedfieldname(data, lookup_data, undefined):
-    '''function to update formCompletedFieldName in data ElementTree via
+    """function to update formCompletedFieldName in data ElementTree via
         lookup of formName in formEvents ElementTree
 
-    '''
+    """
     # make a dictionary of the relevant elements from the form_events
     element_to_set_in_data = 'formCompletedFieldName'
     index_element_in_data = 'redcapFormName'
@@ -825,13 +839,13 @@ def update_formcompletedfieldname(data, lookup_data, undefined):
 
 
 def update_redcap_field_name_value_and_units(data, lookup_data, undefined):
-    '''function to update redcapFieldNameValue and
+    """function to update redcapFieldNameValue and
         redcapFieldNameUnits in data
         ElementTree via lookup of redcapFieldNameValue and
         redcapFieldNameUnits in
         translation table tree
 
-    '''
+    """
     # set redcapFieldNameValue
     element_to_set_in_data = 'redcapFieldNameValue'
     index_element_in_data = 'loinc_code'
@@ -877,24 +891,22 @@ def update_data_from_lookup(
         index_element_in_lookup_data,
         value_in_lookup_data,
         undefined):
-    '''Update a single field in an element tree based on a lookup in another
+    """Update a single field in an element tree based on a lookup in another
         element tree
-        Parameters:
-        data - an element tree with a field that needs to be set
-        element_to_set_in_data - element that will be set
-        index_element_in_data - element in data that wil be looked up
-                in lookup table where value of element to be set wil be found
-        lookup_data - an element tree that contains, the lookup data
-        element_to_find_in_lookup_data - parameter for the initial
-                findall in the lookup data
-        index_element_in_lookup_data - the element in the lookup data
-                that will be the key in the lookup table
-        value_in_lookup_data - element in the lookup data that provides
-                the value in the lookup table
-        undefined - a string to be returned for all failed lookups in
-                the lookup table
-
-    '''
+    :param data: an element tree with a field that needs to be set
+    :param element_to_set_in_data: element that will be set
+    :param index_element_in_data: element in data that wil be looked up
+            in lookup table where value of element to be set wil be found
+    :param lookup_data: an element tree that contains, the lookup data
+    :param element_to_find_in_lookup_data: parameter for the initial
+            findall in the lookup data
+    :param index_element_in_lookup_data: the element in the lookup data
+            that will be the key in the lookup table
+    :param value_in_lookup_data: element in the lookup data that provides
+            the value in the lookup table
+    :param undefined: a string to be returned for all failed lookups in
+            the lookup table
+    """
 
     # make a dictionary of the relevant elements from the lookup table
     root_of_lookup_data = lookup_data.getroot()
@@ -918,10 +930,10 @@ def update_data_from_lookup(
 
 
 def update_event_name(data, lookup_data, undefined):
-    '''function to update eventName to data ElementTree via lookup of formName
+    """function to update eventName to data ElementTree via lookup of formName
         in formEvents ElementTree
 
-    '''
+    """
     # make a dictionary of form_events
     element_to_find_in_lookup_data = 'form'
     index_element_in_lookup_data = 'name'
@@ -980,13 +992,13 @@ def update_event_name(data, lookup_data, undefined):
                 # exceed the size of the event list.  If it did we should
                 # issue a warning
 
-                if event_index >= lookup_table_length:
-                    max_event_alert.append("Exceeded event list for record group " +
-                                           last_record_group +
-                                           ". Event count of " +
-                                           str(event_index) +
-                                           " exceeds maximum of " +
-                                           str(len(lookup_table[old_form_name])))
+                if old_form_name is not "dummy" and \
+                event_index >= len(lookup_table[old_form_name]):
+                    max_event_alert.append("Exceeded event list for record "\
+                        "group with Subject ID.: " + last_study_id + " and "\
+                        "Form Name: " + last_form_name + ". Event count "\
+                        "of " + str(event_index) + " exceeds maximum of " + \
+                        str(len(lookup_table[old_form_name])))
                     logger.warn('update_event_name: %s', max_event_alert)
 
                 # reset the event counter so we can restart from the top
@@ -998,6 +1010,8 @@ def update_event_name(data, lookup_data, undefined):
                              current_timestamp_group)
 
                 last_record_group = current_record_group
+                last_study_id = study_id
+                last_form_name = form_name
                 last_timestamp_group = current_timestamp_group
                 event_index = 0
             if last_timestamp_group != current_timestamp_group:
@@ -1053,23 +1067,26 @@ def update_event_name(data, lookup_data, undefined):
         'multiple_values_alert': multiple_values_alert}
 
 
+# @TODO: remove settings from signature
 def research_id_to_redcap_id_converter(
-        data,
-        settings,
+        data,redcap_settings,
+        email_settings,research_id_to_redcap_id,dry_run,
         configuration_directory):
-    '''This function converts the research_id to redcap_id
+    """
+    This function converts the research_id to redcap_id
      1. prepare a dictionary with [key, value] --> [study_id, redcap_id]
      2. replace the element tree study_id with the new redcap_id's
      for each bad id, log it as warn
+    """
 
-    '''
     # read each of the study_id's from the data etree
     study_id_recap_id_dict = {}
 
     ''' Configuration data from the mapping xml
 
   '''
-    mapping_xml = configuration_directory + settings.research_id_to_redcap_id
+    mapping_xml = os.path.join(configuration_directory,\
+     research_id_to_redcap_id)
 
     # read the field names from the research_id_to_redcap_id_map.xml
     # check for file existance
@@ -1100,8 +1117,14 @@ def research_id_to_redcap_id_converter(
             'redcap_id_field_name tag in file %s is not present',
             mapping_xml)
 
-    # Communication with redcap
-    redcapClientObject = redcapClient(settings)
+    try:
+        # Communication with redcap
+        redcapClientObject = redcapClient(redcap_settings['redcap_uri'],redcap_settings['token'])
+    except RequestException:
+        logger.info("Sending email to redcap support")
+        if not dry_run:
+            redi_email.send_email_redcap_connection_error(email_settings)
+        sys.exit()
 
     # query the redcap for the response with redcap id's
     response = redcapClientObject.get_data_from_redcap(
@@ -1141,15 +1164,15 @@ def research_id_to_redcap_id_converter(
     pass
 
 
-def configure_logging(verbose=False):
+def configure_logging(data_folder, verbose=False):
     """Configures the Logger"""
-    application = AppDirs(appname='redi', appauthor='University of Florida')
 
     # create logger for our application
+    application_name = 'redi'
     root_logger = logging.getLogger()
     root_logger.setLevel(logging.DEBUG)
     global logger
-    logger = logging.getLogger(application.appname)
+    logger = logging.getLogger(application_name)
 
     #Set log level for requests module
     requests_log = logging.getLogger("requests")
@@ -1162,10 +1185,10 @@ def configure_logging(verbose=False):
     root_logger.addHandler(console_handler)
 
     # make sure we can write to the log
-    makedirs(application.user_log_dir)
-    global system_log_file_full_path
-    system_log_file_full_path = application.user_log_dir
-    filename = os.path.join(application.user_log_dir, application.appname + '.log')
+    log_folder = os.path.join(data_folder, "log")
+    _makedirs(log_folder)
+    suffix = '_' + str(date.today())
+    filename = os.path.join(log_folder, application_name + suffix + '.log')
 
     # create a file handler
     file_handler = None
@@ -1178,28 +1201,16 @@ def configure_logging(verbose=False):
     if file_handler:
         file_handler.setLevel(logging.DEBUG)
         file_handler.setFormatter(logging.Formatter('%(asctime)s - %(levelname)s - %(name)s - %(message)s'))
-        logger.debug('Log file will be "%s"', filename)
+        logger.info('Logging to the file: "%s"' % filename)
         root_logger.addHandler(file_handler)
     else:
         logger.warning('File logging has been disabled.')
 
     return logger
 
-def makedirs(path):
-    """Like os.makedirs() but suppresses error if path already exists."""
-    try:
-        os.makedirs(path)
-    except os.error:
-        if not os.path.exists(path):
-            raise
-
-
-'''
-Function to email the report of the redi run.
-'''
-
 
 def send_report(sender, receiver, body):
+    """Function to email the report of the redi run."""
     from email.MIMEMultipart import MIMEMultipart
     from email.MIMEText import MIMEText
     msg = MIMEMultipart()
@@ -1213,27 +1224,30 @@ def send_report(sender, receiver, body):
     """
 
     try:
-        smtpObj = smtplib.SMTP(smtp_host_for_outbound_mail, smtp_port_for_outbound_mail)
-        smtpObj.sendmail(sender, receiver, msg.as_string())
+        smtpObj = smtplib.SMTP('smtp.ufl.edu', 25)
+        smtpObj.sendmail(sender, receiver, msg.as_string())   
         logger.info("Successfully sent email to: " + str(receiver))
     except Exception:
         logger.info("Error: unable to send report email to: " + str(receiver))
 
 
-def create_summary_report(report_parameters, report_data, alert_summary):
+def create_summary_report(report_parameters, report_data, alert_summary, \
+    collection_date_summary_dict):
     root = etree.Element("report")
     root.append(etree.Element("header"))
     root.append(etree.Element("summary"))
     root.append(etree.Element("alerts"))
     root.append(etree.Element("subjectsDetails"))
     root.append(etree.Element("errors"))
+    root.append(etree.Element("summaryOfSpecimenTakenTimes"))
     updateReportHeader(root, report_parameters)
     updateReportSummary(root, report_data)
     updateSubjectDetails(root, report_data['subject_details'])
     updateReportAlerts(root, alert_summary)
     updateReportErrors(root, report_data['errors'])
+    updateSummaryOfSpecimenTakenTimes(root, collection_date_summary_dict)
     tree = etree.ElementTree(root)
-    write_element_tree_to_file(tree, report_parameters.get('report_file_path'))
+    write_element_tree_to_file(tree,report_parameters.get('report_file_path'))
     return tree
 
 
@@ -1301,33 +1315,31 @@ def updateReportErrors(root, errors):
         errorElement = etree.SubElement(errorsRoot, "error")
         errorElement.text = str(error)
 
-"""
-create_empty_events_for_one_subject_helper:
-This function creates new copies of the form_events_tree and translation_table_tree and calls create_empty_events_for_one_subject
-Parameters:
-    form_events_file: This parameter holds the path of form_events file
-    translation_table_file: This parameter holds the path of translation_table file
 
-"""
+def updateSummaryOfSpecimenTakenTimes(root, collection_date_summary_dict):
+    timeSummaryRoot = root[5]
+    totalElement = etree.SubElement(timeSummaryRoot, "total")
+    totalElement.text = str(collection_date_summary_dict['total'])
+    blankElement = etree.SubElement(timeSummaryRoot, "blank")
+    blankElement.text = str(collection_date_summary_dict['blank'])
+    percentElement = etree.SubElement(timeSummaryRoot, "percent")
+    percentElement.text = str((float(collection_date_summary_dict['blank'])/\
+        collection_date_summary_dict['total'])*100)
 
 
 def create_empty_events_for_one_subject_helper(
         form_events_file,
         translation_table_file):
+    """
+    This function creates new copies of the form_events_tree and translation_table_tree and calls create_empty_events_for_one_subject
+    :param form_events_file: This parameter holds the path of form_events file
+    :param translation_table_file: This parameter holds the path of translation_table file
+    """
     form_events_tree = parse_form_events(form_events_file)
     translation_table_tree = parse_translation_table(translation_table_file)
     return create_empty_events_for_one_subject(
         form_events_tree,
         translation_table_tree)
-
-"""
-create_empty_events_for_one_subject:
-This function uses form_events_tree and translation_table_tree and creates an all_form_events_tree
-Parameters:
-    form_events_tree: This parameter holds form events tree
-    translation_table_tree: This parameter holds translation table tree
-
-"""
 
 
 def create_empty_events_for_one_subject(
@@ -1387,9 +1399,12 @@ def create_empty_events_for_one_subject(
             raise
 
         for child in form.iter('event'):
+            status_element = etree.Element("status")
+            status_element.text = 'unsent'
+            child.append(status_element)
             child.insert(
                 child.index(
-                    child.find('name')) + 1,
+                    child.find('status')) + 1,
                 etree.XML(
                     etree.tostring(
                         all_fields,
@@ -1401,17 +1416,13 @@ def create_empty_events_for_one_subject(
     tree = etree.ElementTree(root)
     return tree
 
-"""
-create_empty_event_tree_for_study:
-This function uses raw_data_tree and all_form_events_tree and creates a person_form_event_tree for study
-Parameters:
-    raw_data_tree: This parameter holds raw data tree
-    all_form_events_tree: This parameter holds all form events tree
-
-"""
-
 
 def create_empty_event_tree_for_study(raw_data_tree, all_form_events_tree):
+    """
+    This function uses raw_data_tree and all_form_events_tree and creates a person_form_event_tree for study
+    :param raw_data_tree: This parameter holds raw data tree
+    :param all_form_events_tree: This parameter holds all form events tree
+    """
     logger.info('Creating all form events template for all subjects')
     from lxml import etree
     root = etree.Element("person_form_event")
@@ -1581,21 +1592,18 @@ def updateStatusFieldValueInPersonFormEventTree(
         # Write the modified tree to an xml file as output
         # person_form_event_tree.write("op1.xml")
 
-"""
-copy_data_to_person_form_event_tree:
-This function copies data from the raw_data_tree to the person_form_event_tree
-Parameters:
-    raw_data_tree: This parameter holds raw data tree
-    person_form_event_tree: This parameter holds person form event tree
-    form_events_tree: This parameter holds form events tree
-
-"""
-
 
 def copy_data_to_person_form_event_tree(
         raw_data_tree,
         person_form_event_tree,
         form_events_tree):
+    """
+    This function copies data from the raw_data_tree to the person_form_event_tree
+
+    :param raw_data_tree: This parameter holds raw data tree
+    :param person_form_event_tree: This parameter holds person form event tree
+    :param form_events_tree: This parameter holds form events tree
+    """
     logger.info('Copying data to person form event tree')
     raw_data_root = raw_data_tree.getroot()
     person_form_event_tree_root = person_form_event_tree.getroot()
@@ -1753,25 +1761,22 @@ def copy_data_to_person_form_event_tree(
     tree = etree.ElementTree(person_form_event_tree_root)
     return tree
 
-"""
-replace noneType objects with an empty string. Else return the object.
-"""
-
 
 def convert_none_type_object_to_empty_string(my_object):
+    """
+    replace noneType objects with an empty string. Else return the object.
+    """
     return ('' if my_object is None else my_object)
-
-"""
-convert_component_id_to_loinc_code:
-This function converts COMPONENT_ID in raw data to loinc_code based on the mapping provided in the xml file
-Parameters:
-    data: Raw data xml tree
-    component_to_loinc_code_xml_tree: COMPONENT_ID to loinc_code mapping xml file tree.
-
-"""
 
 
 def convert_component_id_to_loinc_code(data, component_to_loinc_code_xml_tree):
+    """
+    This function converts COMPONENT_ID in raw data to loinc_code based on the mapping provided in the xml file
+
+    :param data: Raw data xml tree
+    :param component_to_loinc_code_xml_tree: COMPONENT_ID to loinc_code mapping xml file tree.
+
+    """
     component2loinc_root = component_to_loinc_code_xml_tree.getroot()
     if component2loinc_root is None:
         raise Exception('component_to_loinc_code_xml is empty')
@@ -1797,17 +1802,14 @@ def convert_component_id_to_loinc_code(data, component_to_loinc_code_xml_tree):
                 "Elements source/name and Source/value are not present in the component_to_loinc_code xml")
     return data
 
-"""
-validate_xml_file_and_extract_data:
-This function is responsible for validating xml file against an xsd and to extract data from xml if validation succeeds
-Parameters:
-    xmlfilename: This parameter holds the path to the xml file
-    xsdfilename: This parameter holds the path to the xsd file
-
-"""
-
 
 def validate_xml_file_and_extract_data(xmlfilename, xsdfilename):
+    """
+    This function is responsible for validating xml file against an xsd and to extract data from xml if validation succeeds
+
+    :param xmlfilename: This parameter holds the path to the xml file
+    :param xsdfilename: This parameter holds the path to the xsd file
+    """
     if not os.path.exists(xsdfilename):
         raise Exception("Error: " + xsdfilename + " xsd file not found at "
                            + xsdfilename)
@@ -1835,17 +1837,16 @@ def validate_xml_file_and_extract_data(xmlfilename, xsdfilename):
             xsdfilename)
     return xml
 
-"""
-replace_fields_in_raw_xml:
-This function renames all fields which need renaming.Fields which need renaming are read from the xml file.
-Parameters:
-    data: Raw data xml tree
-    fields_to_replace_xml: Path to xml file which has list of fields which need renaming.
-
-"""
-
 
 def replace_fields_in_raw_xml(data, fields_to_replace_xml):
+    """
+    replace_fields_in_raw_xml:
+    This function renames all fields which need renaming.Fields which need renaming are read from the xml file.
+    Parameters:
+        data: Raw data xml tree
+        fields_to_replace_xml: Path to xml file which has list of fields which need renaming.
+
+    """
     file_path = fields_to_replace_xml
     if not os.path.exists(file_path):
         raise Exception(
@@ -1874,34 +1875,33 @@ def replace_fields_in_raw_xml(data, fields_to_replace_xml):
     return data
 
 
-"""
-Load custom post-processing rules.
+def load_rules(rules, root='./'):
+    """
+    Load custom post-processing rules.
 
-Rules should be added to the configuration file under a property called
-"rules", which has key-value pairs mapping a unique rule name to a Python
-file. Each Python file intended to be used as a rules file should have a
-run_rules() function which takes one argument.
+    Rules should be added to the configuration file under a property called
+    "rules", which has key-value pairs mapping a unique rule name to a Python
+    file. Each Python file intended to be used as a rules file should have a
+    run_rules() function which takes one argument.
 
-Example config.json:
-  { "rules": { "my_rules": "rules/my_rules.py" } }
+    Example config.json:
+      { "rules": { "my_rules": "rules/my_rules.py" } }
 
-Example rules file:
-  def run_rules(data):
-    pass
-"""
-
-def load_rules(settings, root='./'):
-    if not settings.hasoption('rules') or settings.rules == "":
+    Example rules file:
+      def run_rules(data):
+        pass
+    """
+    if not rules:
         return {}
 
     loaded_rules = {}
 
-    for (rule, path) in ast.literal_eval(settings.rules).iteritems():
+    for (rule, path) in ast.literal_eval(rules).iteritems():
         module = None
         if os.path.exists(path):
             module = imp.load_source(rule, path)
-        elif os.path.exists(root + path):
-            module = imp.load_source(rule, root + path)
+        elif os.path.exists(os.path.join(root, path)):
+            module = imp.load_source(rule, os.path.join(root, path))
 
         assert module is not None
         assert module.run_rules is not None
@@ -1927,146 +1927,99 @@ def run_rules(rules, person_form_event_tree_with_data):
 
     return person_form_event_tree_with_data, errors
 
-"""
-Check if parameters for the required files [raw_xml_file, 
-translation_table_file, form_events_file, research_id_to_redcap_id, 
-component_to_loinc_code_xml] are present in settings.ini. 
-Since program cannot continue execution if any of these is absent, 
-the execution will stop after logger and printing appropriate message.
-"""
 
-
-def check_for_required_files(settings):
-
-    if (not settings.hasoption('raw_xml_file') or '' == settings.raw_xml_file) :
-        message = "Missing parameter 'raw_xml_file' in settings.ini. \
-            It should specify the name of the file containing raw data. " + MSG_HELP_AND_QUIT
-        logger.error(message)
-        sys.exit()
-    else:
-        pass
-
-    # Checking if translation_table_file is presnt
-    if (not settings.hasoption('translation_table_file') or '' == settings.translation_table_file) :
-        message = "Missing parameter 'translation_table_file' in settings.ini. \
-            It should specify the name of the required xml file containing translation table" + MSG_HELP_AND_QUIT
-        logger.error(message)
-        sys.exit()
-    else:
-        pass
-
-    # Checking if form_events_file is presnt
-    if (not settings.hasoption('form_events_file') or '' == settings.form_events_file) :
-        message = "Missing parameter 'form_events_file' in settings.ini. \
-            It should specify the name of the required xml file containing empty form events. " + MSG_HELP_AND_QUIT 
-        logger.error(message)
-        sys.exit()
-    else:
-        pass
-
-    # Checking if research_id_to_redcap_id is presnt
-    if (not settings.hasoption('research_id_to_redcap_id') or '' == settings.research_id_to_redcap_id) :
-        message = "Attention: Required parameter 'research_id_to_redcap_id' \
-missing from settings.ini. It should specify the name of the xml file \
-containing empty form events which is mandatory for data \
-processing. " + MSG_HELP_AND_QUIT
-        logger.error(message)
-        sys.exit()
-    else:
-        pass
-
-    # Checking if component_to_loinc_code_xml is presnt
-
-    if (not settings.hasoption('component_to_loinc_code_xml') or '' == settings.component_to_loinc_code_xml) :
-        message = "Missing parameter 'component_to_loinc_code_xml' in settings.ini. \
-            It should specify the name of the required xml file  containing a mapping \
-            of clinical component id to loinc code." + MSG_HELP_AND_QUIT
-        logger.error(message)
-        sys.exit()
-    else:
-        pass
-
-
-"""
-Checks if parameters mandatory for connection to redcap server and sending
-email are configured in settings.ini. If they are missing or without a value,
-the program will print and log the appropriate error message and stop 
-execution. This method is separate from check_for_required_files so as to allow
-program to continue running in dry run state as it does not require server
-parameters.
-"""
-
-
-def check_for_required_server_parameters(settings, dry_run):
-    required_server_parameters = ['redcap_uri', 'token', 'redcap_server', \
-    'redcap_support_receiver_email', 'redcap_support_sender_email', \
-    'smtp_host_for_outbound_mail', 'smtp_port_for_outbound_mail']
-
-    required_email_parameters = ['sender_email', 'receiver_email']
-
-    flag = 0
-
-    for item in required_server_parameters:
-        if not settings.hasoption(item):
-            message = "Missing parameter '" + item + "' in settings.ini. " + ERR_MISSING_PARAM
-            logger.warn(message)
-            flag += 1
-
-    if settings.hasoption('send_email'):
-        if settings.send_email == 'Y':
-            for item in required_email_parameters:
-                if (not settings.hasoption(item) or '' == settings.getoption(item)) :
-                    message = "Misssing parameter '" + item + "' in settings.ini. " + ERR_MISSING_PARAM
-                    logger.warn(message)
-                    flag += 1
-
-    if not dry_run and flag > 0:
-        logger.info(MSG_QUIT)
-        sys.exit()
-
-
-"""
-Checks if items mandatory for getting EMR data from SFTP server are 
-configured in settings.ini. If they are missing or without a value, the 
-program will print and log the appropriate error message and stop execution. 
-This method is separate from check_for_required_files and 
-check_for_required_server_parameters so as to allow program to continue 
-running when -e switch is not used.
-"""
-
-
-def check_for_required_emr_parameters(settings, dry_run):
-    required_parameters = ['emr_sftp_server_hostname', \
-    'emr_sftp_server_username', 'emr_sftp_server_password',\
-     'emr_sftp_project_name', 'emr_data_file', 'emr_log_file']
-
-    flag = 0
-
-    if not settings.hasoption(item):
-        message = "Missing parameter '" + item + "' in settings.ini. " + ERR_MISSING_PARAM
-        logger.warn(message)
-        flag += 1
-
-    if not dry_run and flag > 0:
-        logger.info(MSG_QUIT)
-        sys.exit()
-
-def verify_and_correct_collection_date(data):
+def verify_and_correct_collection_date(data, input_date_format):
+    # this dictionary keeps a track of total specimen taken times and the
+    # number of times specimen taken date is missing
+    collection_date_summary_dict = {'total': 0, 'blank': 0}
     for subject in data.iter('subject'):
+        study_id = subject.findtext('STUDY_ID')
+        collection_date_summary_dict['total'] += 1
         collection_date_element = subject.find('DATE_TIME_STAMP')
         result_date_element = subject.find('RESULT_DATE')
-        if collection_date_element is not None and result_date_element is not None:
+        if collection_date_element is not None and \
+        result_date_element is not None:
             if not collection_date_element.text:
-                collection_date_element.text = result_date_element.text
-        elif collection_date_element is None and result_date_element is not None:
+                # subtract 4 days from result date and assign the value to
+                # date_time_stamp
+                result_date_object = datetime.strptime(
+                    result_date_element.text, input_date_format) - \
+                timedelta(days=4)
+                collection_date_element.text = str(result_date_object)
+                collection_date_summary_dict['blank'] += 1
+        elif collection_date_element is None and \
+        result_date_element is not None:
             new_collection_date_element = etree.Element('DATE_TIME_STAMP')
-            new_collection_date_element.text = result_date_element.text
+            # subtract 4 days from result date and assign the value to
+            # date_time_stamp
+            result_date_object = datetime.strptime(
+                result_date_element.text, input_date_format) - \
+            timedelta(days=4)
+            new_collection_date_element.text = str(result_date_object)
             subject.replace(result_date_element, new_collection_date_element)
+            collection_date_summary_dict['blank'] += 1
             continue
         else:
             continue
         subject.remove(result_date_element)
-    return data
+    if collection_date_summary_dict['blank'] > 0:
+        logger.info("There were {0} out of {1} blank specimen taken times "\
+            "in this run.".format(collection_date_summary_dict['blank'],
+                collection_date_summary_dict['total']))
+    return data, collection_date_summary_dict
+
+
+def get_email_settings(settings):
+    """
+    Helper function for grouping email-related properties
+    """
+    email_settings = {}
+    email_settings['smtp_host_for_outbound_mail'] = settings.smtp_host_for_outbound_mail
+    email_settings['redcap_support_sender_email'] = settings.redcap_support_sender_email
+    email_settings['redcap_uri'] = settings.redcap_uri
+    email_settings['smtp_port_for_outbound_mail'] = settings.smtp_port_for_outbound_mail
+    email_settings['redcap_support_receiver_email'] = settings.redcap_support_receiver_email
+    email_settings['batch_warning_days'] = settings.batch_warning_days
+    return email_settings
+
+
+def get_redcap_settings(settings):
+    """
+    Helper function for grouping redcap connection properties
+    """
+    redcap_settings = {}
+    redcap_settings['redcap_uri'] = settings.redcap_uri
+    redcap_settings['token'] = settings.token
+    redcap_settings['rate_limiter_value_in_redcap'] = settings.rate_limiter_value_in_redcap
+    return redcap_settings
+
+
+class PersonFormEventsRepository(object):
+    """Wrapper for the person-form-events XML file"""
+    def __init__(self, filename, logger=None):
+        # simple test to catch obvious errors with a filename supplied
+        self._filename = filename
+        self._logger = logger
+
+    def delete(self):
+        try:
+            os.remove(self._filename)
+        except OSError:
+            # It is okay that the file we wanted to delete does not exist
+            pass
+
+    def fetch(self):
+        return etree.parse(self._filename)
+
+    def store(self, pfe_tree):
+        if self._logger:
+            self._logger.debug('Writing ElementTree to %s', self._filename)
+        pfe_tree.write(self._filename,
+                       encoding="us-ascii",
+                       xml_declaration=True,
+                       method="xml",
+                       pretty_print=True)
+
 
 if __name__ == "__main__":
     main()

@@ -1,5 +1,6 @@
 *.pyc
 *.pyo
+REDI.egg-info/
 formData.xml
 rawData.xml
 translationalData.xml
