@@ -7,11 +7,12 @@ file_dir = os.path.dirname(os.path.realpath(__file__))
 goal_dir = os.path.join(file_dir, "../")
 proj_root = os.path.abspath(goal_dir)+'/'
 
+DEFAULT_DATA_DIRECTORY = os.getcwd()
 
 class TestUpdateStatusField(unittest.TestCase):
 
   def test_update_status_field_value_when_one_subject_with_two_forms_with_one_event_in_each_form(self):
-    redi.configure_logging(proj_root+'log/redi.log')
+    redi.configure_logging(DEFAULT_DATA_DIRECTORY)
     self.source = """<person_form_event>
       <person>
           <study_id>99</study_id>

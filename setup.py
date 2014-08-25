@@ -18,7 +18,7 @@ from setuptools import setup, find_packages
 
 setup(
     name='REDI',
-    version='0.10.1',
+    version='0.11.1',
     author='Christopher P Barnes, Philip Chase, Nicholas Rejack',
     author_email='cpb@ufl.edu, pbc@ufl.edu, nrejack@ufl.edu',
     packages=find_packages(exclude=['test']),
@@ -37,7 +37,6 @@ setup(
         "lxml >= 3.3.5",
         "PyCap >= 1.0",
         "pysftp >= 0.2.8",
-        "appdirs >= 1.3.0"
     ],
     entry_points={
         'console_scripts': [
@@ -45,5 +44,11 @@ setup(
         ],
     },
     test_suite='test.TestSuite',
-    tests_require=["mock >= 1.0"],
+    tests_require=[
+        "mock >= 1.0",
+    ],
+    setup_requires=[
+        "nose >= 1.0",
+        "nosexcover >= 1.0.10",
+    ],
 )

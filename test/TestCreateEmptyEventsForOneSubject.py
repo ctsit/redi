@@ -7,6 +7,7 @@ file_dir = os.path.dirname(os.path.realpath(__file__))
 goal_dir = os.path.join(file_dir, "../")
 proj_root = os.path.abspath(goal_dir)+'/'
 
+DEFAULT_DATA_DIRECTORY = os.getcwd()
 
 class TestCreateEmptyEventsForOneSubject(unittest.TestCase):
 
@@ -107,32 +108,31 @@ class TestCreateEmptyEventsForOneSubject(unittest.TestCase):
         """
         self.data2_test1 = etree.ElementTree(etree.fromstring(self.xml2_test1))
         self.output_test1 = """<all_form_events><form>
-		<name>cbc</name>
-		<event>
-    		<name>1_arm_1</name>
-		<field><name>lymce_lborres</name><value/></field><field><name>lymce_lborresu</name><value/></field><field><name>hemo_lborresu</name><value/></field><field><name>cbc_lbdtc</name><value/></field><field><name>cbc_nximport</name><value/></field><field><name>lymce_lbstat</name><value/></field><field><name>cbc_complete</name><value/></field><field><name>hemo_lbstat</name><value/></field><field><name>hemo_lborres</name><value/></field></event>
-		
-		
+        <name>cbc</name>
+        <event>
+            <name>1_arm_1</name>
+        <status>unsent</status><field><name>lymce_lborres</name><value/></field><field><name>lymce_lborresu</name><value/></field><field><name>hemo_lborresu</name><value/></field><field><name>cbc_lbdtc</name><value/></field><field><name>cbc_nximport</name><value/></field><field><name>lymce_lbstat</name><value/></field><field><name>cbc_complete</name><value/></field><field><name>hemo_lbstat</name><value/></field><field><name>hemo_lborres</name><value/></field></event>
+        
+        
         </form>
         <form>
             <name>chemistry</name>
             <event>
-		        <name>1_arm_1</name>
-		    <field><name>k_lborres</name><value/></field><field><name>chem_lbdtc</name><value/></field><field><name>sodium_lborresu</name><value/></field><field><name>k_lbstat</name><value/></field><field><name>sodium_lbstat</name><value/></field><field><name>chem_nximport</name><value/></field><field><name>chemistry_complete</name><value/></field><field><name>k_lborresu</name><value/></field><field><name>sodium_lborres</name><value/></field></event>
-		
-		
+                <name>1_arm_1</name>
+            <status>unsent</status><field><name>k_lborres</name><value/></field><field><name>chem_lbdtc</name><value/></field><field><name>sodium_lborresu</name><value/></field><field><name>k_lbstat</name><value/></field><field><name>sodium_lbstat</name><value/></field><field><name>chem_nximport</name><value/></field><field><name>chemistry_complete</name><value/></field><field><name>k_lborresu</name><value/></field><field><name>sodium_lborres</name><value/></field></event>
+        
+        
         </form>
 
-	    <form>
-		    <name>inr</name>
-		    <event>
-		    <name>1_arm_1</name>
-		    <field><name>inr_lbdtc</name><value/></field><field><name>inr_complete</name><value/></field><field><name>inr_nximport</name><value/></field></event>
-		
-	       </form>
-	
-        </all_form_events>
-        """
+        <form>
+            <name>inr</name>
+            <event>
+            <name>1_arm_1</name>
+            <status>unsent</status><field><name>inr_lbdtc</name><value/></field><field><name>inr_complete</name><value/></field><field><name>inr_nximport</name><value/></field></event>
+        
+           </form>
+    
+        </all_form_events>"""
         self.expect_test1 = etree.tostring(etree.fromstring(self.output_test1))
         
         self.xml1_test2 = """<?xml version='1.0' encoding='US-ASCII'?>
@@ -202,30 +202,30 @@ class TestCreateEmptyEventsForOneSubject(unittest.TestCase):
         """
         self.data2_test2 = etree.ElementTree(etree.fromstring(self.xml2_test2))
         self.output_test2 = """<all_form_events><form>
-		<name>cbc</name>
-		<event>
-    		<name>1_arm_1</name>
-		<field><name>lymce_lborres</name><value/></field><field><name>lymce_lborresu</name><value/></field><field><name>hemo_lborresu</name><value/></field><field><name>cbc_lbdtc</name><value/></field><field><name>cbc_nximport</name><value/></field><field><name>lymce_lbstat</name><value/></field><field><name>cbc_complete</name><value/></field><field><name>hemo_lbstat</name><value/></field><field><name>hemo_lborres</name><value/></field></event>
-		
-		
+        <name>cbc</name>
+        <event>
+        <name>1_arm_1</name>
+        <field><name>lymce_lborres</name><value/></field><field><name>lymce_lborresu</name><value/></field><field><name>hemo_lborresu</name><value/></field><field><name>cbc_lbdtc</name><value/></field><field><name>cbc_nximport</name><value/></field><field><name>lymce_lbstat</name><value/></field><field><name>cbc_complete</name><value/></field><field><name>hemo_lbstat</name><value/></field><field><name>hemo_lborres</name><value/></field></event>
+
+
         </form>
         <form>
             <name>chemistry</name>
             <event>
-		        <name>1_arm_1</name>
-		    <field><name>k_lborres</name><value/></field><field><name>chem_lbdtc</name><value/></field><field><name>sodium_lborresu</name><value/></field><field><name>k_lbstat</name><value/></field><field><name>sodium_lbstat</name><value/></field><field><name>chem_nximport</name><value/></field><field><name>chemistry_complete</name><value/></field><field><name>k_lborresu</name><value/></field><field><name>sodium_lborres</name><value/></field></event>
-		
-		
+                <name>1_arm_1</name>
+                <field><name>k_lborres</name><value/></field><field><name>chem_lbdtc</name><value/></field><field><name>sodium_lborresu</name><value/></field><field><name>k_lbstat</name><value/></field><field><name>sodium_lbstat</name><value/></field><field><name>chem_nximport</name><value/></field><field><name>chemistry_complete</name><value/></field><field><name>k_lborresu</name><value/></field><field><name>sodium_lborres</name><value/></field></event>
+
+
         </form>
 
-	    <form>
-		    <name>inr</name>
-		    <event>
-		    <name>1_arm_1</name>
-		    <field><name>inr_lbdtc</name><value/></field><field><name>inr_complete</name><value/></field><field><name>inr_nximport</name><value/></field></event>
-		
-	       </form>
-	
+        <form>
+            <name>inr</name>
+            <event>
+            <name>1_arm_1</name>
+            <field><name>inr_lbdtc</name><value/></field><field><name>inr_complete</name><value/></field><field><name>inr_nximport</name><value/></field></event>
+        
+           </form>
+    
         </all_form_events>
         """
         self.expect_test2 = etree.tostring(etree.fromstring(self.output_test2))
@@ -233,12 +233,14 @@ class TestCreateEmptyEventsForOneSubject(unittest.TestCase):
 
 
     def test_create_empty_events_for_one_subject_all_fields_input(self):
-        redi.configure_logging(proj_root+'log/redi.log')
+        redi.configure_logging(DEFAULT_DATA_DIRECTORY)
         self.result = etree.tostring(redi.create_empty_events_for_one_subject(self.data1_test1,self.data2_test1))
+        self.result = ''.join(self.result.split())
+        self.expect_test1 = ''.join(self.expect_test1.split())
         self.assertEqual(self.expect_test1, self.result)
 
     def test_create_empty_events_for_one_subject_no_fields_input(self):
-        redi.configure_logging(proj_root+'log/redi.log')
+        redi.configure_logging(DEFAULT_DATA_DIRECTORY)
         self.assertRaises(Exception,redi.create_empty_events_for_one_subject,self.data1_test2,self.data2_test2)
 
     def tearDown(self):

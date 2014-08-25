@@ -24,11 +24,12 @@ file_dir = os.path.dirname(os.path.realpath(__file__))
 goal_dir = os.path.join(file_dir, "../")
 proj_root = os.path.abspath(goal_dir)+'/'
 
+DEFAULT_DATA_DIRECTORY = os.getcwd()
 
 class TestCreateImportDataJson(unittest.TestCase):
 
     def setUp(self):
-        redi.configure_logging()
+        redi.configure_logging(DEFAULT_DATA_DIRECTORY)
         self.CONST_STUDY_ID = 73
          
         global logger
@@ -44,7 +45,7 @@ class TestCreateImportDataJson(unittest.TestCase):
     ############################
     # == TEST_1
     def test_empty_event(self):
-        redi.configure_logging(proj_root+'log/redi.log')
+        redi.configure_logging(DEFAULT_DATA_DIRECTORY)
         logger.info("Running " + __name__ 
             + "#test_empty_event() using study_id: " + `self.CONST_STUDY_ID`)
         # Case 1 input string

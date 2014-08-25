@@ -19,22 +19,18 @@ class redcapClient:
         settings: an object of class SimpleConfigParser (in SimpleConfigParser module) that is used for parsing configuration details
     """
 
-    def __init__(self, settings) :
+    def __init__(self, redcap_uri,token) :
 
-        self.settings = settings
-        redcap_uri = settings.redcap_uri
+        self.redcap_uri = redcap_uri
         msg = 'Initializing redcap interface for: ' + redcap_uri
         logger.info(msg)
-        token = settings.token
+        self.token = token
 
         try:
             self.project = Project(redcap_uri, token)
             logger.info("redcap interface initialzed")
-        except RequestException as e:
-            redi_email.send_email_redcap_connection_error(
-                self.settings)
-        except RedcapError as e:
-            logger.error(e.message)
+        except (RequestException,RedcapError) as e:
+            logger.exception(e.message)
             raise
 
     """

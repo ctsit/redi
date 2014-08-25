@@ -18,11 +18,12 @@ file_dir = os.path.dirname(os.path.realpath(__file__))
 goal_dir = os.path.join(file_dir, "../")
 proj_root = os.path.abspath(goal_dir)+'/'
 
+DEFAULT_DATA_DIRECTORY = os.getcwd()
 
 class TestCreateSummaryReport(unittest.TestCase):
 
     def setUp(self):
-    	redi.configure_logging(proj_root+'log/redi.log')
+    	redi.configure_logging(DEFAULT_DATA_DIRECTORY)
         self.test_report_params = {'project': 'hcvtarget-uf',
         							'report_file_path': proj_root + 'config/report.xml',
         							'redcap_server': 'https://hostname.org'}
@@ -41,6 +42,7 @@ class TestCreateSummaryReport(unittest.TestCase):
             },
             'errors' : [],
         }
+        self.specimen_taken_time_summary = {'total': 15, 'blank': 3}
         self.test_alert_summary = {
             'multiple_values_alert': [
                 'This is multiple values alert 1',
@@ -145,6 +147,11 @@ class TestCreateSummaryReport(unittest.TestCase):
         </Subject>
     </subjectsDetails>
     <errors/>
+    <summaryOfSpecimenTakenTimes>
+        <total>15</total>
+        <blank>3</blank>
+        <percent>20.0</percent>
+    </summaryOfSpecimenTakenTimes>
 </report>'''
 
        	self.schema_str = StringIO('''\
@@ -245,6 +252,15 @@ class TestCreateSummaryReport(unittest.TestCase):
         </xs:element>
         <xs:element name="errors">
         </xs:element>
+        <xs:element name="summaryOfSpecimenTakenTimes">
+          <xs:complexType>
+            <xs:sequence>
+              <xs:element type="xs:byte" name="total"/>
+              <xs:element type="xs:byte" name="blank"/>
+              <xs:element type="xs:float" name="percent"/>
+            </xs:sequence>
+          </xs:complexType>
+        </xs:element>
       </xs:sequence>
     </xs:complexType>
   </xs:element>
@@ -260,7 +276,10 @@ class TestCreateSummaryReport(unittest.TestCase):
             self.configFolderCreatedNow = True
             os.makedirs(self.newpath)
 
-        result = redi.create_summary_report(self.test_report_params, self.test_report_data, self.test_alert_summary)
+        result = redi.create_summary_report(self.test_report_params,
+          self.test_report_data,
+          self.test_alert_summary,
+          self.specimen_taken_time_summary)
         result_string = etree.tostring(result)
     
         #print result_string

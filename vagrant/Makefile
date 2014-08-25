@@ -13,10 +13,10 @@ help:
 	@echo "\t egg_test      - deploy the redi egg file to the vagrant box and run redi"
 	@echo "\t copy_redcap_code: - copy the redcap.zip file from the 'config' folder if available"
 	@echo "\t copy_project_data: - copy *.sql files from the 'config' folder if available"
-	
+
 
 rc_check:
-	curl -s http://localhost:8998/redcap/ | grep -i  'Welcome\|Critical Error' 
+	curl -s http://localhost:8998/redcap/ | grep -i  'Welcome\|Critical Error'
 
 rc_list:
 	vagrant ssh -c 'cd /vagrant/scripts && php redcapdbm.php -l'
@@ -26,13 +26,13 @@ rc_save:
 
 rc_clean:
 	# TODO: add support for project id as parameter
-	vagrant ssh -c 'cd /vagrant/scripts && php redcapdbm.php -d 12'	
+	vagrant ssh -c 'cd /vagrant/scripts && php redcapdbm.php -d 12'
 
 rc_demographics:
 	../bin/utils/redcap_records.py --token=121212 --url=http://localhost:8998/redcap/api/ -i demographic_test_data.csv
 
 rc_post:
-	python ../bin/redi.py
+	python ../bin/redi.py -c ../config
 
 rc_get:
 	../bin/utils/redcap_records.py --token=121212 --url=http://localhost:8998/redcap/api/ -f "demgraphics chemistry"
@@ -52,7 +52,7 @@ rc_set_rate:
 
 test_egg:
 	make egg_test
-	
+
 egg_test:
 	@test -f ../dist/REDI*.egg || (echo 'Please execute "make egg" from the project root first'			&& exit 1)
 	@test -d config				|| (echo 'Please create a "config" folder with necessary files first'	&& exit 1)
@@ -75,4 +75,3 @@ copy_project_data:
 	@test -f ../config/vagrant-data/projectDataBootstrap.sql || (echo 'Please obtain the project sql dump first' && exit 1)
 	cp ../config/vagrant-data/projectDataBootstrap.sql .
 	test ! -d ../config/vagrant-data/sqlPatches || (echo "Copying sqlPatches folder from project configuration to vagrant folder" && cp -r ../config/vagrant-data/sqlPatches .)
-
