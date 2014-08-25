@@ -15,6 +15,7 @@ file_dir = os.path.dirname(os.path.realpath(__file__))
 goal_dir = os.path.join(file_dir, "../")
 proj_root = os.path.abspath(goal_dir)+'/'
 
+DEFAULT_DATA_DIRECTORY = os.getcwd()
 
 class TestUpdateFormDateField(unittest.TestCase):
 
@@ -107,7 +108,7 @@ class TestUpdateFormDateField(unittest.TestCase):
         self.form_events_tree = etree.ElementTree(etree.fromstring(self.form_events))
 
     def test_update_formdatefield(self):
-        redi.configure_logging(proj_root+'log/redi.log')
+        redi.configure_logging(DEFAULT_DATA_DIRECTORY)
         redi.update_formdatefield(self.data, self.form_events_tree)
 
 	    # output raw file to check it

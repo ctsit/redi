@@ -1,4 +1,10 @@
-#!/usr/bin/env python3
+#!/usr/bin/env python
+
+from __future__ import print_function, unicode_literals
+from io import open
+import sys
+reload(sys)
+sys.setdefaultencoding('utf8')
 
 # ==============================================================================
 # Conversion from CSV to XML
@@ -199,7 +205,7 @@ class Writer:
     def write_file(self, data):
         if self.args.declaration:
             declaration = ('<?xml version="1.0" encoding="{0}"?>'.
-                           format(args.oencoding))
+                           format(self.args.oencoding))
             self.write(declaration)
         self.write("<{0}>".format(self.args.root_elem))
         for record in data:
@@ -248,9 +254,9 @@ def parse_cmdline():
     parser = OptionParser(usage)
     parser.set_defaults(iencoding='UTF-8',
                         oencoding='UTF-8',
-                        delimiter=',',
+                        delimiter=b',',
                         doublequote=True,
-                        quotechar='"',
+                        quotechar=b'"',
                         quoting=csv.QUOTE_MINIMAL,
                         skipinitialspace=False,
                         header=False,
@@ -343,7 +349,7 @@ if __name__ == '__main__':
                 newline='') as ifile:
         csvreader = csv.reader(ifile, dialect='custom')
         if args.header:
-            args.header = csvreader.__next__()
+            args.header = next(csvreader)
         with openio(args.ofile, 'w', args.oencoding) as ofile:
             writer = Writer(ofile, args)
             writer.write_file(csvreader)

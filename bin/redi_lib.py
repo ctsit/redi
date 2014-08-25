@@ -23,15 +23,17 @@ import hashlib
 import redi
 import utils.redi_email as redi_email
 from utils.redcapClient import redcapClient
+from requests import RequestException
+from lxml import etree
 import logging
+import sys
 logger = logging.getLogger(__name__)
 logger.addHandler(logging.NullHandler())
 proj_root = redi.get_proj_root()
 
+DEFAULT_DATA_DIRECTORY = os.getcwd()
 
-# Constants
-DEFAULT_RATE_LIMITER = 600
-DEFAULT_BATCH_WARNING_DAYS = 13
+
 
 """
 create_import_data_json:
@@ -102,7 +104,7 @@ Steps:
 """
 
 
-def generate_output(person_tree, settings):
+def generate_output(person_tree, redcap_settings, email_settings, data_repository):
     # redi.configure_logger(system_log_file_full_path)
 
     # the global dictionary to be returned
@@ -129,14 +131,14 @@ def generate_output(person_tree, settings):
     root = person_tree.getroot()
     persons = root.xpath('//person')
 
-    redcapClientObject = redcapClient(settings)    
+    try:
+        # Communication with redcap
+        redcapClientObject = redcapClient(redcap_settings['redcap_uri'],redcap_settings['token'])
+    except RequestException:
+        redi_email.send_email_redcap_connection_error(email_settings)
+        quit()
 
-    if (not settings.hasoption('rate_limiter_value_in_redcap') or '' == settings.rate_limiter_value_in_redcap) :
-        rate_limiter_value_in_redcap = DEFAULT_RATE_LIMITER
-        logger.warn("Missing parameter 'rate_limiter_value_in_redcap' in settings.ini.")
-        logger.warn("Using default value: rate_limiter_value_in_redcap = " + str(DEFAULT_RATE_LIMITER))
-    else :
-        rate_limiter_value_in_redcap = float(settings.rate_limiter_value_in_redcap)
+    rate_limiter_value_in_redcap = float(redcap_settings['rate_limiter_value_in_redcap'])
 
 
     ideal_time_per_request = 60 / float(rate_limiter_value_in_redcap)
@@ -181,6 +183,9 @@ def generate_output(person_tree, settings):
 
             # loop through the events of one form
             for event in form.xpath('event'):
+                event_status = event.findtext('status')
+                if event_status == 'sent':
+                    continue
                 event_count += 1
 
                 try:
@@ -210,6 +215,14 @@ def generate_output(person_tree, settings):
                     try:
                         found_error = False
                         response = redcapClientObject.send_data_to_redcap([json_data_dict], overwrite = True)
+                        status = event.find('status')
+                        if status is not None:
+                            status.text = 'sent'
+                        else:
+                            status_element = etree.Element("status")
+                            status_element.text = 'sent'
+                            event.append(status_element)
+                        data_repository.store(person_tree)
                     except RedcapError as e:
                         found_error = handle_errors_in_redcap_xml_response(
                             e.message,
@@ -247,7 +260,7 @@ This function checks for any errors in the redcap response and update report dat
 Parameters:
     redcap_response_xml: This parameter holds the redcap response passed to this function
     report_data: This parameter holds the report data passed to this function
-    
+
 """
 
 
@@ -283,7 +296,7 @@ Creates a folder name with the following format:
 """
 
 
-def create_temp_dir_debug(existing_folder=(proj_root + 'out')):
+def create_temp_dir_debug(existing_folder=(DEFAULT_DATA_DIRECTORY + 'out')):
     if not os.path.exists(existing_folder):
         try:
             os.makedirs(existing_folder)
@@ -351,6 +364,7 @@ def create_empty_md5_database(db_path) :
         fresh_file = open(db_path, 'w')
         fresh_file.close()
         os.chmod(db_path, stat.S_IRUSR | stat.S_IWUSR)
+        time.sleep(5)
 
     except IOError as e:
         logger.error("I/O error: " + e.strerror + ' for file: ' + db_path)
@@ -384,7 +398,7 @@ def create_empty_table(db_path) :
     finally:
         if db:
             db.close()
-    logger.info('success reate_empty_table')
+    logger.info('success create_empty_table')
     return True
 
 
@@ -415,10 +429,8 @@ Check the md5sum of the input file
 """
 
 
-def check_input_file(settings, raw_xml_file):
+def check_input_file(batch_warning_days, db_path, email_settings, raw_xml_file):
     batch = None
-
-    db_path = redi.get_db_path(settings)
 
     if not os.path.exists(db_path) :
         create_empty_md5_database(db_path)
@@ -443,7 +455,7 @@ def check_input_file(settings, raw_xml_file):
         logger.info(record_msg)
         return batch
 
-    if (old_md5ive != new_md5ive):
+    if old_md5ive != new_md5ive:
         # the data has changed... insert a new batch entry
         batch = add_batch_entry(db_path, new_md5ive)
         record_msg = 'Added batch (rbID= %s, rbStartTime= %s, rbMd5Sum= %s' % (
@@ -454,12 +466,6 @@ def check_input_file(settings, raw_xml_file):
         days_since_today = get_days_since_today(old_batch['rbStartTime'])
         # TODO: refactor code to use ConfigParser.RawConfigParser in order to
         # preserve data types
-        if (not settings.hasoption('batch_warning_days') or '' == settings.batch_warning_days) :
-            batch_warning_days = DEFAULT_BATCH_WARNING_DAYS
-            logger.warn("Missing parameter 'batch_warning_days' in settings.ini.")
-            logger.warn("Using default value: batch_warning_days = " + str(DEFAULT_BATCH_WARNING_DAYS))
-        else:
-            batch_warning_days = settings.batch_warning_days
 
         if (days_since_today > int(batch_warning_days)):
             logger.info('Last import was started on: %s which is more than the limit of %s' % (old_batch['rbStartTime'], batch_warning_days))
@@ -468,13 +474,13 @@ def check_input_file(settings, raw_xml_file):
                 The configuration `batch_warning_days = -1` indicates that we want to continue
                 execution even if the input file did not change
                 """
-                loggging.info(msg_continue)
+                logger.info(msg_continue)
             else:
 
                 msg_quit = "The input file did not change in the past: %s days. Stop data import." % batch_warning_days
-                loggging.warn(msg_quit)
-                redi_email.send_email_input_data_unchanged(settings)
-                quit()
+                logger.critical(msg_quit)
+                redi_email.send_email_input_data_unchanged(email_settings)
+                sys.exit()
         else:
             logger.info('Reusing md5 entry: ' + str(old_batch['rbID']))
     # return the old batch so we can update the status
@@ -685,7 +691,3 @@ Helper function for debugging xml content
 def printxml(tree):
     print etree.tostring(tree, pretty_print = True)
     return
-
-
-if __name__ == "__main__":
-    main()

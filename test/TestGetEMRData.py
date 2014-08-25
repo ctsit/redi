@@ -1,53 +1,40 @@
 import unittest
-import os
+import shutil
 import tempfile
 import pysftp
 from mock import patch
 import utils.GetEmrData as GetEmrData
-import utils.SimpleConfigParser as SimpleConfigParser
+from utils.GetEmrData import EmrConnectionDetails
 
 
 class TestGetEMRData(unittest.TestCase):
-	
-	def setUp(self):
-		self.temp_folder = tempfile.mkdtemp('/')
-		input_string = '''"NAME","COMPONENT_ID","RESULT","REFERENCE_UNIT","DATE_TIME_STAMP","STUDY_ID"
+
+    def _noop(*args, **kwargs):
+        pass
+
+    @patch.multiple(pysftp, Connection=_noop)
+    @patch.multiple(GetEmrData, download_file=_noop)
+    def test_get_emr_data(self):
+        temp_folder = tempfile.mkdtemp('/')
+        input_string = '''"NAME","COMPONENT_ID","RESULT","REFERENCE_UNIT","DATE_TIME_STAMP","STUDY_ID"
 "RNA","1905","<5","IU/mL","1907-05-21 05:50:00","999-0059"
 "EGFR","1740200","eGFR result is => 60 ml/min/1.73M2","ml/min/1.73M2","1903-11-27 15:13:00","999-0059"
 "HEMATOCRIT","1534436",">27&<30","%","","999-0059"'''
-		with open(self.temp_folder+"raw.txt", 'w+') as f:
-			f.write(input_string)
-		settings_input = '''system_log_file = log/log.txt
-emr_sftp_server_hostname = fake.server
-emr_sftp_server_username = username
-emr_sftp_server_password = password
-emr_sftp_project_name = tmp
-emr_data_file = output.csv
-emr_log_file = log.txt
-emr_log_file_destination = log/log.txt'''
-		with open(self.temp_folder+"temp_settings.ini", 'w+') as cf:
-			cf.write(settings_input)
-		self.settings = SimpleConfigParser.SimpleConfigParser()
-		self.settings.read(self.temp_folder+"temp_settings.ini")
-		self.settings.set_attributes()
+        with open(temp_folder+"raw.txt", 'w+') as f:
+            f.write(input_string)
 
-	def dummy_connect(host, username, password):
-		pass
+        props = EmrConnectionDetails('fake.server',
+            'username',
+            'password',
+            'tmp',
+            'output.csv'
+            )
 
-	def dummy_download(source, destination, server):
-		pass
+        GetEmrData.get_emr_data(temp_folder, props)
 
-	def dummy_upload(source, server):
-		pass
-
-	@patch.multiple(pysftp, Connection=dummy_connect)
-	@patch.multiple(GetEmrData, download_file=dummy_download, upload_file=dummy_upload)
-
-	def test_get_emr_data(self):		
-		GetEmrData.get_emr_data(self.temp_folder, self.settings)
-		with open(self.temp_folder + 'raw.xml') as f:
-			result = f.read()
-		expected = '''<?xml version="1.0" encoding="utf8"?>
+        with open(temp_folder + 'raw.xml') as f:
+            result = f.read()
+        expected = '''<?xml version="1.0" encoding="utf8"?>
 <study>
     <subject>
         <NAME>RNA</NAME>
@@ -75,16 +62,5 @@ emr_log_file_destination = log/log.txt'''
     </subject>
 </study>
 '''
-		self.assertEqual(result, expected)
-
-	def tearDown(self):
-		os.remove(self.temp_folder + "raw.txt")
-		os.remove(self.temp_folder + "raw.xml")
-		os.remove(self.temp_folder + "temp_settings.ini")
-		try:
-			os.rmdir(self.temp_folder)
-		except OSError:
-			raise LogException("Folder " + self.temp_folder + "is not empty, hence cannot be deleted.")
-
-if __name__ == "__main__":
-    unittest.main()
+        self.assertEqual(result, expected)
+        shutil.rmtree(temp_folder)

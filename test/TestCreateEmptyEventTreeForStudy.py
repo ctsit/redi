@@ -7,6 +7,7 @@ file_dir = os.path.dirname(os.path.realpath(__file__))
 goal_dir = os.path.join(file_dir, "../")
 proj_root = os.path.abspath(goal_dir)+'/'
 
+DEFAULT_DATA_DIRECTORY = os.getcwd()
 
 class TestCreateEmptyEventTreeForStudy(unittest.TestCase):
 
@@ -45,7 +46,7 @@ class TestCreateEmptyEventTreeForStudy(unittest.TestCase):
 
 
     def test_create_empty_event_tree_for_study_for_zero_subjects(self):
-        redi.configure_logging(proj_root+'log/redi.log')
+        redi.configure_logging(DEFAULT_DATA_DIRECTORY)
         self.zero_subjects = """<?xml version='1.0' encoding='US-ASCII'?>
         <study></study>
         """
@@ -53,7 +54,7 @@ class TestCreateEmptyEventTreeForStudy(unittest.TestCase):
         self.assertRaises(Exception,redi.create_empty_event_tree_for_study,self.data_zero_subjects,self.data_all_form_events)
         
     def test_create_empty_event_tree_for_study_for_one_subjects(self):
-        redi.configure_logging(proj_root+'log/redi.log')
+        redi.configure_logging(DEFAULT_DATA_DIRECTORY)
         self.one_subject = """<?xml version='1.0' encoding='US-ASCII'?>
             <study>
             <subject>
@@ -103,7 +104,7 @@ class TestCreateEmptyEventTreeForStudy(unittest.TestCase):
         self.assertEqual(self.expect_one_subject, self.result)
        
     def test_create_empty_event_tree_for_study_for_two_subjects(self):
-        redi.configure_logging(proj_root+'log/redi.log')
+        redi.configure_logging(DEFAULT_DATA_DIRECTORY)
         self.two_subjects = """<?xml version='1.0' encoding='US-ASCII'?>
             <study>
                 <subject>

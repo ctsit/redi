@@ -7,6 +7,7 @@ file_dir = os.path.dirname(os.path.realpath(__file__))
 goal_dir = os.path.join(file_dir, "../")
 proj_root = os.path.abspath(goal_dir)+'/'
 
+DEFAULT_DATA_DIRECTORY = os.getcwd()
 
 class TestUpdateFormImported(unittest.TestCase):
 
@@ -314,7 +315,7 @@ class TestUpdateFormImported(unittest.TestCase):
         self.expect = etree.tostring(etree.fromstring(self.output))
 
     def test_update_form_imported(self):
-        redi.configure_logging(proj_root+'log/redi.log')
+        redi.configure_logging(DEFAULT_DATA_DIRECTORY)
         redi.update_form_imported_field(self.data, self.form_events_tree, 'undefined')
         result = etree.tostring(self.data)
         self.assertEqual(self.expect, result)

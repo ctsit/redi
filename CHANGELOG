@@ -1,3 +1,22 @@
+2014-08-25 v0.11.0
+
+ * Introduced Data Directories (see documentation for --datadir)
+ * Resumable RED-I (see documentation for --resume)
+ * Serialize Collection Date Summary
+ * Included Debian 7.4 installation script (see scripts/install_deb_7_4.sh)
+ * Updated settings: removed emr_log_file since it wasn't used
+ * Removed dependency on Python3 (converted csv2xml.py)
+ * Significantly sped up the data pre-processing step when getting EMR data.
+ * Changed behavior of combining --emrdata and --dryrun; **will** get EMR data.
+ * BUG: Fixed SQLite issue
+ * BUG: event count 15 exceeds maximum of 74
+ * BUG: Closed hanging SFTP connection in GetEmrData.py
+ * Other minor bug fixes
+ * Updated documentation and example configuration
+ * Cleaned up comments in code
+ * DEV: Added coverage and lint goals to Makefile
+ * DEV: Added the generated files to the list of files to remove by `make clean`
+
 2014-08-11 v0.10.1
 
  * Add Travis CI configuration and documentation for activating Travis in forks of this repo.
@@ -67,7 +86,7 @@
  * Add config directory to gitignore (Philip Chase)
 
 2014-03-07 v0.6.1
- 
+
  * Summary: Add location independence to tests. Add BSD 3-Clause license
 
  * Add loction independence and config folder creation to TestCreateSummaryReport.py (Philip Chase)
@@ -81,7 +100,7 @@
  * made few changes to Test files to enable them run independent of its locations (Mohan Das Katragadda)
 
 2014-03-07 v0.6.0
- 
+
  * Summary: De-identified sample and test data and removed unneeded filed and references to HCV Target
 
  * Removing the init.sh (Mohan Das Katragadda)
@@ -126,7 +145,7 @@
  * Replaced all year values in sample and test data with the year 1905. (Mohan Das Katragadda)
 
 2014-02-25 v0.5.0
- 
+
  * Summary: Add support for configured date formats and make HCVTarget-specific features optional
 
  * Update README-install.md with a warning to mac users to use GNU Utilities (Philip Chase)
@@ -136,12 +155,12 @@
  * Add configurable date formats for input and output dates (Philip Chase)
 
  2014-02-25 v0.4.1
- 
+
  * Add second component element for INR to accommodate second component ID (Philip Chase)
  * Update redeployment procedure in README-install.md and add run procedure to same (Philip Chase)
 
  2014-02-25 v0.4.0
- 
+
  * Summary added CBC and Chemistry form fields, INR form, and email summary report
 
  * Fixed createSummaryReport test issue (Mohan Das Katragadda)
@@ -329,7 +348,7 @@
  * logger function called inappropriately. so, updated it (Radha Kandula)
  * logger function accessed without configuring logging. so corrected it (Radha Kandula)
 
-2013-12-18 v0.2.0 
+2013-12-18 v0.2.0
 
  * Summary: Add rx2ra.py, getEmrData.sh
 
@@ -514,7 +533,7 @@
 
  * Created new project from redi-js and redi-js-config repos
 
-2013-11-22 ( REDI-JS 70d9eaade3e1ca1a0d8b19fef3c92ec32d4f341d no release ) 
+2013-11-22 ( REDI-JS 70d9eaade3e1ca1a0d8b19fef3c92ec32d4f341d no release )
 
  * added prototyping.txt with control flow and functions for program. (Nicholas Rejack)
  * prototype new functions (Nicholas Rejack)
@@ -526,7 +545,7 @@
  * Add major update of ./src/redi/config and minor update to rediJS.py (Philip Chase)
  * Move README.md to doc/README-install.md and add doc/README-development.md (Philip Chase)
  * Add a proposed process flow chart (Philip Chase)
- 
+
 2013-08-27 REDI-JS version 0.1.0
 
  * Relocate work folder and ignore and remove log folder (Philip Chase)
@@ -561,7 +580,7 @@
  * Initial commit to redi-js (Philip Chase)
 
 2013-11-21 ( redi-js-config 522afd8dbd39f4c86b7dbd92e09ce6cb33ad619b no release )
- 
+
  * Move rx2ra.py to redi-js repo (Philip Chase)
  * Add sql to delete sample data from REDCap (Philip Chase)
  * Add sample data for separate weeks (Philip Chase)

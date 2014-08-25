@@ -38,7 +38,7 @@ This file contains details of the form, events and fields which are updated by r
 
 This file is used for formatting the final REDI run report, which is sent to the receiver_email set in the settings.ini
 
-### clinical-component-to-loinc.xml:
+### clinical-component-to-loinc-example.xml:
 
 This file maps your project specific component id's to standard LOINC codes. For every new form added to formEvents.xml make sure that component id's of fields in that form are mapped to standard LOINC codes in this file.
 

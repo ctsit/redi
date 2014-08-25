@@ -4,7 +4,6 @@ __license__ = "BSD 3-Clause"
 
 
 class Form(object):
-    _tree = None
 
     def __init__(self, data):
         try:
@@ -21,7 +20,6 @@ class Form(object):
 
 
 class Event(object):
-    _node = None
 
     def __init__(self, etree_node):
         try:
@@ -63,7 +61,6 @@ class Event(object):
 
 
 class Field(object):
-    _node = None
 
     def __init__(self, etree_node):
         try:

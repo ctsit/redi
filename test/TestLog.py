@@ -17,6 +17,7 @@ file_dir = os.path.dirname(os.path.realpath(__file__))
 goal_dir = os.path.join(file_dir, "../")
 proj_root = os.path.abspath(goal_dir)+'/'
 
+DEFAULT_DATA_DIRECTORY = os.getcwd()
 
 class TestLog(unittest.TestCase):
 
@@ -37,7 +38,7 @@ class TestLog(unittest.TestCase):
                 #print os.path.isfile(file_name)
 
         # call the configure logging function
-        redi.configure_logging(proj_root+'log/redi.log')
+        redi.configure_logging(DEFAULT_DATA_DIRECTORY)
 
         #print 'checking if log file was created: ' + file_name
         # check if the file is created

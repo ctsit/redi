@@ -4,13 +4,16 @@ import os
 from lxml import etree
 from mock import patch
 import redi
+from utils import redi_email
 from utils.redcapClient import redcapClient
 import utils.SimpleConfigParser as SimpleConfigParser
+from requests import RequestException
 
 file_dir = os.path.dirname(os.path.realpath(__file__))
 goal_dir = os.path.join(file_dir, "../")
 proj_root = os.path.abspath(goal_dir)+'/'
 
+DEFAULT_DATA_DIRECTORY = os.getcwd()
 
 class TestResearchIdToRedcapId(unittest.TestCase):
 
@@ -110,45 +113,19 @@ class TestResearchIdToRedcapId(unittest.TestCase):
     </study>"""
 
         self.expect = etree.tostring(etree.fromstring(self.output))
-        # setup_json = proj_root+'config/setup.json'
-        # creating dummy settings.ini file
-        self.setupFile = tempfile.mkstemp()
-        self.input = """{ job_owner_name = John Doe\njob_email = johndoe@example.org\ndata_provider_name = Jane Doe\ndata_provider_email = janedoe@example.org\nsmtp_host_for_outbound_mail = smtp.example.org\nsystem_log_file = log/redi\ntranslation_table_file = TestTranslationTable.xml\nform_events_file = TestFormEvents.xml\nraw_xml_file = TestRaw.xml\nresearch_id_to_redcap_id = research_id_to_redcap_id_map.xml\nsubject_map_header = studyID, mrn, facilityCode, startDate, endDate\\n\nredcap_uri = https://example.org/redcap/api/\ntoken = ABCDEF878D219CFA5D3ADF7F9AB12345"""
-        f = open(self.setupFile[1], 'r+')
-        f.write(self.input)
-        f.close()
-        self.settings = SimpleConfigParser.SimpleConfigParser()
-        # extracting path of temporary directory in which dummy settings.ini file is located
-        last_slash = self.setupFile[1].rfind("/")
-        self.configuration_directory = self.setupFile[1][:last_slash]+"/"
-        #creating temporary files which read_config and research_id_to_redcap_id_converter functions need
+        self.configuration_directory = tempfile.mkdtemp('/')
+        self.research_id_to_redcap_id = "research_id_to_redcap_id_map.xml"
         try:
-            f = open(self.configuration_directory+"research_id_to_redcap_id_map.xml", "w+")
+            f = open(os.path.join(self.configuration_directory, self.research_id_to_redcap_id), "w+")
             f.write("""<subject_id_field_mapping>
   <redcap_id_field_name>dm_subjid</redcap_id_field_name>
   <research_id_field_name>dm_usubjid</research_id_field_name>
 </subject_id_field_mapping>""")
             f.close()
         except:
-            print("setUp failed to create file '" + "research_id_to_redcap_id_map.xml" + "'")
-        try:
-            f = open(self.configuration_directory+"TestTranslationTable.xml", "w+")
-        except:
-            print("setUp failed to create file '" + "TestTranslationTable.xml" + "'")
-        try:
-            f = open(self.configuration_directory+"TestFormEvents.xml", "w+")
-        except:
-            print("setUp failed to create file '" + "TestFormEvents.xml" + "'")
-        try:
-            f = open(self.configuration_directory+"TestRaw.xml", "w+")
-        except:
-            print("setUp failed to create file '" + "TestRaw.xml" + "'")
-        # parse the settings.ini file
-        self.settings.read(self.setupFile[1])
-        self.settings.set_attributes()
-        redi.read_config(self.setupFile[1],self.configuration_directory, self.settings)
+            print("setUp failed to create file '" + self.research_id_to_redcap_id + "'")
 
-    def dummy_redcapClient_initializer(self,settings):
+    def dummy_redcapClient_initializer(self,redcap_uri,token):
         pass
         
     def dummy_get_data_from_redcap(self,records_to_fecth=[],events_to_fetch=[], fields_to_fetch=[], forms_to_fetch=[], return_format='xml'):
@@ -158,36 +135,51 @@ class TestResearchIdToRedcapId(unittest.TestCase):
 </records>"""
         return dummy_output
 
+    def dummy_redcapClient_initializer_with_exception(self,redcap_uri,token):
+        raise RequestException
+
+    def dummy_send_email_redcap_connection_error(email_settings):
+        raise Exception
+
     @patch.multiple(redcapClient, __init__ = dummy_redcapClient_initializer, get_data_from_redcap = dummy_get_data_from_redcap)
     def test_research_id_to_redcap_id_converter(self):
-        self.settings.set_attributes()
-        redi.configure_logging(proj_root+'log/redi.log')
-        redi.research_id_to_redcap_id_converter(self.data, self.settings,self.configuration_directory)
+        redi.configure_logging(DEFAULT_DATA_DIRECTORY)
+        email_settings = {}
+        redcap_settings = {}
+        redcap_settings['redcap_uri'] = 'https://example.org/redcap/api/'
+        redcap_settings['token'] = 'ABCDEF878D219CFA5D3ADF7F9AB12345'
+        redi.research_id_to_redcap_id_converter(self.data, redcap_settings, email_settings, self.research_id_to_redcap_id, False, self.configuration_directory)
         result = etree.tostring(self.data)
         self.assertEqual(self.expect, result)
 
+    @patch.multiple(redcapClient, __init__ = dummy_redcapClient_initializer_with_exception, get_data_from_redcap = dummy_get_data_from_redcap)
+    def test_research_id_to_redcap_id_converter_connection_error(self):
+        redi.configure_logging(DEFAULT_DATA_DIRECTORY)
+        email_settings = {}
+        redcap_settings = {}
+        redcap_settings['redcap_uri'] = 'https://example.org/redcap/api/'
+        redcap_settings['token'] = 'ABCDEF878D219CFA5D3ADF7F9AB12345'
+        self.assertRaises(SystemExit,redi.research_id_to_redcap_id_converter,self.data,redcap_settings,email_settings, self.research_id_to_redcap_id, True, self.configuration_directory)
     
+    @patch.multiple(redcapClient, __init__ = dummy_redcapClient_initializer_with_exception, get_data_from_redcap = dummy_get_data_from_redcap)
+    @patch.multiple(redi_email,send_email_redcap_connection_error=dummy_send_email_redcap_connection_error)
+    def test_research_id_to_redcap_id_converter_mail_key_error(self):
+        redi.configure_logging(DEFAULT_DATA_DIRECTORY)
+        email_settings = {}
+        redcap_settings = {}
+        redcap_settings['redcap_uri'] = 'https://example.org/redcap/api/'
+        redcap_settings['token'] = 'ABCDEF878D219CFA5D3ADF7F9AB12345'
+        self.assertRaises(Exception,redi.research_id_to_redcap_id_converter,self.data,redcap_settings,email_settings, self.research_id_to_redcap_id, False, self.configuration_directory)
+
     def tearDown(self):
         try:
-            os.unlink(self.configuration_directory+"research_id_to_redcap_id_map.xml")
+            os.unlink(os.path.join(self.configuration_directory, self.research_id_to_redcap_id))
         except:
             print("setUp failed to unlink file '" + "research_id_to_redcap_id_map.xml" + "'")
         try:
-            os.unlink(self.configuration_directory+"TestTranslationTable.xml")
-        except:
-            print("setUp failed to unlink file '" + "TestTranslationTable.xml" + "'")
-        try:
-            os.unlink(self.configuration_directory+"TestFormEvents.xml")
-        except:
-            print("setUp failed to unlink file '" + "TestFormEvents.xml" + "'")
-        try:
-            os.unlink(self.configuration_directory+"TestRaw.xml")
-        except:
-            print("setUp failed to unlink file '" + "TestRaw.xml" + "'")
-        try:
-            os.unlink(self.setupFile[1])
-        except:
-            print("setUp failed to unlink file '" + self.setupFile[1] + "'")
+            os.rmdir(self.configuration_directory)
+        except OSError:
+            raise LogException("Folder " + self.configuration_directory + "is not empty, hence cannot be deleted.")
         return()
 
 if __name__ == "__main__":

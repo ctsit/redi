@@ -14,11 +14,12 @@ file_dir = os.path.dirname(os.path.realpath(__file__))
 goal_dir = os.path.join(file_dir, "../")
 proj_root = os.path.abspath(goal_dir)+'/'
 
+DEFAULT_DATA_DIRECTORY = os.getcwd()
 
 class TestConvertComponentIdToLoincCode(unittest.TestCase):
 
     def setUp(self):
-        redi.configure_logging()
+        redi.configure_logging(DEFAULT_DATA_DIRECTORY)
         
         
     def test_convert_component_id_to_loinc_code(self):

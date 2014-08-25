@@ -28,13 +28,14 @@ file_dir = os.path.dirname(os.path.realpath(__file__))
 goal_dir = os.path.join(file_dir, "../")
 proj_root = os.path.abspath(goal_dir)+'/'
 
+DEFAULT_DATA_DIRECTORY = os.getcwd()
 
 class TestGenerateOutput(unittest.TestCase):
     
     def setUp(self):
-        redi.configure_logging()
+        redi.configure_logging(DEFAULT_DATA_DIRECTORY)
 
-    def dummy_redcapClient_initializer(self,settings):
+    def dummy_redcapClient_initializer(self,redcap_uri,token):
         pass
         
     class dummyClass:
@@ -174,29 +175,29 @@ class TestGenerateOutput(unittest.TestCase):
             'errors'                : []
         }
         
-        # setup_data = {
-        #     'rate_limiter_value_in_redcap':500,
-        #     'redcap_uri':'http://fakeURI:fakeport/',
-        #     'token':'faketoken'
-        # }
-        temporary_settings_file = tempfile.mkstemp()
-        settings_data = """rate_limiter_value_in_redcap = 500\nredcap_uri = http://fakeURI:fakeport/\ntoken = faketoken"""
-        f = open(temporary_settings_file[1], 'r+')
-        f.write(settings_data)       
-        f.close()
-        settings = SimpleConfigParser.SimpleConfigParser()
-        settings.read(temporary_settings_file[1])
-        settings.set_attributes()
+        redcap_settings = {
+            'rate_limiter_value_in_redcap':500,
+            'redcap_uri':'http://fakeURI:fakeport/',
+            'token':'faketoken'
+        }
+        email_settings = {
+            'smtp_host_for_outbound_mail': 'smtp.example.com',
+            'redcap_support_sender_email': 'please-do-not-reply@example.com',
+            'redcap_uri': 'http://localhost:8998/redcap/api/',
+            'smtp_port_for_outbound_mail': 25,
+            'redcap_support_receiver_email': 'please-do-not-reply@example.com'
+        }
+
+        class MockDataRepository(object):
+            def store(self, data):
+                pass
 
         etree_1 = etree.ElementTree(etree.fromstring(string_1_xml))
-        result = redi_lib.generate_output(etree_1,settings)
+        result = redi_lib.generate_output(etree_1,redcap_settings,email_settings, MockDataRepository())
         self.assertEqual(report_data['total_subjects'], result['total_subjects'])
         self.assertEqual(report_data['form_details'], result['form_details'])
         self.assertEqual(report_data['subject_details'], result['subject_details'])
         self.assertEqual(report_data['errors'], result['errors'])
-    
-        
-    
 
     def tearDown(self):
         return()

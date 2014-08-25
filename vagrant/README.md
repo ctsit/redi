@@ -7,8 +7,6 @@ Before you can use the VM you must obtain a copy of the redcap software from
    http://project-redcap.org/
 and save it as 'redcap.zip'.
 
-@TODO: Need a sample redcap project and test data set.
-
 The user is expected to provide the binary file 'redcap.zip' in the same folder as the Vagrantfile.
 This ensures that the 'bootstrap.sh' script can extract the files to the virtual machine path '/var/www/redcap'.
 A typical listing of the '/var/www/redcap' folder after extraction is:
