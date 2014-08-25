@@ -1,0 +1,39 @@
+
+DB_FILE=$(shell python -c 'from appdirs import AppDirs; dirs = AppDirs("redi"); print ("\"" + dirs.user_data_dir + "/0.10.0/redi.db\"")')
+
+.PHONY: help
+help:
+	@echo "Example invokation: make -f Makefile_db list"
+	@echo "Supported tasks:"
+	@echo "\t tables     : list the tables in the database"
+	@echo "\t schema     : show the columns in the RediBatch table"
+	@echo "\t list       : list the redi batches that have been run"
+	@echo "\t last       : show the row corresponding to the last redi batch run"
+	@echo "\t add        : insert sample row in the RediBatch table"
+	@echo "\t fresh      : create a fresh database file"
+	@echo "\t clean      : remove all rows from the RediBatch table"
+
+
+tables:
+	sqlite3 $(DB_FILE) .tables
+
+schema:
+	sqlite3 $(DB_FILE) 'PRAGMA table_info("RediBatch")'
+
+list:
+	sqlite3 $(DB_FILE) "SELECT * FROM RediBatch"
+
+last:
+	sqlite3 $(DB_FILE) "SELECT * FROM RediBatch ORDER BY rbID DESC LIMIT 1"
+
+add:
+	sqlite3 $(DB_FILE) "INSERT INTO RediBatch (rbStartTime, rbStatus, rbMd5Sum) VALUES ( datetime('now'), 'Started', 'xyz');"
+
+fresh:
+	rm -f $(DB_FILE)
+	touch $(DB_FILE)
+	sqlite3 $(DB_FILE) 'CREATE TABLE RediBatch ( rbID INTEGER PRIMARY KEY AUTOINCREMENT, rbStartTime TEXT NOT NULL, rbEndTime TEXT, rbStatus TEXT, rbMd5Sum TEXT NOT NULL);'
+	@test -s $(DB_FILE) || echo 'File $(DB_FILE) was not created'
+
+clean:
+	sqlite3 $(DB_FILE) "DELETE FROM RediBatch"
