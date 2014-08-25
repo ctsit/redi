@@ -13,7 +13,7 @@ class TestGetEMRData(unittest.TestCase):
         pass
 
     @patch.multiple(pysftp, Connection=_noop)
-    @patch.multiple(GetEmrData, download_file=_noop, upload_file=_noop)
+    @patch.multiple(GetEmrData, download_file=_noop)
     def test_get_emr_data(self):
         temp_folder = tempfile.mkdtemp('/')
         input_string = '''"NAME","COMPONENT_ID","RESULT","REFERENCE_UNIT","DATE_TIME_STAMP","STUDY_ID"

@@ -6,8 +6,11 @@
  * Included Debian 7.4 installation script (see scripts/install_deb_7_4.sh)
  * Updated settings: removed emr_log_file since it wasn't used
  * Removed dependency on Python3 (converted csv2xml.py)
+ * Significantly sped up the data pre-processing step when getting EMR data.
+ * Changed behavior of combining --emrdata and --dryrun; **will** get EMR data.
  * BUG: Fixed SQLite issue
  * BUG: event count 15 exceeds maximum of 74
+ * BUG: Closed hanging SFTP connection in GetEmrData.py
  * Other minor bug fixes
  * Updated documentation and example configuration
  * Cleaned up comments in code

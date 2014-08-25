@@ -129,9 +129,6 @@ def main():
     if dry_run and not do_keep_gen_files:
         do_keep_gen_files = True
 
-    if dry_run:
-        get_emr_data = False
-
     db_path = get_db_path(settings.batch_info_database, data_directory)
 
     output_files = os.path.join(data_directory, "data")

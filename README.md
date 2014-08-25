@@ -112,7 +112,7 @@ Optional command-line arguments:
 
     If the parameter is not provided, the output files are stored in a temporary folder during the execution of **redi** and then deleted along with the temporary folder once **redi** finishes execution.
 
- - -d, --dryrun : Performs a dry-run.
+ - -d, --dryrun : Performs a dry run.
 
         $ redi --dryrun
 
@@ -137,7 +137,7 @@ Optional command-line arguments:
     - emr_sftp_project_name = folder on the SFTP server containing the EMR data
     - emr_data_file = file containing the EMR data
 
-    By default, this parameter is disabled. It is also disabled if **redi** is executing in dry run state
+    By default, this parameter is disabled.
 
  - -r, --resume: Resumes a previously stopped run of `redi`.
 

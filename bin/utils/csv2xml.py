@@ -2,6 +2,9 @@
 
 from __future__ import print_function, unicode_literals
 from io import open
+import sys
+reload(sys)
+sys.setdefaultencoding('utf8')
 
 # ==============================================================================
 # Conversion from CSV to XML

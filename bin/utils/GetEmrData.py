@@ -4,8 +4,8 @@ and return possibly modified log file to the server.
 """
 
 import os
-import re
 import csv
+from xml.sax import saxutils
 
 import pysftp
 
@@ -35,30 +35,16 @@ class EmrConnectionDetails(object) :
 # Module level functions
 #============================
 
-def download_file(source, destination, server):
-    try:
-        server.get(source, destination)
-    except IOError:
-        raise Exception("Unable to download: %s. File not found." % source)
-
-
-def upload_file(source, server):
-    try:
-        server.put(source)
-    except Exception:
-        raise Exception("Unable to upload: %s. File not found." % source)
+def download_file(source, destination, server, username, password):
+    with pysftp.Connection(host=server, username=username, password=password) as sftp:
+        sftp.get(source, destination)
 
 
 def data_preprocessing(input_filename, output_filename):
     # replace &, >, < with &amp;, &>;, &<;
-    with open(input_filename, 'r') as file1:
-        new_string = ""
-        for line in file1:
-            new_string = new_string + re.sub('(&)', r'&amp;', line)
-            new_string = re.sub('(<)', r'&lt;', new_string)
-            new_string = re.sub('(>)', r'&gt;', new_string)
-    with open(output_filename, 'w') as file2:
-        file2.write(new_string)
+    with open(input_filename, 'r') as raw, open(output_filename, 'w') as processed:
+        for line in raw:
+            processed.write(saxutils.escape(line))
 
 
 def generate_xml(input_filename, output_filename):
@@ -128,16 +114,11 @@ def get_emr_data(configuration_directory_path, props):
     data_file       = props.data_file
     configuration_directory_path = configuration_directory_path + "/"
 
-    server = pysftp.Connection(
-        host=props.server,
-        username=props.username,
-        password=props.password)
-
     # download csv file
     download_file(
         project_name + data_file,
         configuration_directory_path + 'raw.txt',
-        server)
+        props.server, props.username, props.password)
 
     # replace certain characters with escape sequences
     data_preprocessing(
