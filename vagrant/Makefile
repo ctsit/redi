@@ -5,18 +5,20 @@ help:
 	@echo "\t rc_list       - list the id of all REDCap projects"
 	@echo "\t rc_save       - save a backup of REDCap database"
 	@echo "\t rc_clean      - remove data for default test project"
+	@echo "\t rc_demographics - load demographic data for default test project"
 	@echo "\t rc_post       - send test data to REDCap"
 	@echo "\t rc_get        - get stored test data from REDCap"
 	@echo "\t rc_fresh      - erase/insert/retrieve test data from REDCap"
 	@echo "\t rc_get_rate   - shows the config option value: 'page_hit_threshold_per_minute' "
 	@echo "\t rc_set_rate   - set the value for: 'page_hit_threshold_per_minute' "
 	@echo "\t egg_test      - deploy the redi egg file to the vagrant box and run redi"
+	@echo "\t clean         - remove files created by testing"
 	@echo "\t copy_redcap_code: - copy the redcap.zip file from the 'config' folder if available"
 	@echo "\t copy_project_data: - copy *.sql files from the 'config' folder if available"
-	
+
 
 rc_check:
-	curl -s http://localhost:8998/redcap/ | grep -i  'Welcome\|Critical Error' 
+	curl -s http://localhost:8998/redcap/ | grep -i  'Welcome\|Critical Error'
 
 rc_list:
 	vagrant ssh -c 'cd /vagrant/scripts && php redcapdbm.php -l'
@@ -26,7 +28,7 @@ rc_save:
 
 rc_clean:
 	# TODO: add support for project id as parameter
-	vagrant ssh -c 'cd /vagrant/scripts && php redcapdbm.php -d 12'	
+	vagrant ssh -c 'cd /vagrant/scripts && php redcapdbm.php -d 12'
 
 rc_demographics:
 	../bin/utils/redcap_records.py --token=121212 --url=http://localhost:8998/redcap/api/ -i demographic_test_data.csv
@@ -52,7 +54,7 @@ rc_set_rate:
 
 test_egg:
 	make egg_test
-	
+
 egg_test:
 	@test -f ../dist/REDI*.egg || (echo 'Please execute "make egg" from the project root first'			&& exit 1)
 	@test -d config				|| (echo 'Please create a "config" folder with necessary files first'	&& exit 1)
