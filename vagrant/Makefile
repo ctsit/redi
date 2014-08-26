@@ -74,5 +74,6 @@ copy_project_data:
 	@test -d ../config    || (echo 'Please create a "config" folder with necessary files first'     && exit 1)
 	@test -f ../config/vagrant-data/projectDataBootstrap.sql || (echo 'Please obtain the project sql dump first' && exit 1)
 	cp ../config/vagrant-data/projectDataBootstrap.sql .
+	@test -f ../config/vagrant-data/demographic_test_data.csv || (echo 'Please obtain the demographics file first' && exit 1)
+	cp ../config/vagrant-data/demographic_test_data.csv .
 	test ! -d ../config/vagrant-data/sqlPatches || (echo "Copying sqlPatches folder from project configuration to vagrant folder" && cp -r ../config/vagrant-data/sqlPatches .)
-
