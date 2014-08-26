@@ -35,7 +35,7 @@ rc_post:
 	python ../bin/redi.py
 
 rc_get:
-	../bin/utils/redcap_records.py --token=121212 --url=http://localhost:8998/redcap/api/ -f "demgraphics chemistry"
+	../bin/utils/redcap_records.py --token=121212 --url=http://localhost:8998/redcap/api/ -f "demographics chemistry cbc inr hcv_rna_results"
 
 rc_fresh:
 	make rc_clean
