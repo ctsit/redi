@@ -267,7 +267,7 @@ Parameters:
 def handle_errors_in_redcap_xml_response(redcap_response, report_data):
     # converting string to dictionary
     response = ast.literal_eval(str(redcap_response))
-    logger.info('handling response from the REDCap')
+    logger.debug('handling response from the REDCap')
     try:
         if 'error' in response:
             for recordData in response['records']:
