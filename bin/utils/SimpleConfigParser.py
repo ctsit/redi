@@ -71,7 +71,7 @@ DEFAULT_MESSAGE = "\nPlease set it with the appropriate value. Refer to "\
                   "config-example/settings.ini for assistance.\nProgram "\
                   "will now terminate..."
 
-# Dictionary containing required file-related parameters along with custom 
+# Dictionary containing required file-related parameters along with custom
 # message to be displayed in case of error
 required_files_dict = {
     "raw_xml_file": "\nIt should specify the name of the file containing raw"\
@@ -88,16 +88,16 @@ required_files_dict = {
 }
 
 required_server_parameters_list = [
-    'redcap_uri', 
-    'token', 
-    'redcap_server', 
+    'redcap_uri',
+    'token',
+    'redcap_server',
     'redcap_support_receiver_email',
-    'smtp_host_for_outbound_mail', 
+    'smtp_host_for_outbound_mail',
     'smtp_port_for_outbound_mail',
-    'emr_sftp_server_hostname', 
-    'emr_sftp_server_username', 
-    'emr_sftp_server_password', 
-    'emr_sftp_project_name', 
+    'emr_sftp_server_hostname',
+    'emr_sftp_server_username',
+    'emr_sftp_server_password',
+    'emr_sftp_project_name',
     'emr_data_file']
 
 # Dictionary containing optional parameters along with their default values
@@ -113,6 +113,7 @@ optional_parameters_dict = {
     "rate_limiter_value_in_redcap": 600,
     "batch_info_database": "redi.db",
     "send_email": 'N',
+    "verify_ssl": True,
     "replace_fields_in_raw_data_xml": None,
     "include_rule_errors_in_report": False,
     "redcap_support_sender_email": 'please-do-not-reply@example.com',
@@ -131,7 +132,7 @@ class SimpleConfigParser(ConfigParser.RawConfigParser):
 
     Inspired from an idea posted by Fredrik Lundh:
     http://mail.python.org/pipermail/python-dev/2002-November/029987.html
-    """    
+    """
 
     def read(self, filename):
         if not os.path.exists(filename):
@@ -168,7 +169,7 @@ class SimpleConfigParser(ConfigParser.RawConfigParser):
             sys.exit()
 
         else:
-            self.check_parameters()            
+            self.check_parameters()
 
     def check_parameters(self):
         """
