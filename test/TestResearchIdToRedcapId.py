@@ -125,7 +125,7 @@ class TestResearchIdToRedcapId(unittest.TestCase):
         except:
             print("setUp failed to create file '" + self.research_id_to_redcap_id + "'")
 
-    def dummy_redcapClient_initializer(self,redcap_uri,token):
+    def dummy_redcapClient_initializer(self, redcap_uri, token, verify_ssl):
         pass
         
     def dummy_get_data_from_redcap(self,records_to_fecth=[],events_to_fetch=[], fields_to_fetch=[], forms_to_fetch=[], return_format='xml'):
@@ -135,7 +135,7 @@ class TestResearchIdToRedcapId(unittest.TestCase):
 </records>"""
         return dummy_output
 
-    def dummy_redcapClient_initializer_with_exception(self,redcap_uri,token):
+    def dummy_redcapClient_initializer_with_exception(self, redcap_uri, token, verify_ssl):
         raise RequestException
 
     def dummy_send_email_redcap_connection_error(email_settings):
@@ -148,6 +148,7 @@ class TestResearchIdToRedcapId(unittest.TestCase):
         redcap_settings = {}
         redcap_settings['redcap_uri'] = 'https://example.org/redcap/api/'
         redcap_settings['token'] = 'ABCDEF878D219CFA5D3ADF7F9AB12345'
+        redcap_settings['verify_ssl'] = False
         redi.research_id_to_redcap_id_converter(self.data, redcap_settings, email_settings, self.research_id_to_redcap_id, False, self.configuration_directory)
         result = etree.tostring(self.data)
         self.assertEqual(self.expect, result)
@@ -159,6 +160,7 @@ class TestResearchIdToRedcapId(unittest.TestCase):
         redcap_settings = {}
         redcap_settings['redcap_uri'] = 'https://example.org/redcap/api/'
         redcap_settings['token'] = 'ABCDEF878D219CFA5D3ADF7F9AB12345'
+        redcap_settings['verify_ssl'] = False
         self.assertRaises(SystemExit,redi.research_id_to_redcap_id_converter,self.data,redcap_settings,email_settings, self.research_id_to_redcap_id, True, self.configuration_directory)
     
     @patch.multiple(redcapClient, __init__ = dummy_redcapClient_initializer_with_exception, get_data_from_redcap = dummy_get_data_from_redcap)

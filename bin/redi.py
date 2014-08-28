@@ -300,7 +300,7 @@ def _run(config_file, configuration_directory, do_keep_gen_files, dry_run,
         html_str = etree.tostring(html_report, method='html', pretty_print=True)
 
         # send report via email
-        if 'Y' == settings.send_email:
+        if settings.send_email:
             sender = settings.sender_email
             receiver = settings.receiver_email.split()
             send_report(sender, receiver, html_str)
@@ -568,15 +568,15 @@ def parse_raw_xml(raw_xml_file):
              + raw_xml_file)
     else:
         raw = open(raw_xml_file, 'r')
-        logger.info("Raw XML file read in. " + str(sum(1 for line in raw))
+        logger.debug("Raw XML file read in. " + str(sum(1 for line in raw))
                     + " total lines in file.")
 
     parser = etree.XMLParser(remove_comments = True)
     data = etree.parse(raw_xml_file, parser = parser)
     event_sum = len(data.findall(".//subject"))
-    logger.info(str(event_sum) + " total subject entries read into tree.")
+    logger.debug(str(event_sum) + " total subject entries read into tree.")
     raw.close()
-    logger.info("Raw XML file closed.")
+    logger.debug("Raw XML file closed.")
     return data
 
 
@@ -596,9 +596,9 @@ def parse_form_events(form_events_file):
                     + " total lines in file.")
     data = etree.parse(form_events_file)
     event_sum = len(data.findall(".//event"))
-    logger.info(str(event_sum) + " total events read into tree.")
+    logger.debug(str(event_sum) + " total events read into tree.")
     raw.close()
-    logger.info("Form events file closed.")
+    logger.debug("Form events file closed.")
     return data
 
 
@@ -701,7 +701,7 @@ def update_time_stamp(data, input_date_format, output_date_format):
     Update timestamp using input and output data formats reads from raw
     ElementTree and writes to it
     """
-    logger.info('Updating timestamp to ElementTree')
+    logger.debug('Updating timestamp to ElementTree')
     for subject in data.iter('subject'):
         # New EMR field SPECIMN_TAKEN_TIME is used in place of Collection Date
         # and Collection Time
@@ -780,7 +780,7 @@ def update_formdatefield(data, form_events_tree):
         Radha
 
     """
-    logger.info('updating the formDateField')
+    logger.debug('updating the formDateField')
     # make a dictionary of the relevant elements from the translationTable
     form_event_root = form_events_tree.getroot()
     if form_event_root is None:
@@ -1117,7 +1117,8 @@ def research_id_to_redcap_id_converter(
 
     try:
         # Communication with redcap
-        redcapClientObject = redcapClient(redcap_settings['redcap_uri'],redcap_settings['token'])
+        redcapClientObject = redcapClient(
+            redcap_settings['redcap_uri'],redcap_settings['token'], redcap_settings['verify_ssl'])
     except RequestException:
         logger.info("Sending email to redcap support")
         if not dry_run:
@@ -1199,7 +1200,7 @@ def configure_logging(data_folder, verbose=False):
     if file_handler:
         file_handler.setLevel(logging.DEBUG)
         file_handler.setFormatter(logging.Formatter('%(asctime)s - %(levelname)s - %(name)s - %(message)s'))
-        logger.info('Logging to the file: "%s"' % filename)
+        #logger.info('Logging to the file: "%s"' % filename)
         root_logger.addHandler(file_handler)
     else:
         logger.warning('File logging has been disabled.')
@@ -1343,7 +1344,7 @@ def create_empty_events_for_one_subject_helper(
 def create_empty_events_for_one_subject(
         form_events_tree,
         translation_table_tree):
-    logger.info('Creating all form events template for one subject')
+    #logger.debug('Creating all form events template for one subject')
     from lxml import etree
     root = etree.Element("all_form_events")
     form_event_root = form_events_tree.getroot()
@@ -1602,7 +1603,7 @@ def copy_data_to_person_form_event_tree(
     :param person_form_event_tree: This parameter holds person form event tree
     :param form_events_tree: This parameter holds form events tree
     """
-    logger.info('Copying data to person form event tree')
+    logger.debug('Copying data to person form event tree')
     raw_data_root = raw_data_tree.getroot()
     person_form_event_tree_root = person_form_event_tree.getroot()
     form_event_root = form_events_tree.getroot()
@@ -1813,7 +1814,7 @@ def validate_xml_file_and_extract_data(xmlfilename, xsdfilename):
                            + xsdfilename)
     else:
         xsdfilehandle = open(xsdfilename, 'r')
-        logger.info(xmlfilename + " Xsd file read in. ")
+        logger.debug(xmlfilename + " Xsd file read in. ")
 
     xsd_tree = etree.parse(xsdfilename)
     xsd = etree.XMLSchema(xsd_tree)
@@ -1989,6 +1990,7 @@ def get_redcap_settings(settings):
     redcap_settings['redcap_uri'] = settings.redcap_uri
     redcap_settings['token'] = settings.token
     redcap_settings['rate_limiter_value_in_redcap'] = settings.rate_limiter_value_in_redcap
+    redcap_settings['verify_ssl'] = settings.verify_ssl
     return redcap_settings
 
 

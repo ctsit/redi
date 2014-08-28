@@ -35,7 +35,7 @@ class TestGenerateOutput(unittest.TestCase):
     def setUp(self):
         redi.configure_logging(DEFAULT_DATA_DIRECTORY)
 
-    def dummy_redcapClient_initializer(self,redcap_uri,token):
+    def dummy_redcapClient_initializer(self, redcap_uri, token, verify_ssl):
         pass
         
     class dummyClass:
@@ -178,7 +178,8 @@ class TestGenerateOutput(unittest.TestCase):
         redcap_settings = {
             'rate_limiter_value_in_redcap':500,
             'redcap_uri':'http://fakeURI:fakeport/',
-            'token':'faketoken'
+            'token'     : 'faketoken',
+            'verify_ssl': False
         }
         email_settings = {
             'smtp_host_for_outbound_mail': 'smtp.example.com',
@@ -193,7 +194,7 @@ class TestGenerateOutput(unittest.TestCase):
                 pass
 
         etree_1 = etree.ElementTree(etree.fromstring(string_1_xml))
-        result = redi_lib.generate_output(etree_1,redcap_settings,email_settings, MockDataRepository())
+        result = redi_lib.generate_output(etree_1, redcap_settings, email_settings, MockDataRepository())
         self.assertEqual(report_data['total_subjects'], result['total_subjects'])
         self.assertEqual(report_data['form_details'], result['form_details'])
         self.assertEqual(report_data['subject_details'], result['subject_details'])
