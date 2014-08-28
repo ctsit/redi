@@ -44,4 +44,6 @@ clean:
 	rm -f all_form_events.xml
 	rm -f person_form_event_tree.xml
 	rm -f person_form_event_tree_with_data.xml
-
+	rm -rf vagrant/data/
+	rm -f vagrant/demographic_test_data.csv
+	rm -f vagrant/redi.db

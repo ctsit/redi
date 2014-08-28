@@ -34,3 +34,6 @@ vagrant/REDI-*.egg
 vagrant/redcap.zip
 vagrant/projectDataBootstrap.sql
 vagrant/sqlPatches
+vagrant/data/
+vagrant/demographic_test_data.csv
+vagrant/redi.db
