@@ -133,7 +133,8 @@ def generate_output(person_tree, redcap_settings, email_settings, data_repositor
 
     try:
         # Communication with redcap
-        redcapClientObject = redcapClient(redcap_settings['redcap_uri'],redcap_settings['token'])
+        redcapClientObject = redcapClient(
+            redcap_settings['redcap_uri'],redcap_settings['token'], redcap_settings['verify_ssl'])
     except RequestException:
         redi_email.send_email_redcap_connection_error(email_settings)
         quit()

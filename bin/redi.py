@@ -1116,7 +1116,8 @@ def research_id_to_redcap_id_converter(
 
     try:
         # Communication with redcap
-        redcapClientObject = redcapClient(redcap_settings['redcap_uri'],redcap_settings['token'], redcap_settings['verify_ssl'])
+        redcapClientObject = redcapClient(
+            redcap_settings['redcap_uri'],redcap_settings['token'], redcap_settings['verify_ssl'])
     except RequestException:
         logger.info("Sending email to redcap support")
         if not dry_run:
