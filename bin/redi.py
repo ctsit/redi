@@ -336,9 +336,6 @@ def _create_person_form_event_tree_with_data(config_file, \
     # parse the raw.xml file and fill the etree rawElementTree
     data = parse_raw_xml(raw_xml_file)
 
-    data, collection_date_summary_dict = \
-    verify_and_correct_collection_date(data, settings.input_date_format)
-    # write_element_tree_to_file(data, proj_root+'raw_with_proper_dates.xml')
     # check if raw element tree is empty
     if not data:
         # raise an exception if empty
@@ -354,6 +351,10 @@ def _create_person_form_event_tree_with_data(config_file, \
     else:
         logger.warning("Parameter 'replace_fields_in_raw_data_xml' missing"\
         " in {0}. Fields will not be replaced".format(config_file))
+
+    data, collection_date_summary_dict = \
+    verify_and_correct_collection_date(data, settings.input_date_format)
+    # write_element_tree_to_file(data, proj_root+'raw_with_proper_dates.xml')
 
     # Convert COMPONENT_ID to loinc_code in the raw data
     component_to_loinc_code_xml = os.path.join(configuration_directory, \
@@ -1222,7 +1223,7 @@ def send_report(sender, receiver, body):
 
     try:
         smtpObj = smtplib.SMTP('smtp.ufl.edu', 25)
-        smtpObj.sendmail(sender, receiver, msg.as_string())   
+        smtpObj.sendmail(sender, receiver, msg.as_string())
         logger.info("Successfully sent email to: " + str(receiver))
     except Exception:
         logger.info("Error: unable to send report email to: " + str(receiver))
