@@ -147,7 +147,14 @@ class SimpleConfigParser(ConfigParser.RawConfigParser):
 
     def getoption(self, option):
         'get the value of an option'
-        return self.get(NOSECTION, option)
+        opt_as_string = self.get(NOSECTION, option)
+        try:
+            # if the conversion to boolean fails we keep the string value
+            opt_as_bool = to_bool(opt_as_string)
+            return opt_as_bool
+        except ValueError:
+            pass
+        return opt_as_string
 
     def getoptionslist(self):
         'get a list of available options'
@@ -170,6 +177,7 @@ class SimpleConfigParser(ConfigParser.RawConfigParser):
 
         else:
             self.check_parameters()
+
 
     def check_parameters(self):
         """
@@ -212,13 +220,32 @@ class SimpleConfigParser(ConfigParser.RawConfigParser):
         # set optional parameters with default values if missing
         for option in optional_parameters_dict:
             if not self.hasoption(option) or self.getoption(option) == "":
-                logging.info("Parameter '{0}' in {1} does not have"\
+                logging.warn("Parameter '{0}' in {1} does not have"\
                 " a value. Default value '{2}' applied.".format(option, \
                     self.filename, optional_parameters_dict[option]))
                 setattr(self, option, optional_parameters_dict[option])
             else:
                 setattr(self, option, self.getoption(option))
 
+#=== End class ================================================================
+def to_bool(value):
+    """
+    Helper function for translating strings into booleans
+    @see test/TestReadConfig.py
+    """
+    valid = {
+        'true':  True,  't': True,  '1': True,  'y' : True,
+        'false': False, 'f': False, '0': False, 'n' : False
+        }
+
+    if not isinstance(value, str):
+        raise ValueError('Cannot check boolean value. Not a string.')
+
+    lower_value = value.lower()
+    if lower_value in valid:
+        return valid[lower_value]
+    else:
+        raise ValueError('Not a boolean string: "%s"' % value)
 
 #=== MAIN =====================================================================
 

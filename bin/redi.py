@@ -300,7 +300,7 @@ def _run(config_file, configuration_directory, do_keep_gen_files, dry_run,
         html_str = etree.tostring(html_report, method='html', pretty_print=True)
 
         # send report via email
-        if 'Y' == settings.send_email:
+        if settings.send_email:
             sender = settings.sender_email
             receiver = settings.receiver_email.split()
             send_report(sender, receiver, html_str)
