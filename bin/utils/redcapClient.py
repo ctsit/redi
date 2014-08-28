@@ -19,7 +19,7 @@ class redcapClient:
         settings: an object of class SimpleConfigParser (in SimpleConfigParser module) that is used for parsing configuration details
     """
 
-    def __init__(self, redcap_uri,token, verify_ssl) :
+    def __init__(self, redcap_uri, token, verify_ssl):
 
         self.redcap_uri = redcap_uri
         msg = 'Initializing redcap interface for: ' + redcap_uri
