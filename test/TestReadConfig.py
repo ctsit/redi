@@ -6,7 +6,6 @@ import os
 from bin import redi
 from bin.utils import SimpleConfigParser
 
-
 class TestReadConfig(unittest.TestCase):
 
     def setUp(self):
@@ -36,6 +35,24 @@ class TestReadConfig(unittest.TestCase):
         }
         self.assertRaises(SystemExit, redi.read_config, **kwargs)
 
+
+    def test_to_bool(self):
+        """
+        Verify we can convert properly the boolean strings
+        """
+        self.assertRaises(ValueError, SimpleConfigParser.to_bool, (None))
+        self.assertRaises(ValueError, SimpleConfigParser.to_bool, (True))
+        self.assertRaises(ValueError, SimpleConfigParser.to_bool, (False))
+        self.assertTrue(SimpleConfigParser.to_bool('true'))
+        self.assertTrue(SimpleConfigParser.to_bool('t'))
+        self.assertTrue(SimpleConfigParser.to_bool('1'))
+        self.assertTrue(SimpleConfigParser.to_bool('y'))
+
+        self.assertFalse(SimpleConfigParser.to_bool('false'))
+        self.assertFalse(SimpleConfigParser.to_bool('f'))
+        self.assertFalse(SimpleConfigParser.to_bool('0'))
+        self.assertFalse(SimpleConfigParser.to_bool('n'))
+
     def test_settings(self):
         settings = SimpleConfigParser.SimpleConfigParser()
 
@@ -58,6 +75,9 @@ emr_sftp_server_password = pswd
 emr_sftp_project_name = sample
 emr_data_file = data.csv
 emr_log_file = log.log
+
+include_rule_errors_in_report = False
+verify_ssl = False
 """)
             t.seek(0)
             settings.read(t.name)
@@ -77,6 +97,8 @@ emr_log_file = log.log
         self.assertEqual(settings.smtp_host_for_outbound_mail,
                          "smtp.example.org")
 
+        self.assertFalse(settings.include_rule_errors_in_report)
+        self.assertFalse(settings.verify_ssl)
 
 def _configure_redi_logger():
     class MockLogger(object):
@@ -84,3 +106,6 @@ def _configure_redi_logger():
             pass
 
     redi.logger = MockLogger()
+
+if __name__ == "__main__":
+    unittest.main()
