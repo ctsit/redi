@@ -206,8 +206,7 @@ class SimpleConfigParser(ConfigParser.RawConfigParser):
                 setattr(self, option, self.getoption(option))
 
         # check for receiver email if send_email = 'Y'
-        if self.hasoption('send_email') and \
-        self.getoption('send_email') == 'Y':
+        if self.hasoption('send_email') and self.getoption('send_email'):
             if not self.hasoption('receiver_email') or \
             self.getoption('receiver_email') == "":
                 message = DEFAULT_MESSAGE_NO_VALUE.format(option, \

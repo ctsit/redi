@@ -40,6 +40,7 @@ rc_get:
 	../bin/utils/redcap_records.py --token=121212 --url=http://localhost:8998/redcap/api/ -f "demographics chemistry cbc inr hcv_rna_results"
 
 rc_fresh:
+	make copy_project_data
 	make rc_clean
 	make rc_demographics
 	make rc_post
@@ -70,7 +71,7 @@ clean:
 copy_redcap_code:
 	@test -d ../config    || (echo 'Please create a "config" folder with necessary files first'     && exit 1)
 	@test -f ../config/vagrant-data/redcap.zip || (echo 'Please obtain the redcap software zip file first' && exit 1)
-	cp -i ../config/vagrant-data/redcap.zip .
+	cp ../config/vagrant-data/redcap.zip .
 
 copy_project_data:
 	@test -d ../config    || (echo 'Please create a "config" folder with necessary files first'     && exit 1)
