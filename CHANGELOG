@@ -1,3 +1,11 @@
+2014-09-03 v0.11.1
+ * Replace clinicalComponentId with loinc_code in config-example
+ * BUG: Interpret `send_email` as bool - fixes #35
+ * Add verify_ssl switch to tell PyCap when to verify the ssl certificate of the REDCap server
+ * Add missing help text and fix typographical errors in vagrant/Makefile
+ * Add additional exported forms to rc_get target of vagrant/Makefile
+ * Remove demographic test data from vagrant folder and add Makefile target to copy this project-specific data from the config folder
+
 2014-08-25 v0.11.0
 
  * Introduced Data Directories (see documentation for --datadir)
