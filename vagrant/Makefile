@@ -2,7 +2,7 @@
 help:
 	@echo "\n Available tasks:"
 	@echo "\t rc_check      - checks if REDCap is running"
-	@echo "\t rc_list       - list the id of the default test project"
+	@echo "\t rc_list       - list the id of all REDCap projects"
 	@echo "\t rc_save       - save a backup of REDCap database"
 	@echo "\t rc_clean      - remove data for default test project"
 	@echo "\t rc_post       - send test data to REDCap"
@@ -11,6 +11,8 @@ help:
 	@echo "\t rc_get_rate   - shows the config option value: 'page_hit_threshold_per_minute' "
 	@echo "\t rc_set_rate   - set the value for: 'page_hit_threshold_per_minute' "
 	@echo "\t egg_test      - deploy the redi egg file to the vagrant box and run redi"
+	@echo "\t copy_redcap_code: - copy the redcap.zip file from the 'config' folder if available"
+	@echo "\t copy_project_data: - copy *.sql files from the 'config' folder if available"
 
 
 rc_check:
@@ -23,6 +25,7 @@ rc_save:
 	vagrant ssh -c 'cd /vagrant/scripts && php redcapdbm.php -b'
 
 rc_clean:
+	# TODO: add support for project id as parameter
 	vagrant ssh -c 'cd /vagrant/scripts && php redcapdbm.php -d 12'
 
 rc_demographics:
@@ -61,3 +64,14 @@ egg_test:
 
 clean:
 	rm -f report.html
+
+copy_redcap_code:
+	@test -d ../config    || (echo 'Please create a "config" folder with necessary files first'     && exit 1)
+	@test -f ../config/vagrant-data/redcap.zip || (echo 'Please obtain the redcap software zip file first' && exit 1)
+	cp -i ../config/vagrant-data/redcap.zip .
+
+copy_project_data:
+	@test -d ../config    || (echo 'Please create a "config" folder with necessary files first'     && exit 1)
+	@test -f ../config/vagrant-data/projectDataBootstrap.sql || (echo 'Please obtain the project sql dump first' && exit 1)
+	cp ../config/vagrant-data/projectDataBootstrap.sql .
+	test ! -d ../config/vagrant-data/sqlPatches || (echo "Copying sqlPatches folder from project configuration to vagrant folder" && cp -r ../config/vagrant-data/sqlPatches .)

@@ -31,3 +31,6 @@ vagrant/backup-redcap-*.sql
 vagrant/redcap-backup-*.sql
 vagrant/REDI-*.egg
 
+vagrant/redcap.zip
+vagrant/projectDataBootstrap.sql
+vagrant/sqlPatches

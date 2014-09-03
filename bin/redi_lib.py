@@ -260,7 +260,7 @@ This function checks for any errors in the redcap response and update report dat
 Parameters:
     redcap_response_xml: This parameter holds the redcap response passed to this function
     report_data: This parameter holds the report data passed to this function
-    
+
 """
 
 
@@ -364,7 +364,7 @@ def create_empty_md5_database(db_path) :
         fresh_file = open(db_path, 'w')
         fresh_file.close()
         os.chmod(db_path, stat.S_IRUSR | stat.S_IWUSR)
-        time.sleep(2)
+        time.sleep(5)
 
     except IOError as e:
         logger.error("I/O error: " + e.strerror + ' for file: ' + db_path)
@@ -398,7 +398,7 @@ def create_empty_table(db_path) :
     finally:
         if db:
             db.close()
-    logger.info('success reate_empty_table')
+    logger.info('success create_empty_table')
     return True
 
 

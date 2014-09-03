@@ -18,7 +18,7 @@ from setuptools import setup, find_packages
 
 setup(
     name='REDI',
-    version='0.11.1',
+    version='0.11.0',
     author='Christopher P Barnes, Philip Chase, Nicholas Rejack',
     author_email='cpb@ufl.edu, pbc@ufl.edu, nrejack@ufl.edu',
     packages=find_packages(exclude=['test']),
