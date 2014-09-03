@@ -1,4 +1,5 @@
 2014-09-03 v0.11.1
+
  * Replace clinicalComponentId with loinc_code in config-example
  * BUG: Interpret `send_email` as bool - fixes #35
  * Add verify_ssl switch to tell PyCap when to verify the ssl certificate of the REDCap server
