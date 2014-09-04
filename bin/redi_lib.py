@@ -104,7 +104,7 @@ Steps:
 """
 
 
-def generate_output(person_tree, redcap_settings, email_settings, data_repository):
+def generate_output(person_tree, redcap_settings, email_settings, data_repository, skip_blanks=False):
     # redi.configure_logger(system_log_file_full_path)
 
     # the global dictionary to be returned
@@ -197,6 +197,12 @@ def generate_output(person_tree, redcap_settings, email_settings, data_repositor
                         event)
                     json_data_dict = import_dict['json_data']
                     contains_data = import_dict['contains_data']
+
+                    # If we're skipping blanks and this event is blank, we
+                    # assume all following events are blank; therefore, break
+                    # out of this for-loop and move on to the next form.
+                    if skip_blanks and not contains_data:
+                        break
 
                     time_lapse_since_last_request = time.time(
                     ) - time_stamp_after_request

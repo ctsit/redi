@@ -148,7 +148,7 @@ def main():
          logger)
 
     _run(config_file, configuration_directory, do_keep_gen_files, dry_run,
-         get_emr_data, settings, output_files, db_path, args['resume'])
+         get_emr_data, settings, output_files, db_path, args['resume'], args['skip_blanks'])
 
 
 def _makedirs(data_folder):
@@ -205,7 +205,7 @@ def _save(obj, path):
 
 
 def _run(config_file, configuration_directory, do_keep_gen_files, dry_run,
-         get_emr_data, settings, data_folder, database_path, resume=False):
+         get_emr_data, settings, data_folder, database_path, resume=False, skip_blanks=False):
     global translational_table_tree
 
     assert _person_form_events_service is not None
@@ -274,7 +274,7 @@ def _run(config_file, configuration_directory, do_keep_gen_files, dry_run,
         # Use the new method to communicate with RedCAP
         report_data = redi_lib.generate_output(
             person_form_event_tree_with_data, redcap_settings, email_settings,
-            _person_form_events_service)
+            _person_form_events_service, skip_blanks)
         # write person_form_event_tree to file
         write_element_tree_to_file(person_form_event_tree_with_data,\
          os.path.join(data_folder, 'person_form_event_tree_with_data.xml'))
