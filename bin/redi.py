@@ -547,6 +547,13 @@ def parse_args(arguments=None):
         'input and output data which will help in running multiple'\
         ' simultaneous instances of redi for different projects')
 
+    parser.add_argument(
+        '--skip-blanks',
+        default=False,
+        action='store_true',
+        required=False,
+        help='skip blank events when sending event data to RedCAP')
+
     if arguments:
         parsed = parser.parse_args(arguments)
     else:
