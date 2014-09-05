@@ -603,6 +603,94 @@ class TestCopyDataToPersonFormEventTree(unittest.TestCase):
         self.assertRaises(Exception, redi.copy_data_to_person_form_event_tree, self.data_Form_Imported_Field,
                           self.data_person_form_event_tree, self.data_form_event_tree)
 
+    def test_form_imported_is_really_optional(self):
+        """This test ensures formImportedFieldName is optional"""
+        person_form_event_tree = """
+            <person_form_event>
+                <person>
+                    <study_id>007</study_id>
+                    <all_form_events>
+                        <form>
+                            <name>espionage</name>
+                            <event>
+                                <name>1_arm_1</name>
+                                <field><name>interrogation</name><value /></field>
+                                <field><name>interrogation_units</name><value /></field>
+                                <field><name>espionage_complete</name><value/></field>
+                            </event>
+                        </form>
+                    </all_form_events>
+                </person>
+            </person_form_event>
+        """
+
+        data_person_form_event_tree = etree.ElementTree(etree.fromstring(person_form_event_tree))
+
+        study_data = """<?xml version="1.0" encoding="UTF-8"?>
+            <study>
+                <subject>
+                    <NAME>Bond, James</NAME>
+                    <RESULT>Passed</RESULT>
+                    <REFERENCE_UNIT/>
+                    <STUDY_ID>007</STUDY_ID>
+                    <timestamp>1953-04-13</timestamp>
+                    <redcapFormName>espionage</redcapFormName>
+                    <eventName>1_arm_1</eventName>
+                    <formDateField>date_taken</formDateField>
+                    <formCompletedFieldName>espionage_complete</formCompletedFieldName>
+                    <redcapFieldNameValue>interrogation</redcapFieldNameValue>
+                    <redcapFieldNameUnits>interrogation_units</redcapFieldNameUnits>
+                    <formImportedFieldName></formImportedFieldName>
+                </subject>
+            </study>"""
+
+        data_one_subject = etree.ElementTree(etree.fromstring(study_data))
+
+        form_event_tree = """<?xml version="1.0" encoding="UTF-8"?>
+        <redcapProject>
+            <name>Project</name>
+            <form>
+                <name>espionage</name>
+                <formDateField>date_taken</formDateField>
+                <formCompletedFieldName>espionage_complete</formCompletedFieldName>
+                <formCompletedFieldValue>Completed</formCompletedFieldValue>
+                <!-- THESE ARE SUPPOSED TO BE OPTIONAL:
+                    <formImportedFieldValue>Y</formImportedFieldValue>
+                    <formImportedFieldName>espionage_nximport</formImportedFieldName>
+                -->
+                <event>
+                    <name>1_arm_1</name>
+                </event>
+            </form>
+        </redcapProject>
+        """
+        data_form_event_tree = etree.ElementTree(etree.fromstring(form_event_tree))
+
+        result = redi.copy_data_to_person_form_event_tree(data_one_subject,
+                                                          data_person_form_event_tree,
+                                                          data_form_event_tree)
+
+        output = """
+            <person_form_event>
+                <person>
+                    <study_id>007</study_id>
+                    <all_form_events>
+                        <form>
+                            <name>espionage</name>
+                            <event>
+                                <name>1_arm_1</name>
+                                <field><name>interrogation</name><value>Passed</value></field>
+                                <field><name>interrogation_units</name><value /></field>
+                                <field><name>espionage_complete</name><value>Completed</value></field>
+                            </event>
+                        </form>
+                    </all_form_events>
+                </person>
+            </person_form_event>
+        """
+
+        expect = etree.tostring(etree.fromstring(output))
+        self.assertEqual(expect, etree.tostring(result))
 
 if __name__ == '__main__':
     unittest.main()
