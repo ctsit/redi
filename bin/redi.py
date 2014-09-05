@@ -1058,10 +1058,7 @@ def update_event_name(data, lookup_data, undefined):
                 # print field_key
                 distinct_value[field_key] += 1
                 if distinct_value[field_key] > 1:
-                    multiple_values_alert.append(
-                        'Multiple values found for field ' +
-                        field_key)
-                    logger.warn("update_event_name: multiple values \
+                    logger.debug("update_event_name: multiple values \
                         found for field %s", field_key)
             else:
                 element_to_set.text = undefined
