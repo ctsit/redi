@@ -148,7 +148,7 @@ def main():
          logger)
 
     _run(config_file, configuration_directory, do_keep_gen_files, dry_run,
-         get_emr_data, settings, output_files, db_path, args['resume'])
+         get_emr_data, settings, output_files, db_path, args['resume'], args['skip_blanks'])
 
 
 def _makedirs(data_folder):
@@ -205,7 +205,7 @@ def _save(obj, path):
 
 
 def _run(config_file, configuration_directory, do_keep_gen_files, dry_run,
-         get_emr_data, settings, data_folder, database_path, resume=False):
+         get_emr_data, settings, data_folder, database_path, resume=False, skip_blanks=False):
     global translational_table_tree
 
     assert _person_form_events_service is not None
@@ -274,7 +274,7 @@ def _run(config_file, configuration_directory, do_keep_gen_files, dry_run,
         # Use the new method to communicate with RedCAP
         report_data = redi_lib.generate_output(
             person_form_event_tree_with_data, redcap_settings, email_settings,
-            _person_form_events_service)
+            _person_form_events_service, skip_blanks)
         # write person_form_event_tree to file
         write_element_tree_to_file(person_form_event_tree_with_data,\
          os.path.join(data_folder, 'person_form_event_tree_with_data.xml'))
@@ -546,6 +546,13 @@ def parse_args(arguments=None):
         help='Specify the path to the directory containing project specific '\
         'input and output data which will help in running multiple'\
         ' simultaneous instances of redi for different projects')
+
+    parser.add_argument(
+        '--skip-blanks',
+        default=False,
+        action='store_true',
+        required=False,
+        help='skip blank events when sending event data to RedCAP')
 
     if arguments:
         parsed = parser.parse_args(arguments)
@@ -1051,10 +1058,7 @@ def update_event_name(data, lookup_data, undefined):
                 # print field_key
                 distinct_value[field_key] += 1
                 if distinct_value[field_key] > 1:
-                    multiple_values_alert.append(
-                        'Multiple values found for field ' +
-                        field_key)
-                    logger.warn("update_event_name: multiple values \
+                    logger.debug("update_event_name: multiple values \
                         found for field %s", field_key)
             else:
                 element_to_set.text = undefined
@@ -1626,7 +1630,6 @@ def copy_data_to_person_form_event_tree(
             fieldUnitsNameObject = subject.find("redcapFieldNameUnits")
             fieldUnitsValueObject = subject.find("REFERENCE_UNIT")
             formCompletedField = subject.find("formCompletedFieldName")
-            formImportedField = subject.find("formImportedFieldName")
 
             if study_id_object is None:
                 raise Exception('Missing required field STUDY_ID')
@@ -1737,25 +1740,29 @@ def copy_data_to_person_form_event_tree(
                     "']/../value")
                 completedFieldValue[0].text = form_event_root.xpath(
                     "form/name[.='" + formName + "']/../formCompletedFieldValue")[0].text
-                importedFieldValue = person_form_event_tree_root.xpath(
-                    "person/study_id[.='" +
-                    subject_id +
-                    "']/../all_form_events/form/name[.='" +
-                    formName +
-                    "']/../event/name[.='" +
-                    eventName +
-                    "']/../field/name[.='" +
-                    formImportedField.text +
-                    "']/../value")
-                importedFieldValue[0].text = form_event_root.xpath(
-                    "form/name[.='" + formName + "']/../formImportedFieldValue")[0].text
+
+                form_imported_field_name = subject.findtext("formImportedFieldName", default="")
+                imported_field_value = person_form_event_tree_root.xpath(
+                    "person/study_id[.='{subject_id}']/../"
+                    "all_form_events/form/name[.='{form_name}']/../event/"
+                    "name[.='{event_name}']/../field/"
+                    "name[.='{form_imported_field_name}']/../value".format(
+                        subject_id=subject_id,
+                        form_name=formName,
+                        event_name=eventName,
+                        form_imported_field_name=form_imported_field_name))
+
+                if imported_field_value:
+                    try:
+                        imported_field_value[0].text = form_event_root.xpath(
+                            "form/name[.='" + formName + "']/../formImportedFieldValue")[0].text
+                        assert imported_field_value[0].text
+                    except (IndexError, AssertionError):
+                        raise Exception('formImportedField not set properly in the person form event tree')
 
                 if not completedFieldValue[0].text:
                     raise Exception(
                         'formCompletedField not set properly in the person form event tree')
-                if not importedFieldValue[0].text:
-                    raise Exception(
-                        'formImportedField not set properly in the person form event tree')
 
     tree = etree.ElementTree(person_form_event_tree_root)
     return tree

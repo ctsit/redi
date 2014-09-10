@@ -70,10 +70,10 @@
                 </table>
                 <br />
                 <!-- Alerts start here -->
-                <!-- <h3>Import Alerts</h3> -->
+                <h3>Import Alerts</h3>
                 <!-- check for not null -->
                 <!-- Commented out as the output is not fully de-identified-->
-                <!-- <xsl:if test="report/alerts/tooManyForms/eventAlert">
+                <xsl:if test="report/alerts/tooManyForms/eventAlert">
                     <table>
                         <thead>
                             <tr>
@@ -91,10 +91,10 @@
                         </tbody>
                     </table>
                     <br />
-                </xsl:if> -->
+                </xsl:if>
                 <!-- check for not null -->
                 <!-- Commented out as the output is not fully de-identified-->
-                <!-- <xsl:if test="report/alerts/tooManyValues/valuesAlert">
+                <xsl:if test="report/alerts/tooManyValues/valuesAlert">
                     <table>
                         <thead>
                             <tr>
@@ -111,7 +111,7 @@
                             </xsl:for-each>
                         </tbody>
                     </table>
-                </xsl:if>  -->
+                </xsl:if>
                 <br />
                 <h3>Subject Details</h3>
                 <table>

@@ -162,6 +162,13 @@ Optional command-line arguments:
     By default, the data directory is assumed to be the current working directory.
     Using this switch, one can run multiple instances of redi simultaneously.
 
+ - -v, --verbose: increase verbosity of output
+
+    $ redi --verbose
+
+ - --skip-blanks: skip blank events when sending event data to RedCAP
+
+    $ redi --skip-blanks
 
 ## Testing
 
