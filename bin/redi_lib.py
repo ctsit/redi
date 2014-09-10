@@ -1,14 +1,12 @@
-#/usr/bin/env python
-
 """
 redi_lib.py
 
     Stores a collection of utility functions used by redi.py
 """
 
-__author__      = "University of Florida CTS-IT Team"
-__copyright__   = "Copyright 2014, University of Florida"
-__license__     = "BSD 2-Clause"
+__author__ = "University of Florida CTS-IT Team"
+__copyright__ = "Copyright 2014, University of Florida"
+__license__ = "BSD 2-Clause"
 
 import datetime
 import os
@@ -104,7 +102,7 @@ Steps:
 """
 
 
-def generate_output(person_tree, redcap_settings, email_settings, data_repository):
+def generate_output(person_tree, redcap_settings, email_settings, data_repository, skip_blanks=False):
     # redi.configure_logger(system_log_file_full_path)
 
     # the global dictionary to be returned
@@ -133,8 +131,9 @@ def generate_output(person_tree, redcap_settings, email_settings, data_repositor
 
     try:
         # Communication with redcap
-        redcapClientObject = redcapClient(
-            redcap_settings['redcap_uri'],redcap_settings['token'], redcap_settings['verify_ssl'])
+        redcapClientObject = redcapClient(redcap_settings['redcap_uri'],
+                                          redcap_settings['token'],
+                                          redcap_settings['verify_ssl'])
     except RequestException:
         redi_email.send_email_redcap_connection_error(email_settings)
         quit()
@@ -197,6 +196,12 @@ def generate_output(person_tree, redcap_settings, email_settings, data_repositor
                         event)
                     json_data_dict = import_dict['json_data']
                     contains_data = import_dict['contains_data']
+
+                    # If we're skipping blanks and this event is blank, we
+                    # assume all following events are blank; therefore, break
+                    # out of this for-loop and move on to the next form.
+                    if skip_blanks and not contains_data:
+                        break
 
                     time_lapse_since_last_request = time.time(
                     ) - time_stamp_after_request

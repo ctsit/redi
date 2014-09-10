@@ -1,4 +1,21 @@
+2014-09-10 v0.11.2
+ 
+ * Summary: performance improvements to speed up run time.
+
+ * Closes #42 - "redcap_records.py lost the events and fields arguments" (Andrei Sura)
+ * Remove implied assert of a formImportedFieldName (Taeber Rapczak)
+ * Add test showing formImportedFieldName is required (Taeber Rapczak)
+ * Refactor TestCopyDataToPersonFormEventTree.py (Taeber Rapczak)
+ * additional fix for #39 (Ruchi Vivek Desai)
+ * fixes #39 (Ruchi Vivek Desai)
+ * Update README with --skip-blanks and --verbose (Taeber Rapczak)
+ * Increase pylint score (Taeber Rapczak)
+ * Add suport for skipping blanks to generate_output (Taeber Rapczak)
+ * Add --skip-blanks flag (Taeber Rapczak)
+ * Add unit test to check for --skip-blanks (Taeber Rapczak)
+
 2014-09-03 v0.11.1
+
  * Replace clinicalComponentId with loinc_code in config-example
  * BUG: Interpret `send_email` as bool - fixes #35
  * Add verify_ssl switch to tell PyCap when to verify the ssl certificate of the REDCap server
