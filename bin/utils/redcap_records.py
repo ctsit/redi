@@ -64,6 +64,7 @@ def main():
     parser.add_argument(
         '-t',
         '--type',
+        choices=['json', 'csv', 'xml'],
         dest='data_type',
         default='csv',
         help='Specify the file type used as input or output. Valid types: json, csv, xml')
@@ -72,7 +73,7 @@ def main():
     args = vars(parser.parse_args())
 
     # According to http://pycap.readthedocs.org/en/latest/api.html
-    # allowed data_types are: csv, json, xm
+    # allowed data_types are: csv, json, xml
     data_type = args['data_type']
 
     # Turn the 'verify_ssl' parameter into the truth value we need to make a
