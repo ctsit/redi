@@ -33,8 +33,6 @@ from TestCreateSummaryReport import TestCreateSummaryReport
 from TestUpdateStatusField import TestUpdateStatusField
 from TestCreateEmptyEventsForOneSubject import TestCreateEmptyEventsForOneSubject
 from TestCreateEmptyEventTreeForStudy import TestCreateEmptyEventTreeForStudy
-from TestCreateImportDataJson import TestCreateImportDataJson
-from TestGenerateOutput import TestGenerateOutput
 from TestParseAll import TestParseAll
 from TestHandleREDCapResponse import TestHandleErrorsInREDCapResponse
 from TestParseRawXml import TestParseRawXml
@@ -43,6 +41,7 @@ from TestConvertComponentIdToLoincCode import TestConvertComponentIdToLoincCode
 from TestCopyDataToPersonFormEventTree import TestCopyDataToPersonFormEventTree
 from TestGetEMRData import TestGetEMRData
 from TestResume import TestResume
+from TestSendPersonFormDataToRedcap import TestSendPersonFormDataToRedcap
 from TestPersonFormEventsRepository import TestPersonFormEventsRepository
 from TestVerifyAndCorrectCollectionDate import TestVerifyAndCorrectCollectionDate
 from TestSkipBlanks import TestSkipBlanks
@@ -76,8 +75,6 @@ class redi_suite(unittest.TestSuite):
         redi_test_suite.addTest(TestParseAll)
 
         # The redesign functions May 2014
-        redi_test_suite.addTest(TestCreateImportDataJson)
-        redi_test_suite.addTest(TestGenerateOutput)
         redi_test_suite.addTest(TestHandleErrorsInREDCapResponse)
         redi_test_suite.addTest(TestParseRawXml)
         redi_test_suite.addTest(TestValidateXmlFleAndExtractData)
@@ -85,6 +82,7 @@ class redi_suite(unittest.TestSuite):
         redi_test_suite.addTest(TestCopyDataToPersonFormEventTree)
         redi_test_suite.addTest(TestGetEMRData)
         redi_test_suite.addTest(TestResume)
+        redi_test_suite.addTest(TestSendPersonFormDataToRedcap)
         redi_test_suite.addTest(TestPersonFormEventsRepository)
         redi_test_suite.addTest(TestSkipBlanks)
 

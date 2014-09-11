@@ -25,275 +25,50 @@ from requests import RequestException
 from lxml import etree
 import logging
 import sys
+import collections
 logger = logging.getLogger(__name__)
 logger.addHandler(logging.NullHandler())
-proj_root = redi.get_proj_root()
 
 DEFAULT_DATA_DIRECTORY = os.getcwd()
 
 
-
-"""
-create_import_data_json:
-This function converts data in event tree into json format.
-Parameters:
-    import_data_dict: This parameter holds the event tree data
-    event_tree: This parameter holds the event tree data
-
-@see #generate_output()
-"""
-
-
-def create_import_data_json(
-        import_data_dict,
-        event_tree):
-    # redi.configure_logger(system_log_file_full_path)
-
-    root = event_tree
-
-    event_name = root.find('name')
-    if event_name is None or not event_name.text:
-        raise Exception('Expected non-blank element event/name')
-
-    import_data_dict['redcap_event_name'] = event_name.text
-
-    event_field_value_list = root.xpath('//event/field/name')
-
-    for name in event_field_value_list:
-        if name.text is None:
-            raise Exception(
-                'Expected non-blank element event/field/name')
-
-    # Match all fields to build a row for each
-    event_field_list = root.xpath('field')
-    contains_data = False
-
-    for field in event_field_list:
-        val = get_child_text_safely(field, 'value')
-        import_data_dict[field.findtext('name')] = val
-
-        if val and not contains_data:
-            contains_data = True
-
-    return {'json_data': import_data_dict, 'contains_data': contains_data}
-
-"""
-Convenience function
-@see create_eav_output
-"""
-
-
 def get_child_text_safely(etree, ele):
+    """
+    Convenience function
+    @see _send_person_form_data_to_redcap()
+    """
+
     ele = etree.find(ele)
     if ele.text is None:
         return ''
     else:
         return ele.text
 
-"""
-Note: This function communicates with the redcap application.
-Steps:
-    - loop for each person/form/event element
-    - generate a csv fragment `using create_eav_output`
-    - send csv fragment to RedCap using `send_eav_data_to_redcap`
 
-
-@return the report_data dictionary
-"""
-
-
-def generate_output(person_tree, redcap_settings, email_settings, data_repository, skip_blanks=False):
-    # redi.configure_logger(system_log_file_full_path)
-
-    # the global dictionary to be returned
-    report_data = {
-        'errors': []
-    }
-
+def handle_errors_in_redcap_xml_response(redcap_response, form_summary):
     """
-     For each person we keep a count for each form type:
-        subject_details = array(
-            'person_A' => array('form_1': 1, 'form_2': 10, ...
-            'person_B' => array('form_1': 1, 'form_2': 10, ...
-            ...
-        )
+    This function checks for any errors in the redcap response and
+        update report data if there are any errors.
+    Parameters:
+        :redcap_response: holds the response from REDCap
+        :form_summary: holds the dictionary in which we store errors
     """
-    subject_details = {}
-
-    # For each form type we keep a global count
-    form_details = {}
-
-    # count how many `person` elements are parsed
-    person_count = 0
-
-    root = person_tree.getroot()
-    persons = root.xpath('//person')
-
-    try:
-        # Communication with redcap
-        redcapClientObject = redcapClient(redcap_settings['redcap_uri'],
-                                          redcap_settings['token'],
-                                          redcap_settings['verify_ssl'])
-    except RequestException:
-        redi_email.send_email_redcap_connection_error(email_settings)
-        quit()
-
-    rate_limiter_value_in_redcap = float(redcap_settings['rate_limiter_value_in_redcap'])
-
-
-    ideal_time_per_request = 60 / float(rate_limiter_value_in_redcap)
-    time_stamp_after_request = 0
-
-    # main loop for each person
-    for person in persons:
-        time_begin = datetime.datetime.now()
-        person_count += 1
-        study_id = (person.xpath('study_id') or [None])[0]
-
-        if study_id is None:
-            raise Exception('Expected a valid value for study_id')
-
-        # count how many csv fragments are created per person
-        event_count = 0
-        logger.info('Start sending data for study_id: %s' % study_id.text)
-
-        forms = person.xpath('./all_form_events/form')
-
-        # loop through the forms of one person
-        for form in forms:
-            form_name = form.xpath('name')[0].text
-            form_key = 'Total_' + form_name + '_Forms'
-            study_id_key = study_id.text
-
-            # init dictionary for a new person in (study_id)
-            if study_id_key not in subject_details:
-                subject_details[study_id_key] = {}
-
-            if not form_key in subject_details[study_id_key]:
-                subject_details[study_id_key][form_key] = 0
-
-            if form_key not in form_details:
-                form_details[form_key] = 0
-
-            logger.debug(
-                'parsing study_id ' +
-                study_id.text +
-                ' form: ' +
-                form_name)
-
-            # loop through the events of one form
-            for event in form.xpath('event'):
-                event_status = event.findtext('status')
-                if event_status == 'sent':
-                    continue
-                event_count += 1
-
-                try:
-                    import_dict = {
-                        redcapClientObject.project.def_field: study_id.text}
-                    import_dict = create_import_data_json(
-                        import_dict,
-                        event)
-                    json_data_dict = import_dict['json_data']
-                    contains_data = import_dict['contains_data']
-
-                    # If we're skipping blanks and this event is blank, we
-                    # assume all following events are blank; therefore, break
-                    # out of this for-loop and move on to the next form.
-                    if skip_blanks and not contains_data:
-                        break
-
-                    time_lapse_since_last_request = time.time(
-                    ) - time_stamp_after_request
-                    sleepTime = max(
-                        ideal_time_per_request -
-                        time_lapse_since_last_request,
-                        0)
-                    # print 'Sleep for: %s seconds' % sleepTime
-                    time.sleep(sleepTime)
-
-                    if (0 == event_count % 50):
-                        logger.info('Requests sent: %s' % (event_count))
-
-                    # to speedup testing uncomment the following line
-                    # if (0 == event_count % 2) : continue
-
-                    try:
-                        found_error = False
-                        response = redcapClientObject.send_data_to_redcap([json_data_dict], overwrite = True)
-                        status = event.find('status')
-                        if status is not None:
-                            status.text = 'sent'
-                        else:
-                            status_element = etree.Element("status")
-                            status_element.text = 'sent'
-                            event.append(status_element)
-                        data_repository.store(person_tree)
-                    except RedcapError as e:
-                        found_error = handle_errors_in_redcap_xml_response(
-                            e.message,
-                            report_data)
-
-                    time_stamp_after_request = time.time()
-
-                    if contains_data:
-                        if not found_error:
-                            # if no errors encountered update event counters
-                            subject_details[study_id_key][form_key] += 1
-                            form_details[form_key] += 1
-
-                except Exception as e:
-                    logger.error(e.message)
-                    raise
-
-        time_end = datetime.datetime.now()
-        logger.info("Total execution time for study_id %s was %s" % (study_id_key, (time_end - time_begin)))
-        logger.info("Total REDCap requests sent: %s \n" % (event_count))
-
-    report_data.update({
-        'total_subjects': person_count,
-        'form_details': form_details,
-        'subject_details': subject_details,
-        'errors': report_data['errors']
-    })
-
-    logger.debug('report_data ' + repr(report_data))
-    return report_data
-
-"""
-handle_errors_in_redcap_xml_response:
-This function checks for any errors in the redcap response and update report data if there are any errors.
-Parameters:
-    redcap_response_xml: This parameter holds the redcap response passed to this function
-    report_data: This parameter holds the report data passed to this function
-
-"""
-
-
-def handle_errors_in_redcap_xml_response(redcap_response, report_data):
     # converting string to dictionary
     response = ast.literal_eval(str(redcap_response))
-    logger.debug('handling response from the REDCap')
+
     try:
         if 'error' in response:
             for recordData in response['records']:
                 error_string = "Error writing to record " + recordData["record"] + " field " + recordData[
                     "field_name"] + " Value " + recordData["value"] + ".Error Message: " + recordData["message"]
-                logger.info(error_string)
-                report_data['errors'].append(error_string)
+                logger.error("Handling error in REDCap response: "
+                             + error_string)
+                form_summary['errors'].append(error_string)
         else:
             logger.error("REDCap response is in unknown format")
     except KeyError as e:
-        logger.error(str(e))
+        logger.error("KeyError found while parsing REDCap response: " + str(e))
     return True
-
-
-# Convenience method for getting the first element
-# Note: for printing an object can use: print  repr(obj)
-def get_first_item(aList):
-    if aList:
-        return aList[0]
-    return None
 
 """
 create_temp_dir_debug:
@@ -697,3 +472,223 @@ Helper function for debugging xml content
 def printxml(tree):
     print etree.tostring(tree, pretty_print = True)
     return
+
+def get_redcap_client(redcap_settings, email_settings):
+    """
+    Helper method used to check availability of REDCap
+    Warning: will send a warning email and interrupt execution
+        if communication with REDCap fails
+    """
+    try:
+        client = redcapClient(
+            redcap_settings['redcap_uri'],
+            redcap_settings['token'],
+            redcap_settings['verify_ssl'])
+    except RequestException:
+        redi_email.send_email_redcap_connection_error(email_settings)
+        raise
+    return client
+
+def transfer_pfe_tree(
+        pfe_tree,
+        redcap_settings,
+        email_settings,
+        pfe_repo,
+        skip_blanks):
+    """
+    The main method which transfers Person Form Event xml to REDCap
+    using #send_person_form_data_to_redcap() function.
+
+    Returns a summary of the transfer success:
+        'total_subjects'        : 3,
+        'form_details'          : { Total_abc_Forms : 123, ...},
+        'subject_details'       : { study_id : { Total_abc_Forms : 123, ... },  ... }
+        'errors'                : []
+        'subject_details_events : {study_id : event_count, ...}
+
+    Note: `total_subjects` is incremented even if the forms for the subject
+        are empty or there was an error while sending the data to REDCap.
+    """
+    client = get_redcap_client(redcap_settings, email_settings)
+    summary = init_summary()
+
+    # Loop through the Person_Form_Event tree and generate
+    root = pfe_tree.getroot()
+    persons = root.xpath('//person')
+
+    for person in persons:
+        summary['total_subjects'] += 1
+        study_id = person.get('study_id')
+        logger.info('Start sending forms for study_id: ' + study_id)
+        forms = person.xpath('./all_form_events/form')
+
+        for form in forms:
+            form_name = form.get('form_name')
+            fk = FormKey(study_id, form_name)
+            form_summary = _send_person_form_data_to_redcap(client, pfe_repo, study_id, form, skip_blanks)
+            summary = _update_summary(summary, fk, form_summary)
+    logger.debug(summary)
+    return summary
+
+def _send_person_form_data_to_redcap(client, pfe_repo, study_id, form, skip_blanks):
+    """
+    Loop through the events of the given form and build
+    the data structure to be sent to REDCap.
+
+    If a form fails to be sent then the entire form
+    is added to a list of `unsent` forms which can be
+    resent later if needed.
+<event>
+     <name>1_arm_1</name>
+     <field> <name>inr_abc</name> <value>1</value></field>
+     <field> <name>inr_xyz</name> <value>2</value></field>
+</event>
+    """
+    form_contains_data = False
+    form_name = form.get('form_name')
+    logger.debug("sending form `{}`, study_id: `{}` ".format(form_name, study_id))
+
+    # The list of dictionaries representing each event in the form
+    form_events_list = []
+
+    for event in form.xpath('event'):
+        validate_event(event)
+        event_dict = {
+            'redcap_event_name': event.find('name').text,
+        }
+
+        for field in event.xpath('field'):
+            val = get_child_text_safely(field, 'value')
+            name = field.findtext('name')
+            event_dict[name] = val
+            if val and not form_contains_data:
+                form_contains_data = True
+
+        event_dict.update({client.project.def_field: study_id})
+        form_events_list.append(event_dict)
+
+    if not form_contains_data:
+        logging.debug("Form `{}` is empty for study_id `{}`".format(form_name , study_id))
+
+    # Now that the events of this form are parsed send the json data in a batch
+    form_summary = _execute_send_data_to_redcap(client,
+                                                pfe_repo,
+                                                form,
+                                                form_contains_data,
+                                                form_events_list,
+                                                skip_blanks)
+    return form_summary
+
+def _execute_send_data_to_redcap(client,
+                                pfe_repo,
+                                form,
+                                form_contains_data,
+                                form_events_list,
+                                skip_blanks):
+    """
+    Helper method for _send_person_form_data_to_redcap
+    Note: the returned value of this method is parsed by "_update_summary"
+    """
+    form_summary = {
+        'was_sent': True,
+        'total_events': 0,
+        'errors': [],
+    }
+
+    if not form_contains_data and skip_blanks:
+        return form_summary
+
+    if form.get('redcap_status'):
+        # (!) This is a resumed batch but this form was already sent
+        # Return a fake summary so the report includes total counts
+        logger.debug("Skip sending already sent form: " + form.get('form_name'))
+        fake_summary = {
+            'was_sent': True,
+            'total_events': len(form_events_list),
+        }
+        return fake_summary
+
+    found_error = False
+    try:
+        response = client.send_data_to_redcap(form_events_list, overwrite = True)
+        # If the form was sent to REDCap update add an extra attribute
+        # which is later used for the resuming
+        form.set('redcap_status', redi.STATUS_SENT)
+        form_tree = etree.ElementTree(form)
+        pfe_repo.store(form_tree)
+    except RedcapError as e:
+        found_error = handle_errors_in_redcap_xml_response(e.message, form_summary)
+    if not found_error:
+        form_summary['was_sent'] = True
+        form_summary['total_events'] = len(form_events_list)
+    return form_summary
+
+def init_summary():
+    """
+    Called by `transfer_pfe_tree` to initialize the data structure passed to `_update_summary`
+    """
+    return {
+        'total_subjects' : 0,
+        'form_details'   : {},
+        'subject_details': {},
+        'errors'         : [],
+        'subject_events' : collections.defaultdict(int),
+    }
+
+def _update_summary(summary, fk, form_summary):
+    """
+    Receives status data about one form transfer to REDCap.
+    The returned `summary` dictionary is passed later on to the function
+    which create an html report of the entire batch.
+    Note: `fk` is an instance of the FormKey class and it is used to decide
+    where to `merge` the `form_summary` data.
+    """
+    total_key = fk.get_total_key()
+
+    # form_details
+    if total_key not in summary['form_details']:
+        summary['form_details'][total_key] = 0
+
+    if "was_sent" in form_summary:
+        summary['form_details'][total_key] += 1
+
+    # subject_details
+    if fk.study_id not in summary['subject_details']:
+        summary['subject_details'][fk.study_id] = {}
+
+    if total_key not in summary['subject_details'][fk.study_id]:
+        summary['subject_details'][fk.study_id][total_key] = 0
+
+    if "was_sent" in form_summary and form_summary['was_sent']:
+        summary['subject_details'][fk.study_id][total_key] += 1
+
+    # errors
+    if form_summary['errors']:
+        summary['errors'].append(form_summary['errors'])
+
+    # event counts
+    # TODO: add column in the report: study_id -> total_events parsed
+    summary['subject_events'][fk.study_id] += form_summary['total_events']
+    return summary
+
+def validate_event(event):
+    """ @see send_person_form_data_to_redcap"""
+    event_name = event.find('name')
+    if event_name is None or not event_name.text:
+        raise Exception('Expected non-blank element event/name')
+
+    event_field_name_list = event.xpath('field/name')
+
+    for name in event_field_name_list:
+        if name.text is None:
+            raise Exception(
+                'Expected non-blank element event/field/name')
+
+class FormKey:
+    def __init__(self, study_id, form_name):
+        self.study_id = study_id
+        self.form_name = form_name
+
+    def get_total_key(self):
+        return "Total_" + self.form_name + "_Forms"
+

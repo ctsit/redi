@@ -139,7 +139,7 @@ Optional command-line arguments:
 
     By default, this parameter is disabled.
 
- - -r, --resume: Resumes a previously stopped run of `redi`.
+ - -r, --resume: ***BROKEN! DO NOT USE!!*** Resumes a previously stopped run of `redi`.
 
     ***WARNING!!!*** This is used in a very specific case. Use with caution.
 

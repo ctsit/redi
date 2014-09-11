@@ -86,6 +86,9 @@ class TestSendDatatoRedcap(unittest.TestCase):
         global test_data
         test_data = ''
         # This is the actual send_data_to_redcap function in test
+        # TODO: refactor the test to use the function
+        #   bin/utils/redcapClient.py#send_data_to_redcap()
+        # since `redi.send_data_to_redcap()` does not exist anymore
         returned = redi.send_data_to_redcap(test_properties,data=test_data,
                         token=test_properties['token'])
         #print returned

@@ -64,7 +64,7 @@ _person_form_events_service = None
 translational_table_tree = None
 
 DEFAULT_DATA_DIRECTORY = os.getcwd()
-
+STATUS_SENT = "sent"
 
 def main():
     """
@@ -123,6 +123,12 @@ def main():
     # this method reduces the syntax
     settings.set_attributes()
 
+    # TODO: fix or permanently remove the --resume switch
+    if args['resume']:
+        msg = 'The resume switch has been disabled.'
+        logger.critical(msg)
+        sys.exit(msg)
+
     # creating temporary folder for storing files which may or may not
     # be retained (depending on the value of do_keep_gen_files)
     # When dry run state is on, the files are retained by default
@@ -177,6 +183,7 @@ def _remove(path):
 
 
 def _fetch_run_data(data_folder):
+    # TODO: Try to get closer to the principle: "Functions should serve single purpose"
     person_form_event_tree_with_data = _person_form_events_service.fetch()
     alert_summary = _load(os.path.join(data_folder, 'alert_summary.obj'))
     rule_errors = _load(os.path.join(data_folder, 'rule_errors.obj'))
@@ -191,8 +198,8 @@ def _load(path):
         return pickle.load(fp)
 
 
-def _store_run_data(data_folder, alert_summary,\
- person_form_event_tree_with_data, rule_errors, collection_date_summary_dict):
+def _store_run_data(data_folder, alert_summary,
+        person_form_event_tree_with_data, rule_errors, collection_date_summary_dict):
     _person_form_events_service.store(person_form_event_tree_with_data)
     _save(alert_summary, os.path.join(data_folder, 'alert_summary.obj'))
     _save(rule_errors, os.path.join(data_folder, 'rule_errors.obj'))
@@ -248,17 +255,18 @@ def _run(config_file, configuration_directory, do_keep_gen_files, dry_run,
         'project': settings.project,
         'redcap_server': settings.redcap_server}
 
-    report_xsl = proj_root + "bin/utils/report.xsl"
-    send_email = settings.send_email
-
     if not resume:
         _delete_last_runs_data(data_folder)
 
-        alert_summary, person_form_event_tree_with_data, rule_errors, \
+        #TODO: not easy to read
+        alert_summary, \
+        person_form_event_tree_with_data, \
+        rule_errors, \
         collection_date_summary_dict = _create_person_form_event_tree_with_data(
-            config_file, configuration_directory, email_settings,\
-             form_events_file, raw_xml_file, redcap_settings, rules,\
-              settings, data_folder, translation_table_file, dry_run)
+                config_file, configuration_directory, email_settings,
+                form_events_file, raw_xml_file, redcap_settings, rules,
+                settings, data_folder, translation_table_file, dry_run
+        )
 
         _store_run_data(data_folder, alert_summary,
                         person_form_event_tree_with_data, rule_errors,
@@ -270,17 +278,34 @@ def _run(config_file, configuration_directory, do_keep_gen_files, dry_run,
     # Data will be sent to REDCap server and email will be sent only if
     # redi.py is not executing in dry run state.
     if not dry_run:
-        unsent_events = person_form_event_tree_with_data.xpath("//event/status[.='unsent']")
-        # Use the new method to communicate with RedCAP
-        report_data = redi_lib.generate_output(
-            person_form_event_tree_with_data, redcap_settings, email_settings,
+        unsent_forms = person_form_event_tree_with_data.xpath(
+            "//form[not(@redcap_status) or @redcap_status != '" + STATUS_SENT + "']")
+        # Send data to REDCap using PyCap
+        report_data = redi_lib.transfer_pfe_tree(
+            person_form_event_tree_with_data,
+            redcap_settings,
+            email_settings,
             _person_form_events_service, skip_blanks)
+
         # write person_form_event_tree to file
-        write_element_tree_to_file(person_form_event_tree_with_data,\
-         os.path.join(data_folder, 'person_form_event_tree_with_data.xml'))
-        sent_events = person_form_event_tree_with_data.xpath("//event/status[.='sent']")
-        if len(unsent_events) != len(sent_events):
-            logger.warning('Some of the events are not sent to the redcap. Please check event statuses in '+data_folder+'person_form_event_tree_with_data.xml')
+        write_element_tree_to_file(
+            person_form_event_tree_with_data,
+            os.path.join(data_folder, 'person_form_event_tree_with_data.xml'))
+
+        sent_forms = person_form_event_tree_with_data.xpath(
+            "//form[@redcap_status='" + STATUS_SENT + "']")
+        sent_forms_num = len(sent_forms)
+        unsent_forms_num = len(unsent_forms)
+
+        if sent_forms_num != unsent_forms_num:
+            logger.warning("{} out of {} forms were sent to the REDCap."\
+                .format(sent_forms_num, unsent_forms_num))
+            logger.warning(
+                    "Please check the `redcap_status` attribute for forms in " +
+                    _person_form_events_service.get_filename())
+        else:
+            logger.info("Success: {} out of {} forms were sent to the REDCap."\
+                .format(sent_forms_num, unsent_forms_num))
 
         # Add any errors from running the rules to the report
         map(logger.warning, rule_errors)
@@ -289,30 +314,11 @@ def _run(config_file, configuration_directory, do_keep_gen_files, dry_run,
             report_data['errors'].extend(rule_errors)
 
         # create summary report
-        xml_report_tree = create_summary_report(report_parameters,
-                                            report_data, alert_summary,
-                                            collection_date_summary_dict)
-        # print ElementTree.tostring(xml_report_tree)
-
-        xslt = etree.parse(report_xsl)
-        transform = etree.XSLT(xslt)
-        html_report = transform(xml_report_tree)
-        html_str = etree.tostring(html_report, method='html', pretty_print=True)
-
-        # send report via email
-        if settings.send_email:
-            sender = settings.sender_email
-            receiver = settings.receiver_email.split()
-            send_report(sender, receiver, html_str)
-        else:
-            logger.info("Email will not be sent as 'send_email' parameter"\
-            " in {0} is set to 'N'".format(config_file))
-            try:
-                report_file = open(settings.report_file_path2, 'w')
-            except IOError:
-                logger.exception('could not open file %s' % settings.report_file_path2)
-                raise
-            report_file.write(html_str)
+        xml_report_tree = create_summary_report(
+            report_parameters,
+            report_data, alert_summary,
+            collection_date_summary_dict)
+        save_or_send_report(settings, xml_report_tree)
 
     if batch:
         # Update the batch row
@@ -325,8 +331,34 @@ def _run(config_file, configuration_directory, do_keep_gen_files, dry_run,
         " in " + data_folder)
 
     if not do_keep_gen_files:
+        # TODO: revise the deletion of the data folder
+        #   Perhaps we should keep the redi.db and report.html files
         redi_lib.delete_temporary_folder(data_folder)
+        logger.info("All generated files have been removed."\
+            "Please pass the `--keep` option to retain the files")
 
+def save_or_send_report(settings, xml_report_tree):
+    # print etree.tostring(xml_report_tree)
+    report_xsl = proj_root + "bin/utils/report.xsl"
+    xslt = etree.parse(report_xsl)
+    transform = etree.XSLT(xslt)
+    html_report = transform(xml_report_tree)
+    html_str = etree.tostring(html_report, method='html', pretty_print=True)
+
+    # send report via email
+    if settings.send_email:
+        sender = settings.sender_email
+        receiver = settings.receiver_email.split()
+        send_report(sender, receiver, html_str)
+    else:
+        logger.info("Report email will not be sent because 'send_email' "
+                    "parameter is set to 'N' in the config file")
+        try:
+            report_file = open(settings.report_file_path2, 'w')
+        except IOError:
+            logger.exception('could not open file %s' % settings.report_file_path2)
+            raise
+        report_file.write(html_str)
 
 def _create_person_form_event_tree_with_data(config_file, \
     configuration_directory, email_settings, form_events_file, raw_xml_file,\
@@ -531,9 +563,7 @@ def parse_args(arguments=None):
         'provide any input when -d is used.')
 
     parser.add_argument('-r', '--resume', default=False, action='store_true',
-                        help='WARNING!!! Resumes the last run of the program. '
-                             'This switch is for a specific scenario. Check '
-                             'the documentation before using it.')
+                        help='WARNING! Broken. DO NOT USE!')
 
     parser.add_argument('-v', '--verbose', required=False,
                         default=False, action='store_true',
@@ -697,7 +727,7 @@ def write_element_tree_to_file(element_tree, file_name):
     logger.debug('Writing ElementTree to %s', file_name)
     element_tree.write(
         file_name,
-        encoding="us-ascii",
+        encoding="utf-8",
         xml_declaration=True,
         method="xml",
         pretty_print=True)
@@ -758,9 +788,7 @@ def sort_element_tree(data):
 
     Keyword argument: data
     sorting is based on study_id, form name, then timestamp, ascending order
-
     """
-
     # this element holds the subjects that are being sorted
     container = data.getroot()
     container[:] = sorted(container, key=getkey)
@@ -771,9 +799,6 @@ def getkey(elem):
 
     Keyword argument: elem
     returns the corresponding tuple study_id, form_name, timestamp
-
-    Nicholas
-
     """
     study_id = elem.findtext("STUDY_ID")
     form_name = elem.findtext("redcapFormName")
@@ -784,8 +809,6 @@ def getkey(elem):
 def update_formdatefield(data, form_events_tree):
     """function to write formDateField to data ElementTree via lookup of
         formName in formEvents ElementTree
-        Radha
-
     """
     logger.debug('updating the formDateField')
     # make a dictionary of the relevant elements from the translationTable
@@ -800,7 +823,7 @@ def update_formdatefield(data, form_events_tree):
     # final element tree's root
     data_root = data.getroot()
 
-    # iterate thru each subject
+    # iterate through each subject
     for subject in data_root.iter('subject'):
         # get the value of formDateField for a given formName from
         # [redcapFormName, formDateField] dictionary
@@ -1069,7 +1092,6 @@ def update_event_name(data, lookup_data, undefined):
         'multiple_values_alert': multiple_values_alert}
 
 
-# @TODO: remove settings from signature
 def research_id_to_redcap_id_converter(
         data,redcap_settings,
         email_settings,research_id_to_redcap_id,dry_run,
@@ -1364,7 +1386,7 @@ def create_empty_events_for_one_subject(
         translation_table_dict[component.find('redcapFormName').text] = set()
 
     for component in translation_table_root.iter('clinicalComponent'):
-        form_name = component.find('redcapFormName').text
+        form_name = component.findtext('redcapFormName')
         if component.find('redcapFieldNameValue') is not None:
             translation_table_dict[form_name].add(
                 component.find('redcapFieldNameValue').text)
@@ -1376,23 +1398,22 @@ def create_empty_events_for_one_subject(
                 component.find('redcapStatusFieldName').text)
 
     for form in form_event_root.iter('form'):
+        f_name = form.findtext('name')
+        # add attribute to speedup `form_name` lookups
+        form.set('form_name', f_name)
         for child in form:
             form_child = child.tag
             if form_child.startswith("form"):
                 try:
                     if form_child != 'formCompletedFieldValue' and form_child != 'formImportedFieldValue':
-                        translation_table_dict[
-                            form.find('name').text].add(
-                            child.text)
+                        translation_table_dict[f_name].add(child.text)
                 except KeyError as e:
-                    translation_table_dict[form.find('name').text] = set()
-                    translation_table_dict[
-                        form.find('name').text].add(
-                        child.text)
+                    translation_table_dict[f_name] = set()
+                    translation_table_dict[f_name].add(child.text)
                 form.remove(child)
         all_fields = etree.Element("allfields")
         try:
-            for field in translation_table_dict[form.find('name').text]:
+            for field in translation_table_dict[f_name]:
                 field_tag = etree.SubElement(all_fields, "field")
                 name = etree.SubElement(field_tag, "name")
                 name.text = field
@@ -1402,12 +1423,12 @@ def create_empty_events_for_one_subject(
             raise
 
         for child in form.iter('event'):
-            status_element = etree.Element("status")
-            status_element.text = 'unsent'
-            child.append(status_element)
+            #status_element = etree.Element("status")
+            #status_element.text = 'unsent'
+            #child.append(status_element)
             child.insert(
                 child.index(
-                    child.find('status')) + 1,
+                    child.find('name')) + 1,
                 etree.XML(
                     etree.tostring(
                         all_fields,
@@ -1427,7 +1448,6 @@ def create_empty_event_tree_for_study(raw_data_tree, all_form_events_tree):
     :param all_form_events_tree: This parameter holds all form events tree
     """
     logger.info('Creating all form events template for all subjects')
-    from lxml import etree
     root = etree.Element("person_form_event")
     raw_data_root = raw_data_tree.getroot()
     all_form_events_root = all_form_events_tree.getroot()
@@ -1446,6 +1466,8 @@ def create_empty_event_tree_for_study(raw_data_tree, all_form_events_tree):
 
     for subject_id in subjects_list:
         person = etree.Element("person")
+        # add attribute to speedup `study_id` lookup
+        person.set('study_id', subject_id)
         study_id = etree.SubElement(person, "study_id")
         study_id.text = subject_id
         person.insert(
@@ -1467,8 +1489,7 @@ def setStat(
         translation_table_dict,
         translation_table_status_field_text_list):
     """
-    Ruchi Vivek Desai, May 13 2014
-    to assist the updateStatusFieldValueInPersonFormEventTree function
+    Assist the updateStatusFieldValueInPersonFormEventTree function
     """
     # iterates over all fields under event (passed as parameter) in source file
     for field in event.iter('field'):  # loop3
@@ -1498,7 +1519,7 @@ def setStat(
 
 def set_status_for(field_name, event, translation_table_dict):
     """
-    Ruchi
+    Helper function for setStat()
     """
     for field in event.iter('field'):
         name = field.findtext('name', "")
@@ -1512,9 +1533,8 @@ def updateStatusFieldValueInPersonFormEventTree(
         person_form_event_tree,
         translational_table_tree):
     """
-    Ruchi Vivek Desai, May 13 2014
-    This function updates the status field value with either NOT_DONE (value in the translation table)
-    or empty string based on certain conditions
+    This function updates the status field value with either NOT_DONE
+    (value in the translation table) or empty string based on certain conditions
     """
     # Get root of peron form event tree
     person_form_event__tree_root = person_form_event_tree.getroot()
@@ -2000,13 +2020,17 @@ def get_redcap_settings(settings):
     redcap_settings['verify_ssl'] = settings.verify_ssl
     return redcap_settings
 
-
 class PersonFormEventsRepository(object):
-    """Wrapper for the person-form-events XML file"""
+    """
+    Wrapper for the person-form-events XML file
+    @see redi_lib#_execute_send_data_to_redcap
+    """
     def __init__(self, filename, logger=None):
-        # simple test to catch obvious errors with a filename supplied
         self._filename = filename
         self._logger = logger
+
+    def get_filename(self):
+        return self._filename
 
     def delete(self):
         try:
@@ -2019,10 +2043,10 @@ class PersonFormEventsRepository(object):
         return etree.parse(self._filename)
 
     def store(self, pfe_tree):
-        if self._logger:
-            self._logger.debug('Writing ElementTree to %s', self._filename)
-        pfe_tree.write(self._filename,
-                       encoding="us-ascii",
+       if self._logger:
+           self._logger.debug('Writing ElementTree to %s', self._filename)
+       pfe_tree.write(self._filename,
+                       encoding="utf-8",
                        xml_declaration=True,
                        method="xml",
                        pretty_print=True)

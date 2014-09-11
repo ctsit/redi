@@ -23,27 +23,31 @@ lint:
 		pylint -f parseable bin | tee pylint.out
 
 clean:
-	find . -type f -name "*.pyc" -print | xargs rm -f
-	rm -rf out
-	rm -rf dist
-	rm -rf build
-	rm -rf REDI.egg-info
-	rm -rf nosetests.xml cover .coverage coverage.xml
-	rm -rf *.egg
-	rm -f pylint.out
-	rm -f formData.xml
-	rm -f rawData.xml
-	rm -f translationalData.xml
-	rm -f rawDataWithFormName.xml
-	rm -f rawDataWithFormCompletedField.xml
-	rm -f rawDataWithDatumAndUnitsFieldNames.xml
-	rm -f rawDataSorted.xml
-	rm -f rawDataWithAllUpdates.xml
-	rm -f rawDataWithFormImported.xml
-	rm -f rawDataWithFormStatus.xml
-	rm -f all_form_events.xml
-	rm -f person_form_event_tree.xml
-	rm -f person_form_event_tree_with_data.xml
-	rm -rf vagrant/data/
-	rm -f vagrant/demographic_test_data.csv
-	rm -f vagrant/redi.db
+	@echo "Removing generated files..."
+	@find . -type f -name "*.pyc" -print | xargs rm -f
+	@rm -rf out
+	@rm -rf dist
+	@rm -rf build
+	@rm -rf REDI.egg-info
+	@rm -rf nosetests.xml cover .coverage coverage.xml
+	@rm -rf *.egg
+	@rm -f pylint.out
+	@rm -f formData.xml
+	@rm -f rawData.xml
+	@rm -f translationalData.xml
+	@rm -f rawDataWithFormName.xml
+	@rm -f rawDataWithFormCompletedField.xml
+	@rm -f rawDataWithDatumAndUnitsFieldNames.xml
+	@rm -f rawDataSorted.xml
+	@rm -f rawDataWithAllUpdates.xml
+	@rm -f rawDataWithFormImported.xml
+	@rm -f rawDataWithFormStatus.xml
+	@rm -f all_form_events.xml
+	@rm -f person_form_event_tree.xml
+	@rm -f person_form_event_tree_with_data.xml
+	@rm -rf vagrant/data/
+	@rm -f vagrant/redi.db
+	@rm -f vagrant/out.csv
+	@rm -f redi.db
+	@rm -rf data/
+	@echo "Done."
