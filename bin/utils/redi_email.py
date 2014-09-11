@@ -64,6 +64,9 @@ def send_email_data_import_completed(email_settings, body=''):
     port = email_settings['smtp_port_for_outbound_mail']
     subject = 'Data Import Report'
     msg = MIMEMultipart()
+    msg['From'] = sender
+    msg['To'] = ",".join(to_addr_list)
+    msg['Subject'] = subject
     msg.attach(MIMEText(body, 'html'))
 
     refused_list = {}
@@ -72,7 +75,7 @@ def send_email_data_import_completed(email_settings, body=''):
         refused_list = smtpObj.sendmail(sender, to_addr_list, msg.as_string())
         logger.info("Successfully sent email to: " + str(to_addr_list))
     except Exception:
-         logger.error("Unable to send email with subject[{}] to {}" \
+         logger.error("Unable to send email with subject [{}] to {}" \
                 .format(subject, str(to_addr_list)))
          raise
     finally:
