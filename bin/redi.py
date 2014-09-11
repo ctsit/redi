@@ -998,7 +998,7 @@ def update_event_name(data, lookup_data, undefined):
                 # issue a warning
 
                 if old_form_name is not "dummy" and \
-                event_index >= len(lookup_table[old_form_name]):
+                event_index > len(lookup_table[old_form_name]):
                     max_event_alert.append("Exceeded event list for record "\
                         "group with Subject ID.: " + last_study_id + " and "\
                         "Form Name: " + last_form_name + ". Event count "\
