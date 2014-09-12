@@ -78,9 +78,7 @@ def send_email_data_import_completed(email_settings, body=''):
          logger.error("Unable to send email with subject [{}] to {}" \
                 .format(subject, str(to_addr_list)))
          raise
-    finally:
-        smtpObj.quit()
-
+    smtpObj.quit()
     return refused_list
 
 def send_email(
