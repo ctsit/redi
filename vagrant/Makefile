@@ -17,6 +17,7 @@ REDCAP_VM_URI := $(subst api/,,$(REDCAP_API_URI))
 REDCAP_VM_TOKEN := $(shell cat ${CONFIG_FILE} | sed -e 's/ //g' | grep 'token=' | cut -d '=' -f2)
 REDCAP_RECORDS_CMD:=../bin/utils/redcap_records.py --token=$(REDCAP_VM_TOKEN) --url=$(REDCAP_API_URI)
 REDCAP_PROJECT_ID := $(shell cat ${MAKE_CONFIG_FILE} | sed -e 's/ //g' | grep 'redcap_project_id=' | cut -d '=' -f2)
+REDCAP_PROJECT_FORMS := $(shell cat ${MAKE_CONFIG_FILE} | sed -e 's/ //g' | grep 'redcap_project_forms=' | cut -d '=' -f2)
 
 .PHONY: help
 help:
@@ -75,10 +76,10 @@ rc_post:
 	python ../bin/redi.py -c $(CONFIG_FOLDER)
 
 rc_get: check_config
-	$(REDCAP_RECORDS_CMD) -f "demographics chemistry cbc inr hcv_rna_results"
+	$(REDCAP_RECORDS_CMD) -f "$(REDCAP_PROJECT_FORMS)"
 
 rc_get_json: check_config
-	$(REDCAP_RECORDS_CMD) "demographics chemistry cbc inr hcv_rna_results" -t json
+	$(REDCAP_RECORDS_CMD) "$(REDCAP_PROJECT_FORMS)" -t json
 
 rc_get_json_demographics: check_config
 	$(REDCAP_RECORDS_CMD) -f "demographics" -t json
