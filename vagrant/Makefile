@@ -3,7 +3,8 @@
 #
 # Note: Some tasks depend on variables set in the config file
 # therefore the proper path must be set for `CONFIG_FOLDER`
-CONFIG_FOLDER        := ../config
+MAKE_CONFIG_FILE     := Makefile.ini
+CONFIG_FOLDER        := $(shell cat ${MAKE_CONFIG_FILE} | sed -e 's/ //g' | grep 'config_folder=' | cut -d '=' -f2)
 CONFIG_FILE          := $(CONFIG_FOLDER)/settings.ini
 BOOTSTRAP_SQL_FILE   := $(CONFIG_FOLDER)/vagrant-data/projectDataBootstrap.sql
 REDCAP_CODE_ZIP_FILE := $(CONFIG_FOLDER)/vagrant-data/redcap.zip
@@ -15,6 +16,7 @@ REDCAP_API_URI := $(shell cat ${CONFIG_FILE} | sed -e 's/ //g' | grep 'redcap_ur
 REDCAP_VM_URI := $(subst api/,,$(REDCAP_API_URI))
 REDCAP_VM_TOKEN := $(shell cat ${CONFIG_FILE} | sed -e 's/ //g' | grep 'token=' | cut -d '=' -f2)
 REDCAP_RECORDS_CMD:=../bin/utils/redcap_records.py --token=$(REDCAP_VM_TOKEN) --url=$(REDCAP_API_URI)
+REDCAP_PROJECT_ID := $(shell cat ${MAKE_CONFIG_FILE} | sed -e 's/ //g' | grep 'redcap_project_id=' | cut -d '=' -f2)
 
 .PHONY: help
 help:
@@ -61,7 +63,7 @@ rc_save:
 
 rc_clean:
 	# TODO: add support for project id as parameter
-	vagrant ssh -c 'cd /vagrant/scripts && php redcapdbm.php -d 12'
+	vagrant ssh -c 'cd /vagrant/scripts && php redcapdbm.php -d $(REDCAP_PROJECT_ID)'
 
 rc_demographics: check_config
 	$(REDCAP_RECORDS_CMD) -i $(ENROLLMENT_CSV_FILE)
