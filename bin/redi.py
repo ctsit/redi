@@ -301,9 +301,7 @@ def _run(config_file, configuration_directory, do_keep_gen_files, dry_run,
 
         # send report via email
         if settings.send_email:
-            sender = settings.sender_email
-            receiver = settings.receiver_email.split()
-            send_report(sender, receiver, html_str)
+            redi_email.send_email_data_import_completed(email_settings, html_str)
         else:
             logger.info("Email will not be sent as 'send_email' parameter"\
             " in {0} is set to 'N'".format(config_file))
@@ -1212,28 +1210,6 @@ def configure_logging(data_folder, verbose=False):
     return logger
 
 
-def send_report(sender, receiver, body):
-    """Function to email the report of the redi run."""
-    from email.MIMEMultipart import MIMEMultipart
-    from email.MIMEText import MIMEText
-    msg = MIMEMultipart()
-    msg['From'] = sender
-    msg['To'] = ",".join(receiver)
-    msg['Subject'] = "Data Import Report"
-    msg.attach(MIMEText(body, 'html'))
-
-    """
-    Sending email
-    """
-
-    try:
-        smtpObj = smtplib.SMTP('smtp.ufl.edu', 25)
-        smtpObj.sendmail(sender, receiver, msg.as_string())
-        logger.info("Successfully sent email to: " + str(receiver))
-    except Exception:
-        logger.info("Error: unable to send report email to: " + str(receiver))
-
-
 def create_summary_report(report_parameters, report_data, alert_summary, \
     collection_date_summary_dict):
     root = etree.Element("report")
@@ -1969,7 +1945,7 @@ def verify_and_correct_collection_date(data, input_date_format):
             continue
         subject.remove(result_date_element)
     if collection_date_summary_dict['blank'] > 0:
-        logger.info("There were {0} out of {1} blank specimen taken times "\
+        logger.debug("There were {0} out of {1} blank specimen taken times "\
             "in this run.".format(collection_date_summary_dict['blank'],
                 collection_date_summary_dict['total']))
     return data, collection_date_summary_dict
@@ -1981,13 +1957,16 @@ def get_email_settings(settings):
     """
     email_settings = {}
     email_settings['smtp_host_for_outbound_mail'] = settings.smtp_host_for_outbound_mail
-    email_settings['redcap_support_sender_email'] = settings.redcap_support_sender_email
-    email_settings['redcap_uri'] = settings.redcap_uri
     email_settings['smtp_port_for_outbound_mail'] = settings.smtp_port_for_outbound_mail
-    email_settings['redcap_support_receiver_email'] = settings.redcap_support_receiver_email
+    email_settings['redcap_support_sender_email'] = settings.redcap_support_sender_email
+    email_settings['redcap_support_receiving_list'] = \
+            settings.redcap_support_receiver_email.split() if settings.redcap_support_receiver_email else []
+    email_settings['redcap_uri'] = settings.redcap_uri
     email_settings['batch_warning_days'] = settings.batch_warning_days
+    email_settings['batch_report_sender_email'] = settings.sender_email
+    email_settings['batch_report_receiving_list'] = \
+            settings.receiver_email.split() if settings.receiver_email else []
     return email_settings
-
 
 def get_redcap_settings(settings):
     """

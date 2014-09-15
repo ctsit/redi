@@ -1,11 +1,6 @@
 '''
-@author : Radha
-email : rkandula@ufl.edu
-
 This file creates a test suite for all the test classes.
 
-'''
-'''
     IMPORTANT: the imports should be updated in order to add the test to
     the test suite.
     Notes:
@@ -46,7 +41,7 @@ from TestResume import TestResume
 from TestPersonFormEventsRepository import TestPersonFormEventsRepository
 from TestVerifyAndCorrectCollectionDate import TestVerifyAndCorrectCollectionDate
 from TestSkipBlanks import TestSkipBlanks
-
+from TestRediEmail import TestRediEmail
 
 class redi_suite(unittest.TestSuite):
 
@@ -87,6 +82,7 @@ class redi_suite(unittest.TestSuite):
         redi_test_suite.addTest(TestResume)
         redi_test_suite.addTest(TestPersonFormEventsRepository)
         redi_test_suite.addTest(TestSkipBlanks)
+        redi_test_suite.addTest(TestRediEmail)
 
         # return the suite
         return unittest.TestSuite([redi_test_suite])
