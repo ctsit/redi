@@ -33,11 +33,20 @@ rc_clean:
 rc_demographics:
 	../bin/utils/redcap_records.py --token=121212 --url=http://localhost:8998/redcap/api/ -i demographic_test_data.csv
 
+rc_demographics_json:
+	../bin/utils/redcap_records.py --token=121212 --url=http://localhost:8998/redcap/api/ -i demographic_test_data.json -t json
+
 rc_post:
 	python ../bin/redi.py -c ../config
 
 rc_get:
 	../bin/utils/redcap_records.py --token=121212 --url=http://localhost:8998/redcap/api/ -f "demographics chemistry cbc inr hcv_rna_results"
+
+rc_get_json:
+	@../bin/utils/redcap_records.py --token=121212 --url=http://localhost:8998/redcap/api/ -f "demographics chemistry cbc inr hcv_rna_results" -t json
+
+rc_get_json_demographics:
+	@../bin/utils/redcap_records.py --token=121212 --url=http://localhost:8998/redcap/api/ -f "demographics" -t json
 
 rc_fresh:
 	make copy_project_data
@@ -80,3 +89,4 @@ copy_project_data:
 	@test -f ../config/vagrant-data/demographic_test_data.csv || (echo 'Please obtain the demographics file first' && exit 1)
 	cp ../config/vagrant-data/demographic_test_data.csv .
 	test ! -d ../config/vagrant-data/sqlPatches || (echo "Copying sqlPatches folder from project configuration to vagrant folder" && cp -r ../config/vagrant-data/sqlPatches .)
+	cp ../config/vagrant-data/demographic_test_data.json .

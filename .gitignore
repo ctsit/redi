@@ -36,4 +36,5 @@ vagrant/projectDataBootstrap.sql
 vagrant/sqlPatches
 vagrant/data/
 vagrant/demographic_test_data.csv
+vagrant/demographic_test_data.json
 vagrant/redi.db
