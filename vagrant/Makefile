@@ -4,20 +4,21 @@
 # Note: Some tasks depend on variables set in the config file
 # therefore the proper path must be set for `CONFIG_FOLDER`
 MAKE_CONFIG_FILE     := Makefile.ini
-CONFIG_FOLDER        := $(shell cat ${MAKE_CONFIG_FILE} | sed -e 's/ //g' | grep 'config_folder=' | cut -d '=' -f2)
+CONFIG_FOLDER        := $(shell cat ${MAKE_CONFIG_FILE} | sed -e 's/ //g' | grep -v '^\#' | grep 'config_folder=' | cut -d '=' -f2)
 CONFIG_FILE          := $(CONFIG_FOLDER)/settings.ini
 BOOTSTRAP_SQL_FILE   := $(CONFIG_FOLDER)/vagrant-data/projectDataBootstrap.sql
 REDCAP_CODE_ZIP_FILE := $(CONFIG_FOLDER)/vagrant-data/redcap.zip
 REDCAP_SQL_PATCHES_FOLDER := $(CONFIG_FOLDER)/vagrant-data/sqlPatches
 ENROLLMENT_CSV_FILE  := $(CONFIG_FOLDER)/vagrant-data/enrollment_test_data.csv
 
-REDCAP_API_URI := $(shell cat ${CONFIG_FILE} | sed -e 's/ //g' | grep 'redcap_uri=' | cut -d '=' -f2)
+REDCAP_API_URI := $(shell cat ${CONFIG_FILE} | sed -e 's/ //g' | grep -v '^\#' | grep 'redcap_uri=' | cut -d '=' -f2)
 REDCAP_VM_URI := $(subst api/,,$(REDCAP_API_URI))
-REDCAP_VM_TOKEN := $(shell cat ${CONFIG_FILE} | sed -e 's/ //g' | grep 'token=' | cut -d '=' -f2)
+REDCAP_VM_TOKEN := $(shell cat ${CONFIG_FILE} | sed -e 's/ //g' | grep -v '^\#' | grep 'token=' | cut -d '=' -f2)
 REDCAP_RECORDS_CMD:=../bin/utils/redcap_records.py --token=$(REDCAP_VM_TOKEN) --url=$(REDCAP_API_URI)
-REDCAP_PROJECT_ID := $(shell cat ${MAKE_CONFIG_FILE} | sed -e 's/ //g' | grep 'redcap_project_id=' | cut -d '=' -f2)
-REDCAP_PROJECT_FORMS := $(shell cat ${MAKE_CONFIG_FILE} | sed -e 's/ //g' | grep 'redcap_project_forms=' | cut -d '=' -f2)
-REDCAP_PROJECT_ENROLLMENT_FORM := $(shell cat ${MAKE_CONFIG_FILE} | sed -e 's/ //g' | grep 'redcap_project_enrollment_form=' | cut -d '=' -f2)
+REDCAP_PROJECT_ID := $(shell cat ${MAKE_CONFIG_FILE} | sed -e 's/ //g' | grep -v '^\#' | grep 'redcap_project_id=' | cut -d '=' -f2)
+REDCAP_PROJECT_FORMS := $(shell cat ${MAKE_CONFIG_FILE} | sed -e 's/ //g' | grep -v '^\#' | grep 'redcap_project_forms=' | cut -d '=' -f2)
+REDCAP_PROJECT_ENROLLMENT_FORM := $(shell cat ${MAKE_CONFIG_FILE} | sed -e 's/ //g' | grep -v '^\#' | grep 'redcap_project_enrollment_form=' | cut -d '=' -f2)
+
 
 .PHONY: help
 help:
