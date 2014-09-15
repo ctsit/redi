@@ -10,7 +10,6 @@ BOOTSTRAP_SQL_FILE   := $(CONFIG_FOLDER)/vagrant-data/projectDataBootstrap.sql
 REDCAP_CODE_ZIP_FILE := $(CONFIG_FOLDER)/vagrant-data/redcap.zip
 REDCAP_SQL_PATCHES_FOLDER := $(CONFIG_FOLDER)/vagrant-data/sqlPatches
 ENROLLMENT_CSV_FILE  := $(CONFIG_FOLDER)/vagrant-data/enrollment_test_data.csv
-ENROLLMENT_JSON_FILE := $(CONFIG_FOLDER)/vagrant-data/demographic_test_data.json
 
 REDCAP_API_URI := $(shell cat ${CONFIG_FILE} | sed -e 's/ //g' | grep 'redcap_uri=' | cut -d '=' -f2)
 REDCAP_VM_URI := $(subst api/,,$(REDCAP_API_URI))
@@ -29,9 +28,11 @@ help:
 	@echo "\t rc_save       - save a backup of REDCap database"
 	@echo "\t rc_clean      - remove data for default test project"
 
-	@echo "\t rc_enrollment - load enrollment data for default test project"
+	@echo "\t rc_enrollment - load csv enrollment test data for the default project"
+	@echo "\t rc_get_enrollment - retrieve csv enrollment test data for the default project"
 	@echo "\t rc_post       - send test data to REDCap"
 	@echo "\t rc_get        - get stored test data from REDCap"
+	@echo "\t rc_get_json   - get stored test data from REDCap in json format"
 	@echo "\t rc_fresh      - erase/insert/retrieve test data from REDCap"
 	@echo "\t rc_get_rate   - shows the config option value: 'page_hit_threshold_per_minute' "
 	@echo "\t rc_set_rate   - set the value for: 'page_hit_threshold_per_minute' "
@@ -73,10 +74,6 @@ rc_clean:
 rc_enrollment: check_config
 	$(REDCAP_RECORDS_CMD) -i $(ENROLLMENT_CSV_FILE)
 
-rc_enrollment_json: check_config
-	@test -f $(ENROLLMENT_JSON_FILE) || (echo 'Config error: missing file "$(ENROLLMENT_JSON_FILE)"' && exit 1)
-	$(REDCAP_RECORDS_CMD) -i $(ENROLLMENT_JSON_FILE) -t json
-
 rc_post:
 	python ../bin/redi.py -c $(CONFIG_FOLDER)
 
@@ -86,8 +83,8 @@ rc_get: check_config
 rc_get_json: check_config
 	$(REDCAP_RECORDS_CMD) -f "$(REDCAP_PROJECT_FORMS)" -t json
 
-rc_get_json_enrollment: check_config
-	$(REDCAP_RECORDS_CMD) -f "$(REDCAP_PROJECT_ENROLLMENT_FORM)" -t json
+rc_get_enrollment: check_config
+	$(REDCAP_RECORDS_CMD) -f "$(REDCAP_PROJECT_ENROLLMENT_FORM)" -t csv
 
 rc_fresh:
 	make copy_project_data
@@ -123,4 +120,3 @@ copy_redcap_code: check_config
 copy_project_data: check_config
 	cp $(BOOTSTRAP_SQL_FILE) .
 	@test ! -d $(REDCAP_SQL_PATCHES_FOLDER) || (echo "Copying 'sqlPatches' folder to vagrant folder" && cp -r $(REDCAP_SQL_PATCHES_FOLDER) .)
-	@test ! -f $(ENROLLMENT_JSON_FILE) || (echo "Copying $(ENROLLMENT_JSON_FILE) to vagrant folder" && cp $(ENROLLMENT_JSON_FILE) . )
