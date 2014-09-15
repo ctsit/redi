@@ -51,7 +51,7 @@ check_config:
 	@test -f $(ENROLLMENT_CSV_FILE) || (echo 'Config error: missing file "$(ENROLLMENT_CSV_FILE)"' && exit 1)
 
 show_config: check_config
-	@echo "Reading parameters from config files : $(CONFIG_FILE), $(MAKE_CONFIG_FILE)"
+	@echo "$(MAKE_CONFIG_FILE) indicates that extra parameters should be read from : $(CONFIG_FILE)"
 	@echo "Using REDCAP_VM_URI : $(REDCAP_VM_URI)"
 	@echo "Using REDCAP_VM_TOKEN : $(REDCAP_VM_TOKEN)"
 	@echo "Using REDCAP_RECORDS_CMD : $(REDCAP_RECORDS_CMD)"
