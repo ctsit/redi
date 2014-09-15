@@ -10,6 +10,7 @@ BOOTSTRAP_SQL_FILE   := $(CONFIG_FOLDER)/vagrant-data/projectDataBootstrap.sql
 REDCAP_CODE_ZIP_FILE := $(CONFIG_FOLDER)/vagrant-data/redcap.zip
 REDCAP_SQL_PATCHES_FOLDER := $(CONFIG_FOLDER)/vagrant-data/sqlPatches
 ENROLLMENT_CSV_FILE  := $(CONFIG_FOLDER)/vagrant-data/enrollment_test_data.csv
+REFERENCE_OUTPUT_FILE:= $(CONFIG_FOLDER)/vagrant-data/redi_out_reference.csv
 
 REDCAP_API_URI := $(shell cat ${CONFIG_FILE} | sed -e 's/ //g' | grep -v '^\#' | grep 'redcap_uri=' | cut -d '=' -f2)
 REDCAP_VM_URI := $(subst api/,,$(REDCAP_API_URI))
@@ -114,6 +115,7 @@ egg_test: check_config
 
 clean:
 	rm -f report.html
+	rm -f out.csv
 
 copy_redcap_code: check_config
 	cp $(REDCAP_CODE_ZIP_FILE) .
@@ -121,3 +123,8 @@ copy_redcap_code: check_config
 copy_project_data: check_config
 	cp $(BOOTSTRAP_SQL_FILE) .
 	@test ! -d $(REDCAP_SQL_PATCHES_FOLDER) || (echo "Copying 'sqlPatches' folder to vagrant folder" && cp -r $(REDCAP_SQL_PATCHES_FOLDER) .)
+
+rc_compare:
+	@# This task can be used to compare the current project data with the reference data
+	$(REDCAP_RECORDS_CMD) -f "$(REDCAP_PROJECT_FORMS)" > out.csv
+	diff -u $(REFERENCE_OUTPUT_FILE) out.csv
