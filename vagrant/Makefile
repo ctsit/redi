@@ -9,7 +9,7 @@ CONFIG_FILE          := $(CONFIG_FOLDER)/settings.ini
 BOOTSTRAP_SQL_FILE   := $(CONFIG_FOLDER)/vagrant-data/projectDataBootstrap.sql
 REDCAP_CODE_ZIP_FILE := $(CONFIG_FOLDER)/vagrant-data/redcap.zip
 REDCAP_SQL_PATCHES_FOLDER := $(CONFIG_FOLDER)/vagrant-data/sqlPatches
-ENROLLMENT_CSV_FILE  := $(CONFIG_FOLDER)/vagrant-data/demographic_test_data.csv
+ENROLLMENT_CSV_FILE  := $(CONFIG_FOLDER)/vagrant-data/enrollment_test_data.csv
 ENROLLMENT_JSON_FILE := $(CONFIG_FOLDER)/vagrant-data/demographic_test_data.json
 
 REDCAP_API_URI := $(shell cat ${CONFIG_FILE} | sed -e 's/ //g' | grep 'redcap_uri=' | cut -d '=' -f2)
@@ -18,6 +18,7 @@ REDCAP_VM_TOKEN := $(shell cat ${CONFIG_FILE} | sed -e 's/ //g' | grep 'token=' 
 REDCAP_RECORDS_CMD:=../bin/utils/redcap_records.py --token=$(REDCAP_VM_TOKEN) --url=$(REDCAP_API_URI)
 REDCAP_PROJECT_ID := $(shell cat ${MAKE_CONFIG_FILE} | sed -e 's/ //g' | grep 'redcap_project_id=' | cut -d '=' -f2)
 REDCAP_PROJECT_FORMS := $(shell cat ${MAKE_CONFIG_FILE} | sed -e 's/ //g' | grep 'redcap_project_forms=' | cut -d '=' -f2)
+REDCAP_PROJECT_ENROLLMENT_FORM := $(shell cat ${MAKE_CONFIG_FILE} | sed -e 's/ //g' | grep 'redcap_project_enrollment_form=' | cut -d '=' -f2)
 
 .PHONY: help
 help:
@@ -28,7 +29,7 @@ help:
 	@echo "\t rc_save       - save a backup of REDCap database"
 	@echo "\t rc_clean      - remove data for default test project"
 
-	@echo "\t rc_demographics - load demographic data for default test project"
+	@echo "\t rc_enrollment - load enrollment data for default test project"
 	@echo "\t rc_post       - send test data to REDCap"
 	@echo "\t rc_get        - get stored test data from REDCap"
 	@echo "\t rc_fresh      - erase/insert/retrieve test data from REDCap"
@@ -48,10 +49,13 @@ check_config:
 	@test -f $(ENROLLMENT_CSV_FILE) || (echo 'Config error: missing file "$(ENROLLMENT_CSV_FILE)"' && exit 1)
 
 show_config: check_config
-	@echo "Reading parameters from config file - $(CONFIG_FILE)"
+	@echo "Reading parameters from config files : $(CONFIG_FILE), $(MAKE_CONFIG_FILE)"
 	@echo "Using REDCAP_VM_URI : $(REDCAP_VM_URI)"
 	@echo "Using REDCAP_VM_TOKEN : $(REDCAP_VM_TOKEN)"
 	@echo "Using REDCAP_RECORDS_CMD : $(REDCAP_RECORDS_CMD)"
+	@echo "Using REDCAP_PROJECT_ID : $(REDCAP_PROJECT_ID)"
+	@echo "Using REDCAP_PROJECT_FORMS : $(REDCAP_PROJECT_FORMS)"
+	@echo "Using REDCAP_PROJECT_ENROLLMENT_FORM : $(REDCAP_PROJECT_ENROLLMENT_FORM)"
 
 rc_check: check_config
 	curl -s $(REDCAP_VM_URI) | grep -i  'Welcome\|Critical Error'
@@ -66,10 +70,11 @@ rc_clean:
 	# TODO: add support for project id as parameter
 	vagrant ssh -c 'cd /vagrant/scripts && php redcapdbm.php -d $(REDCAP_PROJECT_ID)'
 
-rc_demographics: check_config
+rc_enrollment: check_config
 	$(REDCAP_RECORDS_CMD) -i $(ENROLLMENT_CSV_FILE)
 
-rc_demographics_json: check_config
+rc_enrollment_json: check_config
+	@test -f $(ENROLLMENT_JSON_FILE) || (echo 'Config error: missing file "$(ENROLLMENT_JSON_FILE)"' && exit 1)
 	$(REDCAP_RECORDS_CMD) -i $(ENROLLMENT_JSON_FILE) -t json
 
 rc_post:
@@ -79,15 +84,15 @@ rc_get: check_config
 	$(REDCAP_RECORDS_CMD) -f "$(REDCAP_PROJECT_FORMS)"
 
 rc_get_json: check_config
-	$(REDCAP_RECORDS_CMD) "$(REDCAP_PROJECT_FORMS)" -t json
+	$(REDCAP_RECORDS_CMD) -f "$(REDCAP_PROJECT_FORMS)" -t json
 
-rc_get_json_demographics: check_config
-	$(REDCAP_RECORDS_CMD) -f "demographics" -t json
+rc_get_json_enrollment: check_config
+	$(REDCAP_RECORDS_CMD) -f "$(REDCAP_PROJECT_ENROLLMENT_FORM)" -t json
 
 rc_fresh:
 	make copy_project_data
 	make rc_clean
-	make rc_demographics
+	make rc_enrollment
 	make rc_post
 	make rc_get
 
@@ -106,7 +111,7 @@ egg_test: check_config
 	cp ../dist/REDI*.egg .
 	vagrant ssh -c 'sudo easy_install /vagrant/REDI*.egg'
 	make rc_clean
-	make rc_demographics
+	make rc_enrollment
 	vagrant ssh -c 'redi -c /vagrant/config'
 
 clean:
