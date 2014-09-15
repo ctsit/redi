@@ -24,6 +24,7 @@ person_form_event_tree_with_data.xml
 .figleaf
 build/
 dist/
+vagrant/Makefile.ini
 vagrant/.vagrant/
 vagrant/.vimrc
 vagrant/report.html
