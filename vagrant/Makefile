@@ -1,10 +1,30 @@
-# Displays the list of available actions
+# This file is intended to help the developers
+# with common testing tasks.
+#
+# Note: Some tasks depend on variables set in the config file
+# therefore the proper path must be set for `CONFIG_FOLDER`
+CONFIG_FOLDER        := ../config
+CONFIG_FILE          := $(CONFIG_FOLDER)/settings.ini
+BOOTSTRAP_SQL_FILE   := $(CONFIG_FOLDER)/vagrant-data/projectDataBootstrap.sql
+REDCAP_CODE_ZIP_FILE := $(CONFIG_FOLDER)/vagrant-data/redcap.zip
+REDCAP_SQL_PATCHES_FOLDER := $(CONFIG_FOLDER)/vagrant-data/sqlPatches
+ENROLLMENT_CSV_FILE  := $(CONFIG_FOLDER)/vagrant-data/demographic_test_data.csv
+ENROLLMENT_JSON_FILE := $(CONFIG_FOLDER)/vagrant-data/demographic_test_data.json
+
+REDCAP_API_URI := $(shell cat ${CONFIG_FILE} | sed -e 's/ //g' | grep 'redcap_uri=' | cut -d '=' -f2)
+REDCAP_VM_URI := $(subst api/,,$(REDCAP_API_URI))
+REDCAP_VM_TOKEN := $(shell cat ${CONFIG_FILE} | sed -e 's/ //g' | grep 'token=' | cut -d '=' -f2)
+REDCAP_RECORDS_CMD:=../bin/utils/redcap_records.py --token=$(REDCAP_VM_TOKEN) --url=$(REDCAP_API_URI)
+
+.PHONY: help
 help:
 	@echo "\n Available tasks:"
+	@echo "\t show_config:  - display the parameters retrieved from $(CONFIG_FILE)"
 	@echo "\t rc_check      - checks if REDCap is running"
 	@echo "\t rc_list       - list the id of all REDCap projects"
 	@echo "\t rc_save       - save a backup of REDCap database"
 	@echo "\t rc_clean      - remove data for default test project"
+
 	@echo "\t rc_demographics - load demographic data for default test project"
 	@echo "\t rc_post       - send test data to REDCap"
 	@echo "\t rc_get        - get stored test data from REDCap"
@@ -14,11 +34,24 @@ help:
 	@echo "\t egg_test      - deploy the redi egg file to the vagrant box and run redi"
 	@echo "\t clean         - remove files created by testing"
 	@echo "\t copy_redcap_code: - copy the redcap.zip file from the 'config' folder if available"
-	@echo "\t copy_project_data: - copy *.sql files from the 'config' folder if available"
+	@echo "\t copy_project_data: - copy extra files from the 'config' folder if available"
 
+check_config:
+	@# This task is used as a dependency checker
+	@test -d $(CONFIG_FOLDER) || (echo 'Please create a "config" folder with necessary files first' && exit 1)
+	@test -f $(CONFIG_FILE) || (echo 'Please obtain the config file "$(CONFIG_FILE)"' && exit 1)
+	@test -f $(BOOTSTRAP_SQL_FILE) || (echo 'Please obtain the project sql dump file "$(BOOTSTRAP_SQL_FILE)"' && exit 1)
+	@test -f $(REDCAP_CODE_ZIP_FILE) || (echo 'Please obtain the redcap software zip file "$(REDCAP_CODE_ZIP_FILE)"' && exit 1)
+	@test -f $(ENROLLMENT_CSV_FILE) || (echo 'Config error: missing file "$(ENROLLMENT_CSV_FILE)"' && exit 1)
 
-rc_check:
-	curl -s http://localhost:8998/redcap/ | grep -i  'Welcome\|Critical Error'
+show_config: check_config
+	@echo "Reading parameters from config file - $(CONFIG_FILE)"
+	@echo "Using REDCAP_VM_URI : $(REDCAP_VM_URI)"
+	@echo "Using REDCAP_VM_TOKEN : $(REDCAP_VM_TOKEN)"
+	@echo "Using REDCAP_RECORDS_CMD : $(REDCAP_RECORDS_CMD)"
+
+rc_check: check_config
+	curl -s $(REDCAP_VM_URI) | grep -i  'Welcome\|Critical Error'
 
 rc_list:
 	vagrant ssh -c 'cd /vagrant/scripts && php redcapdbm.php -l'
@@ -30,23 +63,23 @@ rc_clean:
 	# TODO: add support for project id as parameter
 	vagrant ssh -c 'cd /vagrant/scripts && php redcapdbm.php -d 12'
 
-rc_demographics:
-	../bin/utils/redcap_records.py --token=121212 --url=http://localhost:8998/redcap/api/ -i demographic_test_data.csv
+rc_demographics: check_config
+	$(REDCAP_RECORDS_CMD) -i $(ENROLLMENT_CSV_FILE)
 
-rc_demographics_json:
-	../bin/utils/redcap_records.py --token=121212 --url=http://localhost:8998/redcap/api/ -i demographic_test_data.json -t json
+rc_demographics_json: check_config
+	$(REDCAP_RECORDS_CMD) -i $(ENROLLMENT_JSON_FILE) -t json
 
 rc_post:
-	python ../bin/redi.py -c ../config
+	python ../bin/redi.py -c $(CONFIG_FOLDER)
 
-rc_get:
-	../bin/utils/redcap_records.py --token=121212 --url=http://localhost:8998/redcap/api/ -f "demographics chemistry cbc inr hcv_rna_results"
+rc_get: check_config
+	$(REDCAP_RECORDS_CMD) -f "demographics chemistry cbc inr hcv_rna_results"
 
-rc_get_json:
-	@../bin/utils/redcap_records.py --token=121212 --url=http://localhost:8998/redcap/api/ -f "demographics chemistry cbc inr hcv_rna_results" -t json
+rc_get_json: check_config
+	$(REDCAP_RECORDS_CMD) "demographics chemistry cbc inr hcv_rna_results" -t json
 
-rc_get_json_demographics:
-	@../bin/utils/redcap_records.py --token=121212 --url=http://localhost:8998/redcap/api/ -f "demographics" -t json
+rc_get_json_demographics: check_config
+	$(REDCAP_RECORDS_CMD) -f "demographics" -t json
 
 rc_fresh:
 	make copy_project_data
@@ -65,9 +98,8 @@ rc_set_rate:
 test_egg:
 	make egg_test
 
-egg_test:
+egg_test: check_config
 	@test -f ../dist/REDI*.egg || (echo 'Please execute "make egg" from the project root first'			&& exit 1)
-	@test -d config				|| (echo 'Please create a "config" folder with necessary files first'	&& exit 1)
 	cp ../dist/REDI*.egg .
 	vagrant ssh -c 'sudo easy_install /vagrant/REDI*.egg'
 	make rc_clean
@@ -77,16 +109,10 @@ egg_test:
 clean:
 	rm -f report.html
 
-copy_redcap_code:
-	@test -d ../config    || (echo 'Please create a "config" folder with necessary files first'     && exit 1)
-	@test -f ../config/vagrant-data/redcap.zip || (echo 'Please obtain the redcap software zip file first' && exit 1)
-	cp ../config/vagrant-data/redcap.zip .
+copy_redcap_code: check_config
+	cp $(REDCAP_CODE_ZIP_FILE) .
 
-copy_project_data:
-	@test -d ../config    || (echo 'Please create a "config" folder with necessary files first'     && exit 1)
-	@test -f ../config/vagrant-data/projectDataBootstrap.sql || (echo 'Please obtain the project sql dump first' && exit 1)
-	cp ../config/vagrant-data/projectDataBootstrap.sql .
-	@test -f ../config/vagrant-data/demographic_test_data.csv || (echo 'Please obtain the demographics file first' && exit 1)
-	cp ../config/vagrant-data/demographic_test_data.csv .
-	test ! -d ../config/vagrant-data/sqlPatches || (echo "Copying sqlPatches folder from project configuration to vagrant folder" && cp -r ../config/vagrant-data/sqlPatches .)
-	cp ../config/vagrant-data/demographic_test_data.json .
+copy_project_data: check_config
+	cp $(BOOTSTRAP_SQL_FILE) .
+	@test ! -d $(REDCAP_SQL_PATCHES_FOLDER) || (echo "Copying 'sqlPatches' folder to vagrant folder" && cp -r $(REDCAP_SQL_PATCHES_FOLDER) .)
+	@test ! -f $(ENROLLMENT_JSON_FILE) || (echo "Copying $(ENROLLMENT_JSON_FILE) to vagrant folder" && cp $(ENROLLMENT_JSON_FILE) . )
