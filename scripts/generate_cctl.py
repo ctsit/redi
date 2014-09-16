@@ -2,7 +2,6 @@
 """ Generates a clinical-component-to-loinc.xml from CSV """
 import argparse
 import csv
-import StringIO
 import sys
 
 
@@ -28,8 +27,7 @@ def main():
         <Description>A mapping of local clinical component identifiers to their corresponding LOINC codes</Description>
         <components>"""
 
-    stdin_as_file = StringIO.StringIO(sys.stdin.read())
-    reader = csv.reader(stdin_as_file)
+    reader = csv.reader(sys.stdin)
     for line in reader:
         length = len(line)
         if 4 == length:
