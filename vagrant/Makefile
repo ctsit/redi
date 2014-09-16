@@ -1,24 +1,74 @@
-# Displays the list of available actions
+# This file is intended to help the developers
+# with common testing tasks.
+#
+# Note: Some tasks depend on variables set in the config file
+# therefore the proper path must be set for `CONFIG_FOLDER`
+MAKE_CONFIG_FILE     := Makefile.ini
+CONFIG_FOLDER        := $(shell cat ${MAKE_CONFIG_FILE} | sed -e 's/ //g' | grep -v '^\#' | grep 'config_folder=' | cut -d '=' -f2)
+CONFIG_FILE          := $(CONFIG_FOLDER)/settings.ini
+BOOTSTRAP_SQL_FILE   := $(CONFIG_FOLDER)/vagrant-data/projectDataBootstrap.sql
+REDCAP_CODE_ZIP_FILE := $(CONFIG_FOLDER)/vagrant-data/redcap.zip
+REDCAP_SQL_PATCHES_FOLDER := $(CONFIG_FOLDER)/vagrant-data/sqlPatches
+ENROLLMENT_CSV_FILE  := $(CONFIG_FOLDER)/vagrant-data/enrollment_test_data.csv
+REFERENCE_OUTPUT_FILE:= $(CONFIG_FOLDER)/vagrant-data/redi_out_reference.csv
+
+REDCAP_API_URI := $(shell cat ${CONFIG_FILE} | sed -e 's/ //g' | grep -v '^\#' | grep 'redcap_uri=' | cut -d '=' -f2)
+REDCAP_VM_URI := $(subst api/,,$(REDCAP_API_URI))
+REDCAP_VM_TOKEN := $(shell cat ${CONFIG_FILE} | sed -e 's/ //g' | grep -v '^\#' | grep 'token=' | cut -d '=' -f2)
+REDCAP_RECORDS_CMD:=../bin/utils/redcap_records.py --token=$(REDCAP_VM_TOKEN) --url=$(REDCAP_API_URI)
+REDCAP_PROJECT_ID := $(shell cat ${MAKE_CONFIG_FILE} | sed -e 's/ //g' | grep -v '^\#' | grep 'redcap_project_id=' | cut -d '=' -f2)
+REDCAP_PROJECT_FORMS := $(shell cat ${MAKE_CONFIG_FILE} | sed -e 's/ //g' | grep -v '^\#' | grep 'redcap_project_forms=' | cut -d '=' -f2)
+REDCAP_PROJECT_ENROLLMENT_FORM := $(shell cat ${MAKE_CONFIG_FILE} | sed -e 's/ //g' | grep -v '^\#' | grep 'redcap_project_enrollment_form=' | cut -d '=' -f2)
+
+
+.PHONY: help
 help:
 	@echo "\n Available tasks:"
+	@echo "\t show_config:  - display the parameters retrieved from $(CONFIG_FILE)"
 	@echo "\t rc_check      - checks if REDCap is running"
 	@echo "\t rc_list       - list the id of all REDCap projects"
 	@echo "\t rc_save       - save a backup of REDCap database"
 	@echo "\t rc_clean      - remove data for default test project"
-	@echo "\t rc_demographics - load demographic data for default test project"
+
+	@echo "\t rc_enrollment - load csv enrollment test data for the default project"
+	@echo "\t rc_get_enrollment - retrieve csv enrollment test data for the default project"
 	@echo "\t rc_post       - send test data to REDCap"
 	@echo "\t rc_get        - get stored test data from REDCap"
+	@echo "\t rc_get_json   - get stored test data from REDCap in json format"
 	@echo "\t rc_fresh      - erase/insert/retrieve test data from REDCap"
 	@echo "\t rc_get_rate   - shows the config option value: 'page_hit_threshold_per_minute' "
 	@echo "\t rc_set_rate   - set the value for: 'page_hit_threshold_per_minute' "
 	@echo "\t egg_test      - deploy the redi egg file to the vagrant box and run redi"
 	@echo "\t clean         - remove files created by testing"
 	@echo "\t copy_redcap_code: - copy the redcap.zip file from the 'config' folder if available"
-	@echo "\t copy_project_data: - copy *.sql files from the 'config' folder if available"
+	@echo "\t copy_project_data: - copy extra files from the 'config' folder if available"
 
+get_config_example:
+	@# Copy the config file for running make tasks
+	cp ../config-example/vagrant-data/Makefile.ini .
 
-rc_check:
-	curl -s http://localhost:8998/redcap/ | grep -i  'Welcome\|Critical Error'
+get_config_develop:
+	cp ../config/vagrant-data/Makefile.ini .
+
+check_config:
+	@# This task is used as a dependency checker
+	@test -d $(CONFIG_FOLDER) || (echo 'Please create a "config" folder with necessary files first' && exit 1)
+	@test -f $(CONFIG_FILE) || (echo 'Please obtain the config file "$(CONFIG_FILE)"' && exit 1)
+	@test -f $(BOOTSTRAP_SQL_FILE) || (echo 'Please obtain the project sql dump file "$(BOOTSTRAP_SQL_FILE)"' && exit 1)
+	@test -f $(REDCAP_CODE_ZIP_FILE) || (echo 'Please obtain the redcap software zip file "$(REDCAP_CODE_ZIP_FILE)"' && exit 1)
+	@test -f $(ENROLLMENT_CSV_FILE) || (echo 'Config error: missing file "$(ENROLLMENT_CSV_FILE)"' && exit 1)
+
+show_config: check_config
+	@echo "$(MAKE_CONFIG_FILE) indicates that extra parameters should be read from : $(CONFIG_FILE)"
+	@echo "Using REDCAP_VM_URI : $(REDCAP_VM_URI)"
+	@echo "Using REDCAP_VM_TOKEN : $(REDCAP_VM_TOKEN)"
+	@echo "Using REDCAP_RECORDS_CMD : $(REDCAP_RECORDS_CMD)"
+	@echo "Using REDCAP_PROJECT_ID : $(REDCAP_PROJECT_ID)"
+	@echo "Using REDCAP_PROJECT_FORMS : $(REDCAP_PROJECT_FORMS)"
+	@echo "Using REDCAP_PROJECT_ENROLLMENT_FORM : $(REDCAP_PROJECT_ENROLLMENT_FORM)"
+
+rc_check: check_config
+	curl -s $(REDCAP_VM_URI) | grep -i  'Welcome\|Critical Error'
 
 rc_list:
 	vagrant ssh -c 'cd /vagrant/scripts && php redcapdbm.php -l'
@@ -28,30 +78,27 @@ rc_save:
 
 rc_clean:
 	# TODO: add support for project id as parameter
-	vagrant ssh -c 'cd /vagrant/scripts && php redcapdbm.php -d 12'
+	vagrant ssh -c 'cd /vagrant/scripts && php redcapdbm.php -d $(REDCAP_PROJECT_ID)'
 
-rc_demographics:
-	../bin/utils/redcap_records.py --token=121212 --url=http://localhost:8998/redcap/api/ -i demographic_test_data.csv
-
-rc_demographics_json:
-	../bin/utils/redcap_records.py --token=121212 --url=http://localhost:8998/redcap/api/ -i demographic_test_data.json -t json
+rc_enrollment: check_config
+	$(REDCAP_RECORDS_CMD) -i $(ENROLLMENT_CSV_FILE)
 
 rc_post:
-	python ../bin/redi.py -c ../config
+	python ../bin/redi.py -c $(CONFIG_FOLDER)
 
-rc_get:
-	../bin/utils/redcap_records.py --token=121212 --url=http://localhost:8998/redcap/api/ -f "demographics chemistry cbc inr hcv_rna_results"
+rc_get: check_config
+	$(REDCAP_RECORDS_CMD) -f "$(REDCAP_PROJECT_FORMS)"
 
-rc_get_json:
-	@../bin/utils/redcap_records.py --token=121212 --url=http://localhost:8998/redcap/api/ -f "demographics chemistry cbc inr hcv_rna_results" -t json
+rc_get_json: check_config
+	$(REDCAP_RECORDS_CMD) -f "$(REDCAP_PROJECT_FORMS)" -t json
 
-rc_get_json_demographics:
-	@../bin/utils/redcap_records.py --token=121212 --url=http://localhost:8998/redcap/api/ -f "demographics" -t json
+rc_get_enrollment: check_config
+	$(REDCAP_RECORDS_CMD) -f "$(REDCAP_PROJECT_ENROLLMENT_FORM)" -t csv
 
 rc_fresh:
 	make copy_project_data
 	make rc_clean
-	make rc_demographics
+	make rc_enrollment
 	make rc_post
 	make rc_get
 
@@ -65,28 +112,26 @@ rc_set_rate:
 test_egg:
 	make egg_test
 
-egg_test:
+egg_test: check_config
 	@test -f ../dist/REDI*.egg || (echo 'Please execute "make egg" from the project root first'			&& exit 1)
-	@test -d config				|| (echo 'Please create a "config" folder with necessary files first'	&& exit 1)
 	cp ../dist/REDI*.egg .
 	vagrant ssh -c 'sudo easy_install /vagrant/REDI*.egg'
 	make rc_clean
-	make rc_demographics
+	make rc_enrollment
 	vagrant ssh -c 'redi -c /vagrant/config'
 
 clean:
 	rm -f report.html
+	rm -f out.csv
 
-copy_redcap_code:
-	@test -d ../config    || (echo 'Please create a "config" folder with necessary files first'     && exit 1)
-	@test -f ../config/vagrant-data/redcap.zip || (echo 'Please obtain the redcap software zip file first' && exit 1)
-	cp ../config/vagrant-data/redcap.zip .
+copy_redcap_code: check_config
+	cp $(REDCAP_CODE_ZIP_FILE) .
 
-copy_project_data:
-	@test -d ../config    || (echo 'Please create a "config" folder with necessary files first'     && exit 1)
-	@test -f ../config/vagrant-data/projectDataBootstrap.sql || (echo 'Please obtain the project sql dump first' && exit 1)
-	cp ../config/vagrant-data/projectDataBootstrap.sql .
-	@test -f ../config/vagrant-data/demographic_test_data.csv || (echo 'Please obtain the demographics file first' && exit 1)
-	cp ../config/vagrant-data/demographic_test_data.csv .
-	test ! -d ../config/vagrant-data/sqlPatches || (echo "Copying sqlPatches folder from project configuration to vagrant folder" && cp -r ../config/vagrant-data/sqlPatches .)
-	cp ../config/vagrant-data/demographic_test_data.json .
+copy_project_data: check_config
+	cp $(BOOTSTRAP_SQL_FILE) .
+	@test ! -d $(REDCAP_SQL_PATCHES_FOLDER) || (echo "Copying 'sqlPatches' folder to vagrant folder" && cp -r $(REDCAP_SQL_PATCHES_FOLDER) .)
+
+rc_compare:
+	@# This task can be used to compare the current project data with the reference data
+	$(REDCAP_RECORDS_CMD) -f "$(REDCAP_PROJECT_FORMS)" > out.csv
+	diff -u $(REFERENCE_OUTPUT_FILE) out.csv

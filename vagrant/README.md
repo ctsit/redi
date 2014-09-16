@@ -112,11 +112,11 @@ You can perform basic data imports and exports with the VM using the tool redcap
 
 Below is an example for export
 
-    ./bin/utils/redcap_records.py --token=121212 --url=http://localhost:8998/redcap/api/ --forms demographics
+    ./bin/utils/redcap_records.py --token=121212 --url=http://localhost:8998/redcap/api/ --forms enrollment
 
-If the above content is redirected to a file, demographics.csv, that data can be re-imported with this command:
+If the above content is redirected to a file, enrollment.csv, that data can be re-imported with this command:
 
-    ./bin/utils/redcap_records.py --token=121212 --url=http://localhost:8998/redcap/api/ -i demographics.csv
+    ./bin/utils/redcap_records.py --token=121212 --url=http://localhost:8998/redcap/api/ -i enrollment.csv
 
 ### 5.3.To backup the redcap database
 Please follow below procedure to backup your REDCap database
