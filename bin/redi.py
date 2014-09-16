@@ -292,25 +292,17 @@ def _run(config_file, configuration_directory, do_keep_gen_files, dry_run,
         xml_report_tree = create_summary_report(report_parameters,
                                             report_data, alert_summary,
                                             collection_date_summary_dict)
-        # print ElementTree.tostring(xml_report_tree)
-
+        # print etree.tostring(xml_report_tree)
+        report_xsl = proj_root + "bin/utils/report.xsl"
         xslt = etree.parse(report_xsl)
         transform = etree.XSLT(xslt)
         html_report = transform(xml_report_tree)
         html_str = etree.tostring(html_report, method='html', pretty_print=True)
 
-        # send report via email
         if settings.send_email:
-            redi_email.send_email_data_import_completed(email_settings, html_str)
+            deliver_report_as_email(email_settings, html_str)
         else:
-            logger.info("Email will not be sent as 'send_email' parameter"\
-            " in {0} is set to 'N'".format(config_file))
-            try:
-                report_file = open(settings.report_file_path2, 'w')
-            except IOError:
-                logger.exception('could not open file %s' % settings.report_file_path2)
-                raise
-            report_file.write(html_str)
+            deliver_report_as_file(settings.report_file_path2, html_str)
 
     if batch:
         # Update the batch row
@@ -325,6 +317,46 @@ def _run(config_file, configuration_directory, do_keep_gen_files, dry_run,
     if not do_keep_gen_files:
         redi_lib.delete_temporary_folder(data_folder)
 
+def deliver_report_as_file(html_report_path, html):
+    """
+    Deliver the summary report by writing it to a file
+    or logging it to the console if writing the file fails
+
+    :html_report_path the path where the report will be stored
+    :html the actual report content
+    """
+    problem_found = False
+    try:
+        report_file = open(html_report_path, 'w')
+    except (IOError, OSError) as e:
+        logger.exception('Could not open file: %s' % html_report_path)
+        problem_found = True
+    else:
+        try:
+            report_file.write(html)
+            logger.info("==> You can review the summary report by opening: {}"\
+                " in your browser".format(html_report_path))
+        except IOError:
+            logger.exception('Could not write file: %s' % report_html_file)
+            problem_found = True
+        finally:
+            report_file.close()
+    if problem_found:
+        logger.info("== Summary report ==" + html)
+
+def deliver_report_as_email(email_settings, html):
+    """
+    Deliver summary report as an email
+
+    :email_settings dictinary with email parameters
+    :html the actual report content
+    """
+    try:
+        redi_email.send_email_data_import_completed(email_settings, html)
+        logger.info("Summary report was emailed: parameter 'send_email = Y'")
+    except Exception as e:
+        logger.error("Unable to deliver the summary report due error: %s" % e)
+        deliver_report_as_file("report.html", html)
 
 def _create_person_form_event_tree_with_data(config_file, \
     configuration_directory, email_settings, form_events_file, raw_xml_file,\
