@@ -43,6 +43,13 @@ help:
 	@echo "\t copy_redcap_code: - copy the redcap.zip file from the 'config' folder if available"
 	@echo "\t copy_project_data: - copy extra files from the 'config' folder if available"
 
+get_config_example:
+	@# Copy the config file for running make tasks
+	cp ../config-example/vagrant-data/Makefile.ini .
+
+get_config_develop:
+	cp ../config/vagrant-data/Makefile.ini .
+
 check_config:
 	@# This task is used as a dependency checker
 	@test -d $(CONFIG_FOLDER) || (echo 'Please create a "config" folder with necessary files first' && exit 1)
