@@ -1,6 +1,7 @@
 *.pyc
 *.pyo
 REDI.egg-info/
+config-example/vagrant-data/redcap.zip
 formData.xml
 rawData.xml
 translationalData.xml
@@ -23,6 +24,7 @@ person_form_event_tree_with_data.xml
 .figleaf
 build/
 dist/
+vagrant/Makefile.ini
 vagrant/.vagrant/
 vagrant/.vimrc
 vagrant/report.html
@@ -38,3 +40,4 @@ vagrant/data/
 vagrant/demographic_test_data.csv
 vagrant/demographic_test_data.json
 vagrant/redi.db
+.idea/
