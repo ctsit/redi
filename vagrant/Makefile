@@ -24,12 +24,14 @@ REDCAP_PROJECT_ENROLLMENT_FORM := $(shell cat ${MAKE_CONFIG_FILE} | sed -e 's/ /
 .PHONY: help
 help:
 	@echo "\n Available tasks:"
-	@echo "\t show_config:  - display the parameters retrieved from $(CONFIG_FILE)"
+	@echo "\t get_config_example  - copy the required Makefile.ini from 'config-example' folder"
+	@echo "\t get_config_develop  - copy the required Makefile.ini from developer's 'config' folder"
+	@echo "\t show_config         - display the parameters retrieved from $(CONFIG_FILE)"
+
 	@echo "\t rc_check      - checks if REDCap is running"
 	@echo "\t rc_list       - list the id of all REDCap projects"
 	@echo "\t rc_save       - save a backup of REDCap database"
 	@echo "\t rc_clean      - remove data for default test project"
-
 	@echo "\t rc_enrollment - load csv enrollment test data for the default project"
 	@echo "\t rc_get_enrollment - retrieve csv enrollment test data for the default project"
 	@echo "\t rc_post       - send test data to REDCap"
@@ -38,6 +40,7 @@ help:
 	@echo "\t rc_fresh      - erase/insert/retrieve test data from REDCap"
 	@echo "\t rc_get_rate   - shows the config option value: 'page_hit_threshold_per_minute' "
 	@echo "\t rc_set_rate   - set the value for: 'page_hit_threshold_per_minute' "
+
 	@echo "\t egg_test      - deploy the redi egg file to the vagrant box and run redi"
 	@echo "\t clean         - remove files created by testing"
 	@echo "\t copy_redcap_code: - copy the redcap.zip file from the 'config' folder if available"
@@ -52,6 +55,7 @@ get_config_develop:
 
 check_config:
 	@# This task is used as a dependency checker
+	@test -f $(MAKE_CONFIG_FILE) || (echo 'Please obtain the required file Makefile.ini by executing get_config_example or get_config_develop' && exit 1)
 	@test -d $(CONFIG_FOLDER) || (echo 'Please create a "config" folder with necessary files first' && exit 1)
 	@test -f $(CONFIG_FILE) || (echo 'Please obtain the config file "$(CONFIG_FILE)"' && exit 1)
 	@test -f $(BOOTSTRAP_SQL_FILE) || (echo 'Please obtain the project sql dump file "$(BOOTSTRAP_SQL_FILE)"' && exit 1)
