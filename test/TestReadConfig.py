@@ -74,8 +74,6 @@ emr_sftp_server_username = user
 emr_sftp_server_password = pswd
 emr_sftp_project_name = sample
 emr_data_file = data.csv
-emr_log_file = log.log
-
 include_rule_errors_in_report = False
 verify_ssl = False
 """)
