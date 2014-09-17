@@ -5,7 +5,7 @@ SHARED_FOLDER=/vagrant
 
 # The user provides a copy of the redcap binary folder as a zip file
 REDCAP_ZIP_FILE=$SHARED_FOLDER/redcap.zip
-REDCAP_SCHEMA_FILE=$SHARED_FOLDER/projectDataBootstrap.sql
+REDCAP_SCHEMA_FILE=$SHARED_FOLDER/redcap_database.sql
 
 # import helper functions
 . $SHARED_FOLDER/bootstrap_functions.sh

@@ -5,12 +5,14 @@
 # therefore the proper path must be set for `CONFIG_FOLDER`
 MAKE_CONFIG_FILE     := Makefile.ini
 CONFIG_FOLDER        := $(shell cat ${MAKE_CONFIG_FILE} | sed -e 's/ //g' | grep -v '^\#' | grep 'config_folder=' | cut -d '=' -f2)
+CONFIG_FOLDER_VAGRANT:= $(CONFIG_FOLDER)/vagrant-data/
 CONFIG_FILE          := $(CONFIG_FOLDER)/settings.ini
-BOOTSTRAP_SQL_FILE   := $(CONFIG_FOLDER)/vagrant-data/projectDataBootstrap.sql
-REDCAP_CODE_ZIP_FILE := $(CONFIG_FOLDER)/vagrant-data/redcap.zip
-REDCAP_SQL_PATCHES_FOLDER := $(CONFIG_FOLDER)/vagrant-data/sqlPatches
-ENROLLMENT_CSV_FILE  := $(CONFIG_FOLDER)/vagrant-data/enrollment_test_data.csv
-REFERENCE_OUTPUT_FILE:= $(CONFIG_FOLDER)/vagrant-data/redi_out_reference.csv
+
+REDCAP_DB_SQL_FILE   := $(CONFIG_FOLDER_VAGRANT)/$(shell cat ${MAKE_CONFIG_FILE} | sed -e 's/ //g' | grep -v '^\#' | grep 'redcap_db_sql_file=' | cut -d '=' -f2)
+REDCAP_CODE_ZIP_FILE := $(CONFIG_FOLDER_VAGRANT)/redcap.zip
+REDCAP_SQL_PATCHES_FOLDER := $(CONFIG_FOLDER_VAGRANT)/sqlPatches
+ENROLLMENT_CSV_FILE  := $(CONFIG_FOLDER_VAGRANT)/enrollment_test_data.csv
+REFERENCE_OUTPUT_FILE:= $(CONFIG_FOLDER_VAGRANT)/vagrant-data/redi_out_reference.csv
 
 REDCAP_API_URI := $(shell cat ${CONFIG_FILE} | sed -e 's/ //g' | grep -v '^\#' | grep 'redcap_uri=' | cut -d '=' -f2)
 REDCAP_VM_URI := $(subst api/,,$(REDCAP_API_URI))
@@ -58,12 +60,13 @@ check_config:
 	@test -f $(MAKE_CONFIG_FILE) || (echo 'Please obtain the required file Makefile.ini by executing get_config_example or get_config_develop' && exit 1)
 	@test -d $(CONFIG_FOLDER) || (echo 'Please create a "config" folder with necessary files first' && exit 1)
 	@test -f $(CONFIG_FILE) || (echo 'Please obtain the config file "$(CONFIG_FILE)"' && exit 1)
-	@test -f $(BOOTSTRAP_SQL_FILE) || (echo 'Please obtain the project sql dump file "$(BOOTSTRAP_SQL_FILE)"' && exit 1)
+	@test -f $(REDCAP_DB_SQL_FILE) || (echo 'Please obtain the project sql dump file "$(REDCAP_DB_SQL_FILE)"' && exit 1)
 	@test -f $(REDCAP_CODE_ZIP_FILE) || (echo 'Please obtain the redcap software zip file "$(REDCAP_CODE_ZIP_FILE)"' && exit 1)
 	@test -f $(ENROLLMENT_CSV_FILE) || (echo 'Config error: missing file "$(ENROLLMENT_CSV_FILE)"' && exit 1)
 
 show_config: check_config
 	@echo "$(MAKE_CONFIG_FILE) indicates that extra parameters should be read from : $(CONFIG_FILE)"
+	@echo "Using REDCAP_DB_SQL_FILE : $(REDCAP_DB_SQL_FILE)"
 	@echo "Using REDCAP_VM_URI : $(REDCAP_VM_URI)"
 	@echo "Using REDCAP_VM_TOKEN : $(REDCAP_VM_TOKEN)"
 	@echo "Using REDCAP_RECORDS_CMD : $(REDCAP_RECORDS_CMD)"
@@ -132,7 +135,8 @@ copy_redcap_code: check_config
 	cp $(REDCAP_CODE_ZIP_FILE) .
 
 copy_project_data: check_config
-	cp $(BOOTSTRAP_SQL_FILE) .
+	@# Bring in the REDCap database file with a name expected by bootstrap.sh
+	cp $(REDCAP_DB_SQL_FILE) redcap_database.sql
 	@test ! -d $(REDCAP_SQL_PATCHES_FOLDER) || (echo "Copying 'sqlPatches' folder to vagrant folder" && cp -r $(REDCAP_SQL_PATCHES_FOLDER) .)
 
 rc_compare:

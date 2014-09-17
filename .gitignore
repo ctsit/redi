@@ -15,6 +15,8 @@ rawDataWithFormStatus.xml
 !log/.dummy
 log/
 config/
+config-uf/
+config-surgery/
 config-upenn/
 config-vcu/
 .project
@@ -36,7 +38,7 @@ vagrant/redcap-backup-*.sql
 vagrant/REDI-*.egg
 
 vagrant/redcap.zip
-vagrant/projectDataBootstrap.sql
+vagrant/redcap_database.sql
 vagrant/sqlPatches
 vagrant/data/
 vagrant/demographic_test_data.csv
