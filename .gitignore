@@ -15,6 +15,8 @@ rawDataWithFormStatus.xml
 !log/.dummy
 log/
 config/
+config-upenn/
+config-vcu/
 .project
 *.swp
 *.swo

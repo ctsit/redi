@@ -1906,6 +1906,7 @@ def load_rules(rules, root='./'):
         pass
     """
     if not rules:
+        logger.info("No rules specified in the settings file")
         return {}
 
     loaded_rules = {}
@@ -1922,6 +1923,7 @@ def load_rules(rules, root='./'):
 
         loaded_rules[rule] = module
 
+    logger.info("Loaded %s post-processing rule(s)" % len(loaded_rules))
     return loaded_rules
 
 
