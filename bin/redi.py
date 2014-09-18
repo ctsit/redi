@@ -1905,7 +1905,6 @@ def load_rules(rules, root='./'):
         pass
     """
     if not rules:
-        logger.info("No rules specified in the settings file")
         return {}
 
     loaded_rules = {}
