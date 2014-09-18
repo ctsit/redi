@@ -16,7 +16,7 @@ REDI also includes the ability to create a REDCap server inside a virtual machin
 
 This example configuration is based on the one of the default REDCap example projects.  This project is identified as "Longitudinal Database (1 arm)" in the REDCap template library.  In fresh REDCap installations like you will find in the test virtual machine, the project named "Example Database (Longitudinal)" has already been created for you using this template.
 
-## File Descriptions:
+## File Descriptions
 
 ### settings.ini:
 
@@ -53,3 +53,7 @@ synthetic-lab-data.xml is a sample RED-I input data file.  It is made by process
 ### enrollment_test_data.csv
 
 enrollment_test_data.csv is a file of enrollment data that must be loaded into the sample REDCap project before RED-I can load data into the project.
+
+### vagrant-data/redi_sample_project_v5.7.4.sql
+
+`vagrant-data/redi_sample_project_v5.7.4.sql` is an SQL dump of our sample project for version 5.7.4 of REDCap. This can be loaded into the MySQL instance running inside the Vagrant Virtual Machine.
