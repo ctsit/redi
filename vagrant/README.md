@@ -1,171 +1,105 @@
-# REDCap Project Testing
+# Testing RED-I with a sample REDCap Project
 
-This vagrant VM is a REDCap testing VM it is designed to start a configurable version of REDCap with a configurable MySQL dump file.
+## Purpose
 
-## 1.Configure the VM
-Before you can use the VM you must obtain a copy of the redcap software from 
-   http://project-redcap.org/
-and save it as 'redcap.zip'.
+The "vagrant" folder was created with the goal of making testing [RED-I software](https://github.com/ctsit/redi) as easy as possible.
+It contains the [Vagrantfile](../vagrant/Vagrantfile) which allows to start a virtual machine capable of running the
+[REDCap software](http://http://www.project-redcap.org) -- which means that during virtual machine creation the Apache and MySQL
+software is installed without any user intervention.
 
-The user is expected to provide the binary file 'redcap.zip' in the same folder as the Vagrantfile.
-This ensures that the 'bootstrap.sh' script can extract the files to the virtual machine path '/var/www/redcap'.
-A typical listing of the '/var/www/redcap' folder after extraction is:
+There are a few important things to note before proceeding with running RED-I to import data into a sample REDCap project:
 
-   api
-   
-   cron.php
-   
-   database.php
-   
-   edocs
-   
-   index.php
-   
-   Installation Instructions.txt
-   
-   install.php
-   
-   languages
-   
-   redcap
-   
-   REDCap License.txt
-   
-   redcap_v4.14.2_
-   
-   robots.txt
-   
-   surveys
-   
-   temp
-   
-   upgrade.php
-   
-   webtools2
+- You have to install the **vagrant** and **virtual box** software
+- You have to obtain the closed-source REDCap software from http://project-redcap.org/
+- You have to obtain a **Makefile.ini** file in order to be able to execute tasks from the **Makefile**
 
-## 2.SqlPatches 
+## Steps
 
-Review the files in 'sqlPatches' to make sure they meet your needs. 
+### 1. Install vagrant and virtual box
 
- * updateBaseURL.sql - sets the redcap_base_url to '/redcap/'.  This aids URL rewriting.
- * updateUsers.sql - resets every password to 'password'.
- * addAdminUser.sql - If correctly edited, this file will add a user 'admin' with password 'password'.
-Edit the list of forms in the last INSERT command and adjust the API Token to meet your needs.
+On a linux machine run:
 
-To run additional sql scripts just save them to the 'sqlPatches' folder.
+* sudo apt-get install vagrant
+* sudo apt-get install virtualbox
 
-## 3.Start the VM
 
-To use this VM you will need to install Vagrant and Virtual Box.
+On a mac machine:
+
+* Download and install vagrant from https://www.vagrantup.com/downloads.html
+* Download and install the latest virtual box from http://download.virtualbox.org/virtualbox/
+
+For more details about Vagrant software you can go to [why-vagrant](https://docs.vagrantup.com/v2/why-vagrant/) page.
+
+
+### 2. Configure the VM
+
+As mentioned above you have to obtain a copy of the REDCap software from http://project-redcap.org/
+and save it as "**redcap.zip**" file in the "**config-example/vagrant-data**" folder.
+This ensures that in the later steps the [bootstrap.sh](../vagrant/bootstrap.sh) script can extract the files to the
+virtual machine path "**/var/www/redcap**".
+
+Now execute the following commands to complete the configuration:
+
+<pre>
+make copy_config_example
+make copy_redcap_code
+make copy_project_data
+make show_config
+</pre>
+
+Please verify that the output from "show_config" matheches your expectations.
+
+### 3. Start the VM
+
+To use the vagrant VM you will need to install Vagrant and Virtual Box.
 
 With these packages installed, follow this procedure to use a VM template:
 
     cd ./vagrant
     vagrant up
 
-Vagrant will instantiate and provision the new VM.  Web applications should be accessible at
+Vagrant will instantiate and provision the new VM.  The REDCap web application should be accessible in the browser at
 
-   http://localhost:8998/
+   http://localhost:8998/redcap/
 
-If that port is already in use vagrant will choose a different port automatically.
-Read the log of "vagrant up" and note the port redirect used.
+If port 8998 is already in use vagrant will choose a different port automatically.
+Read the log of "vagrant up" and note the port to be used.
 
-## 4.Connect to VM
-The command `vagrant ssh` launches a full-fledged SSH session. To access all the necessary scripts and sql patches run below commands
+### 4. Verify the VM is running
 
-`cd /vagrant`
+Verify that the virtual machine is working properly by accessing it using:
 
-One can find `scripts` and `sqlPatches` directories at this location.
+<pre>
+vagrant ssh
+</pre>
 
-## 5.REDCap Database maintainance
+### 5. Import Enrollment Data using RED-I
 
-`redcapdbm.php` is a tool which allows to perform basic maintaince of the RedCap database. This tool is located at `/vagrant/scripts` directory on the VM
+Import the [sample subject list](../config-example/vagrant-data/enrollment_test_data.csv) into REDCap by executing:
 
-### 5.1.To delete data from REDCap
-Please follow below procedure to delete data from your REDCap project
+<pre>
+make rc_enrollment
+</pre>
 
-`cd /vagrant/scripts`
+Note: This step is necessary because in order to associate data with subjects the list of subjects needs to exist in the REDCap database.
 
-`php redcapdbm.php -l` this command list of REDCap projects available along with project_id
 
-`php redcapdbm.php -d <project_id>` Choose a project_id from the output of above command and pass it as a parameter for this command. This command deletes records from the project you have chosen.
+### 6. Import Electronic Health Records using RED-I
 
-### 5.2.To load data into REDCap
-`redcap_records.py` tool can be used for loading data into REDCap. Please refer below to learn how you can use `redcap_records.py` to import and export records from REDCap.
+Import the [sample electronic health records](../config-example/vagrant-data/redi_sample_project_v5.7.4.sql) into REDCap by executing:
 
-#### 5.2.1.Data imports and exports
+<pre>
+make rc_post
+</pre>
 
-You can perform basic data imports and exports with the VM using the tool redcap_records.py.  
-##### Usage
-`redcap_records.py` [OPTIONS]
-##### OPTIONS
+Verify that the output of this command ends with:
+<pre>
+You can review the summary report by opening: report.html in your browser
+</pre>
 
-`--token` 		Specify the authentication/authorization token that will provide access to the REDCap project
+If this step succeded you have verified that RED-I can be used to save time by automating EHR data imports into REDCap.
 
-`--url`   		Specify the url of the REDCap server to connect with
-
-`--verify_ssl` Specify whether the SSL cert of the REDCap server should be checked. provide 'y' to verify
-
-`--import_data`	Specify the input data file to load into REDCap
-
-`--forms`		Specify a list of forms, separated by spaces, for which data should be returned.
-
-Below is an example for export
-
-    ./bin/utils/redcap_records.py --token=121212 --url=http://localhost:8998/redcap/api/ --forms enrollment
-
-If the above content is redirected to a file, enrollment.csv, that data can be re-imported with this command:
-
-    ./bin/utils/redcap_records.py --token=121212 --url=http://localhost:8998/redcap/api/ -i enrollment.csv
-
-### 5.3.To backup the redcap database
-Please follow below procedure to backup your REDCap database
-
-`cd /vagrant/scripts`
-
-`php redcapdbm.php -b` This command backups database schema and partial data
-
-A file named in the format `backup-redcap-XXXX.sql` will be saved in the `scripts` directory. If you want this `backup-redcap-XXX.sql` to be default for this VM, rename it to `/vagrant/projectDataBootstrap.sql`. Please dont forget to update this file in version control.
-
-## 6.Updating redcap.zip with new content
-While updating redcap.zip with new content one needs to make sure that all of the contents listed in the `Configure VM` step above has to go into the directory `redcap`. This ensures that when a `redcap.zip` file is extracted, the root folder is named `redcap` and contains the files listed above in the `Configure VM`.
-
-## 7.Add new REDCap Project and share it with team members
-The instructions below assume you have the permissions to create a new REDCap project,create a user, set user permissions, and create an API Token. Depending on how your REDCap server is configured you may or may not have the permissions to do these tasks yourself. Consult with your local REDCap managers for assistance if you do not see these options.
-
-### 7.1.Create new Project
-Select the `Create New Project` tab. Enter `<your_project_name>` for the project title. Please check below images for reference.
-
-![alt text](images/image_0.png)
-![alt text](images/image_1.png)
-
-### 7.2.Authorize People
-To adjust user rights, access the User Rights tool via the menu on the left side of the REDCap screen. 
-
-![alt text](images/image_02.png)
-
-or click on `User Rights` button in the `Project Setup`
-
-![alt text](images/image_4.png)
-
-In REDCap User Rights, set `Data Entry Rights`  as per your needs.Please check below image
-
-![alt text](images/image_6.png)
-
-### 7.3.Create API Token
-For the data in your project to be used by programs, those programs will need access through REDCap's API interface. You will need to create an API Token to allow those programs to authenticate and get the correct permissions on your project.
-
-This token can be created on any account, but for automated processes a service account will provide a more reliable authentication. Add a user in this REDCap project with the permissions shown below
-![alt text](images/image_11.png)
-
-After you have created the new user, login as that user and request an Read-only API button on the left hand toolbar.
-![alt text](images/image_12.png)
-
-### 7.4.Export Data
-If you have data in this project that needs to be preserved, you can export it using the steps listed in the section `5.2` above.
-
-### 7.5 Backup Data
-If you would like to backup this project along with other `REDCap` projects, please follow the procedures listed in the section `5.3`. If you want to initialize the project with no data in it, follow the procedures in section `5.2`.
-
-### 7.6 Document the Existence of the Project
-Please update the README-projects.md document with a detailed decription of the new project.
+<span style="color: green; font-weight: bold">
+Congratulations! You can now [add your own REDCap project](../doc/add_new_redcap_project.md)
+and start using RED-I to move data.
+</span>
