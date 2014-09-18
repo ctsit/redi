@@ -26,9 +26,11 @@ REDCAP_PROJECT_ENROLLMENT_FORM := $(shell cat ${MAKE_CONFIG_FILE} | sed -e 's/ /
 .PHONY: help
 help:
 	@echo "\n Available tasks:"
-	@echo "\t get_config_example  - copy the required Makefile.ini from 'config-example' folder"
-	@echo "\t get_config_develop  - copy the required Makefile.ini from developer's 'config' folder"
+	@echo "\t copy_config_example - copy the required Makefile.ini from 'config-example' folder"
+	@echo "\t copy_config_develop - copy the required Makefile.ini from developer's 'config' folder"
 	@echo "\t show_config         - display the parameters retrieved from $(CONFIG_FILE)"
+	@echo "\t copy_redcap_code:   - copy the redcap.zip file from the 'config' folder if available"
+	@echo "\t copy_project_data:  - copy extra files from the 'config' folder if available"
 
 	@echo "\t rc_check      - checks if REDCap is running"
 	@echo "\t rc_list       - list the id of all REDCap projects"
@@ -45,14 +47,25 @@ help:
 
 	@echo "\t egg_test      - deploy the redi egg file to the vagrant box and run redi"
 	@echo "\t clean         - remove files created by testing"
-	@echo "\t copy_redcap_code: - copy the redcap.zip file from the 'config' folder if available"
-	@echo "\t copy_project_data: - copy extra files from the 'config' folder if available"
+	@echo "\t rc_compare    - compares the output data from REDCap to the reference dataset"
 
-get_config_example:
+show_steps:
+	@echo "\n Steps for importing data into the sample project:"
+	@echo "\t make clean"
+	@echo "\t make copy_config_example"
+	@echo "\t make copy_redcap_code"
+	@echo "\t make copy_project_data"
+	@echo "\t make show_config"
+	@echo "\t vagrant up"
+	@echo "\t make rc_enrollment"
+	@echo "\t make rc_post"
+	@echo "\t make rc_get"
+
+copy_config_example:
 	@# Copy the config file for running make tasks
 	cp ../config-example/vagrant-data/Makefile.ini .
 
-get_config_develop:
+copy_config_develop:
 	cp ../config/vagrant-data/Makefile.ini .
 
 check_config:
@@ -73,6 +86,14 @@ show_config: check_config
 	@echo "Using REDCAP_PROJECT_ID : $(REDCAP_PROJECT_ID)"
 	@echo "Using REDCAP_PROJECT_FORMS : $(REDCAP_PROJECT_FORMS)"
 	@echo "Using REDCAP_PROJECT_ENROLLMENT_FORM : $(REDCAP_PROJECT_ENROLLMENT_FORM)"
+
+copy_redcap_code: check_config
+	cp $(REDCAP_CODE_ZIP_FILE) .
+
+copy_project_data: check_config
+	@# Bring in the REDCap database file with a name expected by bootstrap.sh
+	cp $(REDCAP_DB_SQL_FILE) redcap_database.sql
+	#@test ! -d $(REDCAP_SQL_PATCHES_FOLDER) || (echo "Copying 'sqlPatches' folder to vagrant folder" && cp -r $(REDCAP_SQL_PATCHES_FOLDER) .)
 
 rc_check: check_config
 	curl -s $(REDCAP_VM_URI) | grep -i  'Welcome\|Critical Error'
@@ -116,6 +137,11 @@ rc_set_rate:
 	# echo $(filter-out $@,$(MAKECMDGOALS))
 	vagrant ssh -c 'mysql -uroot -ppassword -e "UPDATE redcap.redcap_config SET value = $(filter-out $@,$(MAKECMDGOALS)) WHERE field_name = \"page_hit_threshold_per_minute\" "'
 
+rc_compare:
+	@# This task can be used to compare the current project data with the reference data
+	$(REDCAP_RECORDS_CMD) -f "$(REDCAP_PROJECT_FORMS)" > out.csv
+	diff -u $(REFERENCE_OUTPUT_FILE) out.csv
+
 test_egg:
 	make egg_test
 
@@ -128,18 +154,8 @@ egg_test: check_config
 	vagrant ssh -c 'redi -c /vagrant/config'
 
 clean:
-	rm -f report.html
+	@# This task removes all copied/generated files
+	rm -f redcap.zip
+	rm -f Makefile.ini
+	rm -f redcap_database.sql
 	rm -f out.csv
-
-copy_redcap_code: check_config
-	cp $(REDCAP_CODE_ZIP_FILE) .
-
-copy_project_data: check_config
-	@# Bring in the REDCap database file with a name expected by bootstrap.sh
-	cp $(REDCAP_DB_SQL_FILE) redcap_database.sql
-	@test ! -d $(REDCAP_SQL_PATCHES_FOLDER) || (echo "Copying 'sqlPatches' folder to vagrant folder" && cp -r $(REDCAP_SQL_PATCHES_FOLDER) .)
-
-rc_compare:
-	@# This task can be used to compare the current project data with the reference data
-	$(REDCAP_RECORDS_CMD) -f "$(REDCAP_PROJECT_FORMS)" > out.csv
-	diff -u $(REFERENCE_OUTPUT_FILE) out.csv
