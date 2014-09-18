@@ -21,7 +21,6 @@ from datetime import date, datetime, timedelta
 from collections import defaultdict
 from collections import Counter
 import string
-import smtplib
 import xml.etree.ElementTree as ET
 import sys
 import imp
@@ -337,7 +336,7 @@ def deliver_report_as_file(html_report_path, html):
             logger.info("==> You can review the summary report by opening: {}"\
                 " in your browser".format(html_report_path))
         except IOError:
-            logger.exception('Could not write file: %s' % report_html_file)
+            logger.exception('Could not write file: %s' % html_report_path)
             problem_found = True
         finally:
             report_file.close()

@@ -16,9 +16,8 @@ import ast
 from redcap import RedcapError
 import tempfile
 import sqlite3 as lite
-import md5
+from datetime import date
 import hashlib
-import redi
 import utils.redi_email as redi_email
 from utils.redcapClient import redcapClient
 from requests import RequestException
@@ -27,7 +26,6 @@ import logging
 import sys
 logger = logging.getLogger(__name__)
 logger.addHandler(logging.NullHandler())
-proj_root = redi.get_proj_root()
 
 DEFAULT_DATA_DIRECTORY = os.getcwd()
 
@@ -47,7 +45,6 @@ Parameters:
 def create_import_data_json(
         import_data_dict,
         event_tree):
-    # redi.configure_logger(system_log_file_full_path)
 
     root = event_tree
 
@@ -103,7 +100,6 @@ Steps:
 
 
 def generate_output(person_tree, redcap_settings, email_settings, data_repository, skip_blanks=False):
-    # redi.configure_logger(system_log_file_full_path)
 
     # the global dictionary to be returned
     report_data = {
