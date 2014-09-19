@@ -245,7 +245,7 @@ def _run(config_file, configuration_directory, do_keep_gen_files, dry_run,
     report_parameters = {
         'report_file_path': report_file_path,
         'project': settings.project,
-        'redcap_server': settings.redcap_server}
+        'redcap_uri': settings.redcap_uri}
 
     report_xsl = proj_root + "bin/utils/report.xsl"
     send_email = settings.send_email
@@ -1262,13 +1262,14 @@ def create_summary_report(report_parameters, report_data, alert_summary, \
 
 
 def updateReportHeader(root, report_parameters):
+    """ Update the passed `root` element tree with date, project name and url"""
     header = root[0]
     project = etree.SubElement(header, "project")
     project.text = report_parameters.get('project')
     date = etree.SubElement(header, "date")
     date.text = time.strftime("%m/%d/%Y")
     redcapServerAddress = etree.SubElement(header, "redcapServerAddress")
-    redcapServerAddress.text = report_parameters.get('redcap_server')
+    redcapServerAddress.text = report_parameters.get('redcap_uri')
 
 
 def updateReportSummary(root, report_data):

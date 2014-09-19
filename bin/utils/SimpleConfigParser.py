@@ -90,7 +90,6 @@ required_files_dict = {
 required_server_parameters_list = [
     'redcap_uri',
     'token',
-    'redcap_server',
     'redcap_support_receiver_email',
     'smtp_host_for_outbound_mail',
     'smtp_port_for_outbound_mail',

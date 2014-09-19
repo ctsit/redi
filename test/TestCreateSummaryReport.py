@@ -22,7 +22,7 @@ class TestCreateSummaryReport(unittest.TestCase):
         self.test_report_params = {
             'project': 'hcvtarget-uf',
             'report_file_path': proj_root + 'config/report.xml',
-            'redcap_server': 'https://hostname.org'}
+            'redcap_uri': 'https://hostname.org'}
 
         self.test_report_data = {
             'total_subjects': 5,

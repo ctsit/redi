@@ -47,11 +47,12 @@ The program will terminate if they are missing or do not have a value in **setti
 
 ### Conditional Parameters
 
-Whereas the aforementioned parameters are always required, the following parameters are only required to have a value in **settings.ini** when **redi** is not performing a dry run:
+While the parameters mentioned above are always required, the following
+parameters are only required to have a value in **settings.ini** when
+**redi** is not performing a dry run:
 
  - redcap_uri
  - token
- - redcap_server
  - redcap_support_receiver_email
  - redcap_support_sender_email
  - smtp_host_for_outbound_mail
