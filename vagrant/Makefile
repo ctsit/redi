@@ -12,7 +12,7 @@ REDCAP_DB_SQL_FILE   := $(CONFIG_FOLDER_VAGRANT)/$(shell cat ${MAKE_CONFIG_FILE}
 REDCAP_CODE_ZIP_FILE := $(CONFIG_FOLDER_VAGRANT)/redcap.zip
 REDCAP_SQL_PATCHES_FOLDER := $(CONFIG_FOLDER_VAGRANT)/sqlPatches
 ENROLLMENT_CSV_FILE  := $(CONFIG_FOLDER_VAGRANT)/enrollment_test_data.csv
-REFERENCE_OUTPUT_FILE:= $(CONFIG_FOLDER_VAGRANT)/vagrant-data/redi_out_reference.csv
+REFERENCE_OUTPUT_FILE:= $(CONFIG_FOLDER_VAGRANT)/redi_out_reference.csv
 
 REDCAP_API_URI := $(shell cat ${CONFIG_FILE} | sed -e 's/ //g' | grep -v '^\#' | grep 'redcap_uri=' | cut -d '=' -f2)
 REDCAP_VM_URI := $(subst api/,,$(REDCAP_API_URI))
@@ -141,6 +141,7 @@ rc_compare:
 	@# This task can be used to compare the current project data with the reference data
 	$(REDCAP_RECORDS_CMD) -f "$(REDCAP_PROJECT_FORMS)" > out.csv
 	diff -u $(REFERENCE_OUTPUT_FILE) out.csv
+	rm out.csv
 
 test_egg:
 	make egg_test
