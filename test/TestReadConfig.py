@@ -66,7 +66,6 @@ component_to_loinc_code_xml = TestComponentToLoincCode.xml
 redcap_uri = https://example.org/redcap/api/
 token = ABCDEF878D219CFA5D3ADF7F9AB12345
 smtp_host_for_outbound_mail = smtp.example.org
-redcap_server = http://localhost:8998/redcap
 redcap_support_receiver_email = jdoe@example.com
 smtp_port_for_outbound_mail = 22
 emr_sftp_server_hostname = TESTSERVER
@@ -74,8 +73,6 @@ emr_sftp_server_username = user
 emr_sftp_server_password = pswd
 emr_sftp_project_name = sample
 emr_data_file = data.csv
-emr_log_file = log.log
-
 include_rule_errors_in_report = False
 verify_ssl = False
 """)

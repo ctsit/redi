@@ -1,0 +1,6 @@
+loinc_component,loinc_code,low,high,units,panel,loinc_long_common_name
+Leukocytes,26464-8,3.8,10.8,10*3/uL,cbc,Leukocytes [#/volume] in Blood
+Neutrophils,26499-4,1.5,7.8,10*3/uL,cbc,Neutrophils [#/volume] in Blood
+Lymphocytes,26474-7,0.85,3.9,10*3/uL,cbc,Lymphocytes [#/volume] in Blood
+Platelets,26515-7,0.172,0.45,10*3/uL,cbc,Platelets [#/volume] in Blood
+Hemoglobin,718-7,12,16,g/dl,cbc,Hemoglobin [Mass/volume] in Blood

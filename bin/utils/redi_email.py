@@ -114,6 +114,11 @@ def send_email(
             '] was sent to:' +
             str(to_addr_list))
     except SMTPException:
-        logger.error("Unable to send email with subject[{}] to {}" \
+        logger.error("Unable to send email with subject [{}] to {}" \
                 .format(subject, str(to_addr_list)))
+        logger.info("Please check if the recipient email is valid")
+    except Exception as e:
+        logger.error("Unable to send email with subject [{}] to {}\n{}" \
+                .format(subject, str(to_addr_list), msg_body))
+        logger.info("Please check if the smtp server is configured properly")
     return success

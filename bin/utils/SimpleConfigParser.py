@@ -90,7 +90,6 @@ required_files_dict = {
 required_server_parameters_list = [
     'redcap_uri',
     'token',
-    'redcap_server',
     'redcap_support_receiver_email',
     'smtp_host_for_outbound_mail',
     'smtp_port_for_outbound_mail',
@@ -113,6 +112,7 @@ optional_parameters_dict = {
     "rate_limiter_value_in_redcap": 600,
     "batch_info_database": "redi.db",
     "send_email": 'N',
+    "receiver_email": "test@example.com",
     "verify_ssl": True,
     "replace_fields_in_raw_data_xml": None,
     "include_rule_errors_in_report": False,
@@ -172,7 +172,7 @@ class SimpleConfigParser(ConfigParser.RawConfigParser):
         if not self.getoptionslist():
             message = "ERROR: Configuration file '{0}' is empty! Program "\
                       "will now terminate...".format(self.filename)
-            logging.error(message)
+            logger.error(message)
             sys.exit()
 
         else:
@@ -190,7 +190,7 @@ class SimpleConfigParser(ConfigParser.RawConfigParser):
                 message = DEFAULT_MESSAGE_NO_VALUE.format(option, \
                     self.filename) + required_files_dict[option] +\
                      DEFAULT_MESSAGE
-                logging.error(message)
+                logger.error(message)
                 sys.exit()
             else:
                 setattr(self, option, self.getoption(option))
@@ -200,9 +200,11 @@ class SimpleConfigParser(ConfigParser.RawConfigParser):
             if not self.hasoption(option) or self.getoption(option) == "":
                 message = DEFAULT_MESSAGE_NO_VALUE.format(option, \
                     self.filename) + DEFAULT_MESSAGE
-                logging.error(message)
+                logger.error(message)
                 sys.exit()
             else:
+                logger.debug("Setting required parameter {} = {} "\
+                        .format(option, self.getoption(option)))
                 setattr(self, option, self.getoption(option))
 
         # check for receiver email if send_email = 'Y'
@@ -211,15 +213,13 @@ class SimpleConfigParser(ConfigParser.RawConfigParser):
             self.getoption('receiver_email') == "":
                 message = DEFAULT_MESSAGE_NO_VALUE.format(option, \
                     self.filename) + DEFAULT_MESSAGE
-                logging.error(message)
+                logger.error(message)
                 sys.exit()
-            else:
-                setattr(self, 'receiver_email', self.getoption('receiver_email'))
 
         # set optional parameters with default values if missing
         for option in optional_parameters_dict:
             if not self.hasoption(option) or self.getoption(option) == "":
-                logging.warn("Parameter '{0}' in {1} does not have"\
+                logger.warn("Parameter '{0}' in {1} does not have"\
                 " a value. Default value '{2}' applied.".format(option, \
                     self.filename, optional_parameters_dict[option]))
                 setattr(self, option, optional_parameters_dict[option])
