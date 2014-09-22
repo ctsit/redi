@@ -4,24 +4,26 @@
 # Note: Some tasks depend on variables set in the config file
 # therefore the proper path must be set for `CONFIG_FOLDER`
 MAKE_CONFIG_FILE     := Makefile.ini
-CONFIG_FOLDER        := $(shell cat ${MAKE_CONFIG_FILE} | sed -e 's/ //g' | grep -v '^\#' | grep 'config_folder=' | cut -d '=' -f2)
-CONFIG_FOLDER_VAGRANT:= $(CONFIG_FOLDER)/vagrant-data/
-CONFIG_FILE          := $(CONFIG_FOLDER)/settings.ini
 
-REDCAP_DB_SQL_FILE   := $(CONFIG_FOLDER_VAGRANT)/$(shell cat ${MAKE_CONFIG_FILE} | sed -e 's/ //g' | grep -v '^\#' | grep 'redcap_db_sql_file=' | cut -d '=' -f2)
-REDCAP_CODE_ZIP_FILE := $(CONFIG_FOLDER_VAGRANT)/redcap.zip
-REDCAP_SQL_PATCHES_FOLDER := $(CONFIG_FOLDER_VAGRANT)/sqlPatches
-ENROLLMENT_CSV_FILE  := $(CONFIG_FOLDER_VAGRANT)/enrollment_test_data.csv
-REFERENCE_OUTPUT_FILE:= $(CONFIG_FOLDER_VAGRANT)/redi_out_reference.csv
+ifneq ("$(wildcard $(MAKE_CONFIG_FILE))", "")
+   CONFIG_FOLDER        := $(shell cat ${MAKE_CONFIG_FILE} | sed -e 's/ //g' | grep -v '^\#' | grep 'config_folder=' | cut -d '=' -f2)
+   CONFIG_FOLDER_VAGRANT:= $(CONFIG_FOLDER)/vagrant-data/
+   CONFIG_FILE          := $(CONFIG_FOLDER)/settings.ini
 
-REDCAP_API_URI := $(shell cat ${CONFIG_FILE} | sed -e 's/ //g' | grep -v '^\#' | grep 'redcap_uri=' | cut -d '=' -f2)
-REDCAP_VM_URI := $(subst api/,,$(REDCAP_API_URI))
-REDCAP_VM_TOKEN := $(shell cat ${CONFIG_FILE} | sed -e 's/ //g' | grep -v '^\#' | grep 'token=' | cut -d '=' -f2)
-REDCAP_RECORDS_CMD:=../bin/utils/redcap_records.py --token=$(REDCAP_VM_TOKEN) --url=$(REDCAP_API_URI)
-REDCAP_PROJECT_ID := $(shell cat ${MAKE_CONFIG_FILE} | sed -e 's/ //g' | grep -v '^\#' | grep 'redcap_project_id=' | cut -d '=' -f2)
-REDCAP_PROJECT_FORMS := $(shell cat ${MAKE_CONFIG_FILE} | sed -e 's/ //g' | grep -v '^\#' | grep 'redcap_project_forms=' | cut -d '=' -f2)
-REDCAP_PROJECT_ENROLLMENT_FORM := $(shell cat ${MAKE_CONFIG_FILE} | sed -e 's/ //g' | grep -v '^\#' | grep 'redcap_project_enrollment_form=' | cut -d '=' -f2)
+   REDCAP_DB_SQL_FILE   := $(CONFIG_FOLDER_VAGRANT)/$(shell cat ${MAKE_CONFIG_FILE} | sed -e 's/ //g' | grep -v '^\#' | grep 'redcap_db_sql_file=' | cut -d '=' -f2)
+   REDCAP_CODE_ZIP_FILE := $(CONFIG_FOLDER_VAGRANT)/redcap.zip
+   REDCAP_SQL_PATCHES_FOLDER := $(CONFIG_FOLDER_VAGRANT)/sqlPatches
+   ENROLLMENT_CSV_FILE  := $(CONFIG_FOLDER_VAGRANT)/enrollment_test_data.csv
+   REFERENCE_OUTPUT_FILE:= $(CONFIG_FOLDER_VAGRANT)/redi_out_reference.csv
 
+   REDCAP_API_URI := $(shell cat ${CONFIG_FILE} | sed -e 's/ //g' | grep -v '^\#' | grep 'redcap_uri=' | cut -d '=' -f2)
+   REDCAP_VM_URI := $(subst api/,,$(REDCAP_API_URI))
+   REDCAP_VM_TOKEN := $(shell cat ${CONFIG_FILE} | sed -e 's/ //g' | grep -v '^\#' | grep 'token=' | cut -d '=' -f2)
+   REDCAP_RECORDS_CMD:=../bin/utils/redcap_records.py --token=$(REDCAP_VM_TOKEN) --url=$(REDCAP_API_URI)
+   REDCAP_PROJECT_ID := $(shell cat ${MAKE_CONFIG_FILE} | sed -e 's/ //g' | grep -v '^\#' | grep 'redcap_project_id=' | cut -d '=' -f2)
+   REDCAP_PROJECT_FORMS := $(shell cat ${MAKE_CONFIG_FILE} | sed -e 's/ //g' | grep -v '^\#' | grep 'redcap_project_forms=' | cut -d '=' -f2)
+   REDCAP_PROJECT_ENROLLMENT_FORM := $(shell cat ${MAKE_CONFIG_FILE} | sed -e 's/ //g' | grep -v '^\#' | grep 'redcap_project_enrollment_form=' | cut -d '=' -f2)
+endif
 
 .PHONY: help
 help:
@@ -70,7 +72,7 @@ copy_config_develop:
 
 check_config:
 	@# This task is used as a dependency checker
-	@test -f $(MAKE_CONFIG_FILE) || (echo 'Please obtain the required file Makefile.ini by executing get_config_example or get_config_develop' && exit 1)
+	@test -f $(MAKE_CONFIG_FILE) || (echo 'Please obtain the required configuration file "Makefile.ini" by executing make task "get_config_example" or "get_config_develop"' && exit 1)
 	@test -d $(CONFIG_FOLDER) || (echo 'Please create a "config" folder with necessary files first' && exit 1)
 	@test -f $(CONFIG_FILE) || (echo 'Please obtain the config file "$(CONFIG_FILE)"' && exit 1)
 	@test -f $(REDCAP_DB_SQL_FILE) || (echo 'Please obtain the project sql dump file "$(REDCAP_DB_SQL_FILE)"' && exit 1)
