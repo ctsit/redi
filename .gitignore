@@ -29,6 +29,8 @@ person_form_event_tree_with_data.xml
 build/
 dist/
 vagrant/Makefile.ini
+vagrant/projectDataBootstrap.sql
+vagrant/out.csv
 vagrant/.vagrant/
 vagrant/.vimrc
 vagrant/report.html

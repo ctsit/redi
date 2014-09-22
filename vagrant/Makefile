@@ -141,7 +141,6 @@ rc_compare:
 	@# This task can be used to compare the current project data with the reference data
 	$(REDCAP_RECORDS_CMD) -f "$(REDCAP_PROJECT_FORMS)" > out.csv
 	diff -u $(REFERENCE_OUTPUT_FILE) out.csv
-	rm out.csv
 
 test_egg:
 	make egg_test
@@ -158,5 +157,5 @@ clean:
 	@# This task removes all copied/generated files
 	rm -f redcap.zip
 	rm -f Makefile.ini
-	rm -f redcap_database.sql
+	rm -f projectDataBootstrap.sql
 	rm -f out.csv
