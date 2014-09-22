@@ -6,16 +6,6 @@ import unittest
 
 class TestResume(unittest.TestCase):
 
-    def test_resume_switch(self):
-        import bin.redi
-        redi = reload(bin.redi)
-
-        args = redi.parse_args('--verbose --dryrun'.split())
-        self.assertFalse(args['resume'])
-
-        args = redi.parse_args('--resume --verbose --dryrun'.split())
-        self.assertTrue(args['resume'])
-
     def test_no_resume_deletes_old_run_data(self):
         class MockPersonFormEvents(object):
             def delete(self):

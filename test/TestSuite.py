@@ -12,6 +12,7 @@ This file creates a test suite for all the test classes.
 '''
 import unittest
 from TestReadConfig import TestReadConfig
+from TestArgs import TestArgs
 from TestWriteToFile import TestWriteToFile
 from TestUpdateRedcapForm import TestUpdateRedcapForm
 from TestUpdateTimestamp import TestUpdateTimestamp
@@ -51,6 +52,7 @@ class redi_suite(unittest.TestSuite):
 
         # add the test to the suite in the order to be tested
         redi_test_suite.addTest(TestReadConfig)
+        redi_test_suite.addTest(TestArgs)
         redi_test_suite.addTest(TestWriteToFile)
         redi_test_suite.addTest(TestUpdateRedcapForm)
         redi_test_suite.addTest(TestUpdateTimestamp)
