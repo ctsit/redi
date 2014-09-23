@@ -56,8 +56,6 @@ import redi_lib
 
 
 # Command line default argument values
-default_do_keep_gen_files = None
-
 _person_form_events_service = None
 
 translational_table_tree = None
@@ -108,8 +106,8 @@ def main():
     configuration_directory = args['configuration_directory_path']
     if configuration_directory is None:
         configuration_directory = os.path.join(data_directory, "config")
-    do_keep_gen_files = False if args['keep'] is None else True
-    get_emr_data = False if args['emrdata'] is None else True
+    do_keep_gen_files = args['keep']
+    get_emr_data = args['emrdata']
     dry_run = args['dryrun']
 
     #configure logger
@@ -535,16 +533,18 @@ def parse_args(arguments=None):
     # read the optional argument `-k` for keeping the generated files
     parser.add_argument(
         '-k', '--keep',
-        default=default_do_keep_gen_files,
+        default=False,
+        action='store_true',
         required=False,
-        help='Specify `yes` to preserve the files generated during execution')
+        help='Provide this argument to preserve the files generated during execution')
 
     # read the optional argument `-e` for getting EMR data
     parser.add_argument(
         '-e', '--emrdata',
-        default=None,
+        default=False,
+        action='store_true',
         required=False,
-        help='Specify `yes` to get EMR data')
+        help='Provide this argument to retrieve EMR data from the source server via sftp')
 
     # read the optional argument `-d` for running redi.py in dry run state
     parser.add_argument(
