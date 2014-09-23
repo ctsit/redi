@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="US-ASCII"?>
+<replace_field_list>
+  <description>This file contains field replacement data for fields which need to be replaced in the raw.xml</description>
+  <fields>
+    <field>
+      <source>result</source>
+      <target>RESULT</target>
+    </field>
+    <field>
+      <source>date_time_stamp</source>
+      <target>DATE_TIME_STAMP</target>
+    </field>
+    <field>
+      <source>study_id</source>
+      <target>STUDY_ID</target>
+    </field>
+	<field>
+		<source>units</source>
+		<target>REFERENCE_UNIT</target>
+	</field>
+  </fields>
+</replace_field_list>

@@ -1,3 +1,34 @@
+2014-09-23 v0.11.3
+
+ * Summary: Update config-example to work with new sample project
+
+ * Fixed #73: Change use of redcap_server and redcap_uri settings
+ * Fixed #72: Remove circular dependency redi <--> redi_lib
+ * Fixed #68: Sample REDCap project is tied to a specific REDCap version number
+ * Fixed #64: Create a RED-I config to match the example REDCap project.
+ * Fixed #63: Add documentation within config-example/settings.ini to explain the use of each parameter
+ * Fixed #62: Regroup settings within settings.ini
+ * Fixed #60: Make a test data set of CBC and Chemistry data
+ * Fixed #59: Revise report sending code to note the locations of reports/email bodies in the console output
+ * Fixed #58: Remove project specific details from vagrant/Makefile
+ * Fixed #49: "Exceeded event list... Event count of 11 exceeds maximum of 11"
+ * Fixed #47: Do not hardcode smtp host/port
+ * Fixed #27: Update /vagrant/README.md to match new features
+ * Fixed #4: Create a working example REDCap Project suitable for RED-I Demonstration
+ * Fixed #3: No config-example folder
+
+ * Rename README_Travis_CI_Setup.md to `setup_travis_ci.md` Also move the related images to `images/setup_travis_ci`
+ * Cut the section about adding a new REDCap project from vagrant/README.md This resulted in creation of a new document: doc/add_new_redcap_project.md and associated files in dedicated folder: `images/add_new_redcap_project/`
+ * Remove deprecated document: `doc/README_test_against_redcap.md`
+ * Delete empty file: `vagrant/README-projects.md`
+
+ * Added scripts/compare_settings.sh to help find differences Example usage: ./compare_settings.sh ../config/settings.ini ../config-vcu/settings.ini
+ * Add clinical-commit-to-loinc.xml helper scripts
+ * Add synthetic_data tool, makefakedata.R
+ * Improve `bin/utils/redcap_records.py` - now works with json/xml
+
+ * Log information about rules loading
+
 2014-09-10 v0.11.2
  
  * Summary: performance improvements to speed up run time.

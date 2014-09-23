@@ -1,10 +1,5 @@
 '''
-@author : Mohan
-email : mohan88@ufl.edu
-
-This file tests for the function create_summary_report and checks if the summary create_summary_report
-has been created or not
-
+Unit test for `redi.create_summary_report()`
 '''
 import unittest
 import os
@@ -23,18 +18,19 @@ DEFAULT_DATA_DIRECTORY = os.getcwd()
 class TestCreateSummaryReport(unittest.TestCase):
 
     def setUp(self):
-    	redi.configure_logging(DEFAULT_DATA_DIRECTORY)
-        self.test_report_params = {'project': 'hcvtarget-uf',
-        							'report_file_path': proj_root + 'config/report.xml',
-        							'redcap_server': 'https://hostname.org'}
+        redi.configure_logging(DEFAULT_DATA_DIRECTORY)
+        self.test_report_params = {
+            'project': 'hcvtarget-uf',
+            'report_file_path': proj_root + 'config/report.xml',
+            'redcap_uri': 'https://hostname.org'}
 
         self.test_report_data = {
             'total_subjects': 5,
             'form_details': {
                 'Total_chemistry_Forms': 22,
-        		'Total_cbc_Forms': 53
+                'Total_cbc_Forms': 53
             },
-        	'subject_details': {
+            'subject_details': {
                 '60': {'cbc_Forms': 1, 'chemistry_Forms': 1},
                 '61': {'cbc_Forms': 2, 'chemistry_Forms': 1},
                 '63': {'cbc_Forms': 11, 'chemistry_Forms': 4},
@@ -53,7 +49,7 @@ class TestCreateSummaryReport(unittest.TestCase):
                 'This is max event alert 2',
                 'This is max event alert 3']
         }
-       	self.expected_xml = '''
+        self.expected_xml = '''
 <report>
     <header>
         <project>hcvtarget-uf</project>
@@ -154,8 +150,8 @@ class TestCreateSummaryReport(unittest.TestCase):
     </summaryOfSpecimenTakenTimes>
 </report>'''
 
-       	self.schema_str = StringIO('''\
-       		<xs:schema attributeFormDefault="unqualified" elementFormDefault="qualified" xmlns:xs="http://www.w3.org/2001/XMLSchema">
+        self.schema_str = StringIO('''\
+            <xs:schema attributeFormDefault="unqualified" elementFormDefault="qualified" xmlns:xs="http://www.w3.org/2001/XMLSchema">
   <xs:element name="report">
     <xs:complexType>
       <xs:sequence>
@@ -276,33 +272,31 @@ class TestCreateSummaryReport(unittest.TestCase):
             self.configFolderCreatedNow = True
             os.makedirs(self.newpath)
 
-        result = redi.create_summary_report(self.test_report_params,
-          self.test_report_data,
-          self.test_alert_summary,
-          self.specimen_taken_time_summary)
+        result = redi.create_summary_report(\
+                self.test_report_params, \
+                self.test_report_data, \
+                self.test_alert_summary, \
+                self.specimen_taken_time_summary)
         result_string = etree.tostring(result)
-    
         #print result_string
-
         xmlschema_doc = etree.parse(self.schema_str)
         xml_schema = etree.XMLSchema(xmlschema_doc)
         # validate the xml against the xsd schema
         self.assertEqual(xml_schema.validate(result), True)
         # validate the actual data in xml but strip the white space first
-        parser = etree.XMLParser(remove_blank_text = True)
-        clean_tree = etree.XML(self.expected_xml, parser = parser)
+        parser = etree.XMLParser(remove_blank_text=True)
+        clean_tree = etree.XML(self.expected_xml, parser=parser)
         self.expected_xml = etree.tostring(clean_tree)
 
         self.assertEqual(self.expected_xml, result_string)
 
     def tearDown(self):
-    	# delete the created xml file
+        # delete the created xml file
         with open(proj_root + 'config/report.xml'):
-           os.remove(proj_root + 'config/report.xml')
+            os.remove(proj_root + 'config/report.xml')
 
-           if self.configFolderCreatedNow:
-               os.rmdir(self.newpath)
-
+            if self.configFolderCreatedNow:
+                os.rmdir(self.newpath)
         return
 
 if __name__ == '__main__':

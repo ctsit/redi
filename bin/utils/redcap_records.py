@@ -29,10 +29,8 @@
 
 import sys
 import argparse
+import json
 from redcap import Project, RedcapError
-import re
-import pprint
-
 
 def main():
 
@@ -64,6 +62,13 @@ def main():
         default='',
         help='Specify a list of forms, separated by spaces, for which data should be returned.')
     parser.add_argument(
+        '-t',
+        '--type',
+        choices=['json', 'csv', 'xml'],
+        dest='data_type',
+        default='csv',
+        help='Specify the file type used as input or output. Valid types: json, csv, xml')
+    parser.add_argument(
         '--fields',
         dest='fields',
         default='',
@@ -78,11 +83,15 @@ def main():
     # prepare the arguments we were given
     args = vars(parser.parse_args())
 
+    # According to http://pycap.readthedocs.org/en/latest/api.html
+    # allowed data_types are: csv, json, xml
+    data_type = args['data_type']
+
     # Turn the 'verify_ssl' parameter into the truth value we need to make a
     # REDCap connection
     if args['verify_ssl'] == 'y':
         args['verify_ssl'] = True
-    elif args['verify_ssl'] == 'n':
+    else:
         args['verify_ssl'] = False
 
     # Attempt to connect to the REDCap project
@@ -99,19 +108,28 @@ def main():
         my_events = args['events'].split()
         data = project.export_records(
             forms=my_forms,
+            format = data_type,
             fields=my_fields,
             events=my_events,
-            format='csv',
             event_name='unique')
-        print str(data)
-    else:  # ...or we import data
+        if 'json' == data_type:
+            print json.dumps(data, ensure_ascii=False)
+        else:
+            print str(data)
+    else:
+        # ...or we import data
         file = args['import_data']
         try:
             input = open(file, 'r')
-        except:
+        except IOError:
             print "Cannot open file " + file
             quit()
-        response = project.import_records(input.read(), format='csv')
+        if 'json' == data_type:
+            json_data = json.load(input)
+            response = project.import_records(json_data)
+        else:
+            response = project.import_records(input.read(), format = data_type)
+
         print response
 
 if __name__ == '__main__':

@@ -4,28 +4,5 @@
     <Description>
       Mapping of the Lab Component Identifiers to corresponding LOINC codes
     </Description>
-    <components>
-        <component>
-          <description>Leukocytes [#/​volume] in Blood</description>
-          <source>
-            <name>COMPONENT_ID</name>
-            <value>8675309</value>
-          </source>
-          <target>
-            <name>loinc_code</name>
-            <value>26464-8</value>
-          </target>
-        </component>
-        <component>
-          <description>Hepatitis C virus RNA [#/​volume]</description>
-          <source>
-            <name>COMPONENT_ID</name>
-            <value>42</value>
-          </source>
-          <target>
-            <name>loinc_code</name>
-            <value>26464-8</value>
-          </target>
-        </component>
-    </components>
+	<components />
 </clinical_datum>

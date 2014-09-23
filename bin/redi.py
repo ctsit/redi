@@ -8,7 +8,7 @@ redi.py - Converter from raw clinical data in XML format to REDCap API data
 __author__ = "Nicholas Rejack"
 __copyright__ = "Copyright 2013, University of Florida"
 __license__ = "BSD 2-Clause"
-__version__ = "0.11.1"
+__version__ = "0.11.3"
 __email__ = "nrejack@ufl.edu"
 __status__ = "Development"
 
@@ -21,7 +21,6 @@ from datetime import date, datetime, timedelta
 from collections import defaultdict
 from collections import Counter
 import string
-import smtplib
 import xml.etree.ElementTree as ET
 import sys
 import imp
@@ -246,7 +245,7 @@ def _run(config_file, configuration_directory, do_keep_gen_files, dry_run,
     report_parameters = {
         'report_file_path': report_file_path,
         'project': settings.project,
-        'redcap_server': settings.redcap_server}
+        'redcap_uri': settings.redcap_uri}
 
     report_xsl = proj_root + "bin/utils/report.xsl"
     send_email = settings.send_email
@@ -292,27 +291,17 @@ def _run(config_file, configuration_directory, do_keep_gen_files, dry_run,
         xml_report_tree = create_summary_report(report_parameters,
                                             report_data, alert_summary,
                                             collection_date_summary_dict)
-        # print ElementTree.tostring(xml_report_tree)
-
+        # print etree.tostring(xml_report_tree)
+        report_xsl = proj_root + "bin/utils/report.xsl"
         xslt = etree.parse(report_xsl)
         transform = etree.XSLT(xslt)
         html_report = transform(xml_report_tree)
         html_str = etree.tostring(html_report, method='html', pretty_print=True)
 
-        # send report via email
         if settings.send_email:
-            sender = settings.sender_email
-            receiver = settings.receiver_email.split()
-            send_report(sender, receiver, html_str)
+            deliver_report_as_email(email_settings, html_str)
         else:
-            logger.info("Email will not be sent as 'send_email' parameter"\
-            " in {0} is set to 'N'".format(config_file))
-            try:
-                report_file = open(settings.report_file_path2, 'w')
-            except IOError:
-                logger.exception('could not open file %s' % settings.report_file_path2)
-                raise
-            report_file.write(html_str)
+            deliver_report_as_file(settings.report_file_path2, html_str)
 
     if batch:
         # Update the batch row
@@ -327,6 +316,46 @@ def _run(config_file, configuration_directory, do_keep_gen_files, dry_run,
     if not do_keep_gen_files:
         redi_lib.delete_temporary_folder(data_folder)
 
+def deliver_report_as_file(html_report_path, html):
+    """
+    Deliver the summary report by writing it to a file
+    or logging it to the console if writing the file fails
+
+    :html_report_path the path where the report will be stored
+    :html the actual report content
+    """
+    problem_found = False
+    try:
+        report_file = open(html_report_path, 'w')
+    except (IOError, OSError) as e:
+        logger.exception('Could not open file: %s' % html_report_path)
+        problem_found = True
+    else:
+        try:
+            report_file.write(html)
+            logger.info("==> You can review the summary report by opening: {}"\
+                " in your browser".format(html_report_path))
+        except IOError:
+            logger.exception('Could not write file: %s' % html_report_path)
+            problem_found = True
+        finally:
+            report_file.close()
+    if problem_found:
+        logger.info("== Summary report ==" + html)
+
+def deliver_report_as_email(email_settings, html):
+    """
+    Deliver summary report as an email
+
+    :email_settings dictinary with email parameters
+    :html the actual report content
+    """
+    try:
+        redi_email.send_email_data_import_completed(email_settings, html)
+        logger.info("Summary report was emailed: parameter 'send_email = Y'")
+    except Exception as e:
+        logger.error("Unable to deliver the summary report due error: %s" % e)
+        deliver_report_as_file("report.html", html)
 
 def _create_person_form_event_tree_with_data(config_file, \
     configuration_directory, email_settings, form_events_file, raw_xml_file,\
@@ -998,7 +1027,7 @@ def update_event_name(data, lookup_data, undefined):
                 # issue a warning
 
                 if old_form_name is not "dummy" and \
-                event_index >= len(lookup_table[old_form_name]):
+                event_index > len(lookup_table[old_form_name]):
                     max_event_alert.append("Exceeded event list for record "\
                         "group with Subject ID.: " + last_study_id + " and "\
                         "Form Name: " + last_form_name + ". Event count "\
@@ -1212,28 +1241,6 @@ def configure_logging(data_folder, verbose=False):
     return logger
 
 
-def send_report(sender, receiver, body):
-    """Function to email the report of the redi run."""
-    from email.MIMEMultipart import MIMEMultipart
-    from email.MIMEText import MIMEText
-    msg = MIMEMultipart()
-    msg['From'] = sender
-    msg['To'] = ",".join(receiver)
-    msg['Subject'] = "Data Import Report"
-    msg.attach(MIMEText(body, 'html'))
-
-    """
-    Sending email
-    """
-
-    try:
-        smtpObj = smtplib.SMTP('smtp.ufl.edu', 25)
-        smtpObj.sendmail(sender, receiver, msg.as_string())
-        logger.info("Successfully sent email to: " + str(receiver))
-    except Exception:
-        logger.info("Error: unable to send report email to: " + str(receiver))
-
-
 def create_summary_report(report_parameters, report_data, alert_summary, \
     collection_date_summary_dict):
     root = etree.Element("report")
@@ -1255,13 +1262,14 @@ def create_summary_report(report_parameters, report_data, alert_summary, \
 
 
 def updateReportHeader(root, report_parameters):
+    """ Update the passed `root` element tree with date, project name and url"""
     header = root[0]
     project = etree.SubElement(header, "project")
     project.text = report_parameters.get('project')
     date = etree.SubElement(header, "date")
     date.text = time.strftime("%m/%d/%Y")
     redcapServerAddress = etree.SubElement(header, "redcapServerAddress")
-    redcapServerAddress.text = report_parameters.get('redcap_server')
+    redcapServerAddress.text = report_parameters.get('redcap_uri')
 
 
 def updateReportSummary(root, report_data):
@@ -1914,6 +1922,7 @@ def load_rules(rules, root='./'):
 
         loaded_rules[rule] = module
 
+    logger.info("Loaded %s post-processing rule(s)" % len(loaded_rules))
     return loaded_rules
 
 
@@ -1969,7 +1978,7 @@ def verify_and_correct_collection_date(data, input_date_format):
             continue
         subject.remove(result_date_element)
     if collection_date_summary_dict['blank'] > 0:
-        logger.info("There were {0} out of {1} blank specimen taken times "\
+        logger.debug("There were {0} out of {1} blank specimen taken times "\
             "in this run.".format(collection_date_summary_dict['blank'],
                 collection_date_summary_dict['total']))
     return data, collection_date_summary_dict
@@ -1981,13 +1990,16 @@ def get_email_settings(settings):
     """
     email_settings = {}
     email_settings['smtp_host_for_outbound_mail'] = settings.smtp_host_for_outbound_mail
-    email_settings['redcap_support_sender_email'] = settings.redcap_support_sender_email
-    email_settings['redcap_uri'] = settings.redcap_uri
     email_settings['smtp_port_for_outbound_mail'] = settings.smtp_port_for_outbound_mail
-    email_settings['redcap_support_receiver_email'] = settings.redcap_support_receiver_email
+    email_settings['redcap_support_sender_email'] = settings.redcap_support_sender_email
+    email_settings['redcap_support_receiving_list'] = \
+            settings.redcap_support_receiver_email.split() if settings.redcap_support_receiver_email else []
+    email_settings['redcap_uri'] = settings.redcap_uri
     email_settings['batch_warning_days'] = settings.batch_warning_days
+    email_settings['batch_report_sender_email'] = settings.sender_email
+    email_settings['batch_report_receiving_list'] = \
+            settings.receiver_email.split() if settings.receiver_email else []
     return email_settings
-
 
 def get_redcap_settings(settings):
     """
