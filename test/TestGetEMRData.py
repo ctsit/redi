@@ -1,13 +1,24 @@
 import unittest
+import os
+import logging
 import shutil
 import tempfile
 import pysftp
 from mock import patch
 import utils.GetEmrData as GetEmrData
-from utils.GetEmrData import EmrConnectionDetails
+from utils.GetEmrData import EmrFileAccessDetails
 
+import time
+from subprocess import Popen
+
+# Try to silence extra info
+logging.getLogger("paramico").addHandler(logging.NullHandler)
+logging.getLogger("pysftp").addHandler(logging.NullHandler)
 
 class TestGetEMRData(unittest.TestCase):
+
+    def setUp(self):
+        pass
 
     def _noop(*args, **kwargs):
         pass
@@ -15,24 +26,35 @@ class TestGetEMRData(unittest.TestCase):
     @patch.multiple(pysftp, Connection=_noop)
     @patch.multiple(GetEmrData, download_file=_noop)
     def test_get_emr_data(self):
+        """
+        This test verifies only that the csv file on the sftp server
+        can be transformed to an xml file.
+        Note: This test is not concerned with testing the sftp communication"""
         temp_folder = tempfile.mkdtemp('/')
+        temp_txt_file = os.path.join(temp_folder, "raw.txt")
+        temp_xml_file = os.path.join(temp_folder, "raw.xml")
+
         input_string = '''"NAME","COMPONENT_ID","RESULT","REFERENCE_UNIT","DATE_TIME_STAMP","STUDY_ID"
 "RNA","1905","<5","IU/mL","1907-05-21 05:50:00","999-0059"
 "EGFR","1740200","eGFR result is => 60 ml/min/1.73M2","ml/min/1.73M2","1903-11-27 15:13:00","999-0059"
 "HEMATOCRIT","1534436",">27&<30","%","","999-0059"'''
-        with open(temp_folder+"raw.txt", 'w+') as f:
+
+        with open(temp_txt_file, 'w+') as f:
             f.write(input_string)
 
-        props = EmrConnectionDetails('fake.server',
-            'username',
-            'password',
-            'tmp',
-            'output.csv'
+        props = EmrFileAccessDetails(
+            'raw.csv',
+            emr_host='localhost',
+            emr_username='admin',
+            emr_password='admin',
+            emr_port=7788,
+            emr_private_key=None,
+            emr_private_key_pass=None,
             )
 
         GetEmrData.get_emr_data(temp_folder, props)
 
-        with open(temp_folder + 'raw.xml') as f:
+        with open(temp_xml_file) as f:
             result = f.read()
         expected = '''<?xml version="1.0" encoding="utf8"?>
 <study>
@@ -64,3 +86,107 @@ class TestGetEMRData(unittest.TestCase):
 '''
         self.assertEqual(result, expected)
         shutil.rmtree(temp_folder)
+
+    def test_pysftp_using_rsa_key(self):
+        """
+        Starts a sftp server and transfers a file
+        to verify the connection using a private key.
+
+        Notes:
+            - Disble this test if running on the Travis VM fails
+                by adding one of the following annotations:
+                @unittest.skip("Unconditional skipping")
+                @unittest.skipIf(os.getenv('CI', '') > '', reason='Travis VM')
+            - Dependency: `sudo easy_install sftpserver`
+        """
+
+        # Using a temp folder does not work for some reason
+        #temp_folder = tempfile.mkdtemp('/')
+        temp_folder = "."
+        key_file = os.path.join(temp_folder, 'unittest_pysftp_rsa_key')
+        key_file = create_rsa_key(key_file)
+
+        source_file = os.path.join(temp_folder, 'source_file')
+        source_file = create_sample_file(source_file)
+
+        # At this point the destination file is empty
+        destination_file = os.path.join(temp_folder, 'destination_file')
+        proc = None
+
+        try:
+            sftp_cmd = "sftpserver --host localhost -p 7788 -l DEBUG -k " + key_file
+            proc = Popen(sftp_cmd, shell=True)
+            time.sleep(1) # let the server start
+
+            try:
+                # this block depends on a running sftp server
+                connection_info = get_connection_info(key_file)
+                with pysftp.Connection(**connection_info) as sftp:
+                    logging.info("User %s connected to sftp server %s" % \
+                        (connection_info['username'], connection_info['host']))
+                    #print sftp.listdir('.')
+                    sftp.get(source_file, destination_file)
+            except Exception as e:
+                logging.error("Problem connecting to: %s due error: %s" % \
+                        (connection_info['host'], e))
+        except Exception as e:
+            logging.error("Problem starting sftp server due error: %s for file: %s" % \
+                    (e, destination_file))
+        finally:
+            if proc:
+                proc.terminate()
+
+        try:
+            fresh_file = open(destination_file)
+            actual = fresh_file.read()
+        finally:
+            fresh_file.close()
+
+        self.assertEqual(actual, "SFTP TEST")
+
+        # Cleanup created files
+        os.remove(source_file)
+        os.remove(destination_file)
+        os.remove(key_file)
+        os.remove(key_file +".pub")
+
+def create_rsa_key(rsa_key_file):
+    """Create a RSA private key pair to be used by sftp"""
+    if not os.path.isfile(rsa_key_file):
+        cmd = "ssh-keygen -q -t rsa -N '' -f " + rsa_key_file
+        proc = Popen(cmd, shell=True)
+        time.sleep(1)
+        proc.terminate()
+    else:
+        logging.warn("RSA key file already exists: %s" % rsa_key_file)
+
+    return rsa_key_file
+
+def create_sample_file(sample_file):
+    """ Create a sample file to be transfered ofe sftp"""
+    if not os.path.isfile(sample_file):
+        try:
+            f = open(sample_file, 'w+')
+            f.write("SFTP TEST")
+            f.flush()
+            f.close()
+        except IOError as (errno, strerror):
+            logging.error("I/O error({0}): {1}".format(errno, strerror))
+    else:
+        logging.info("Sample file %s already exists" % sample_file)
+    return sample_file
+
+def get_connection_info(private_key):
+    """Return a dictionary of parameters for creating a sftp connection"""
+    connection_info = {
+            'host': 'localhost',
+            'username': 'admin',
+            'password': 'pass',
+            'port' : 7788,
+            'private_key': private_key,
+            'private_key_pass': ''
+    }
+    return connection_info
+
+if __name__ == '__main__':
+    unittest.main()
