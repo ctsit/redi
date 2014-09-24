@@ -72,7 +72,7 @@ copy_config_develop:
 
 check_config:
 	@# This task is used as a dependency checker
-	@test -f $(MAKE_CONFIG_FILE) || (echo 'Please obtain the required configuration file "Makefile.ini" by executing make task "get_config_example" or "get_config_develop"' && exit 1)
+	@test -f $(MAKE_CONFIG_FILE) || (echo 'Please obtain the required configuration file "Makefile.ini" by executing make task "copy_config_example" or "copy_config_develop"' && exit 1)
 	@test -d $(CONFIG_FOLDER) || (echo 'Please create a "config" folder with necessary files first' && exit 1)
 	@test -f $(CONFIG_FILE) || (echo 'Please obtain the config file "$(CONFIG_FILE)"' && exit 1)
 	@test -f $(REDCAP_DB_SQL_FILE) || (echo 'Please obtain the project sql dump file "$(REDCAP_DB_SQL_FILE)"' && exit 1)
