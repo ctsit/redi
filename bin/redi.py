@@ -34,7 +34,7 @@ from utils import redi_email
 from utils.redcapClient import redcapClient
 import utils.SimpleConfigParser as SimpleConfigParser
 import utils.GetEmrData as GetEmrData
-from utils.GetEmrData import EmrConnectionDetails
+from utils.GetEmrData import EmrFileAccessDetails
 
 
 def get_proj_root():
@@ -211,14 +211,16 @@ def _run(config_file, configuration_directory, do_keep_gen_files, dry_run,
 
     # Getting EMR data
     if get_emr_data:
-        props = EmrConnectionDetails(
+        connection_details = EmrFileAccessDetails(
+            os.path.join(settings.emr_sftp_project_name, settings.emr_data_file),
             settings.emr_sftp_server_hostname,
             settings.emr_sftp_server_username,
             settings.emr_sftp_server_password,
-            settings.emr_sftp_project_name,
-            settings.emr_data_file)
-        print props
-        GetEmrData.get_emr_data(configuration_directory, props)
+            settings.emr_sftp_server_port,
+            settings.emr_sftp_server_private_key,
+            settings.emr_sftp_server_private_key_pass,
+            )
+        GetEmrData.get_emr_data(configuration_directory, connection_details)
 
     # load custom post-processing rules
     rules = load_rules(settings.rules, configuration_directory)
