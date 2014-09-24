@@ -1107,9 +1107,17 @@ def research_id_to_redcap_id_converter(
     This function converts the research_id to redcap_id
      1. prepare a dictionary with [key, value] --> [study_id, redcap_id]
      2. replace the element tree study_id with the new redcap_id's
-     for each bad id, log it as warn
-    """
+     for each bad id, log it as warn.
 
+    Example of xml fragment produced:
+<subject lab_id="999-0001">
+    <NAME>HEMOGLOBIN</NAME>
+    <loinc_code>1534435</loinc_code>
+    <RESULT>1234</RESULT>
+...
+    <STUDY_ID>1</STUDY_ID> <!-- originally this was "999-0001" -->
+</subject>
+    """
     # read each of the study_id's from the data etree
     study_id_recap_id_dict = {}
 
@@ -1127,26 +1135,21 @@ def research_id_to_redcap_id_converter(
             mapping_xml)
 
     mapping_data = etree.parse(mapping_xml)
-    redcap_id_field_name = mapping_data.getroot().findtext(
-        'redcap_id_field_name')
-    research_id_field_name = mapping_data.getroot().findtext(
-        'research_id_field_name')
+    root = mapping_data.getroot()
+    redcap_id_field_name = root.findtext('redcap_id_field_name')
+    research_id_field_name = root.findtext('research_id_field_name')
 
     if research_id_field_name is None or research_id_field_name == '':
         logger.error(
-            'research_id_field_name tag in file %s is not present',
-            mapping_xml)
+            'research_id_field_name tag in file %s is not present', mapping_xml)
         raise Exception(
-            'research_id_field_name tag in file %s is not present',
-            mapping_xml)
+            'research_id_field_name tag in file %s is not present', mapping_xml)
 
     if redcap_id_field_name is None or redcap_id_field_name == '':
         logger.error(
-            'redcap_id_field_name tag in file %s is not present',
-            mapping_xml)
+            'redcap_id_field_name tag in file %s is not present', mapping_xml)
         raise Exception(
-            'redcap_id_field_name tag in file %s is not present',
-            mapping_xml)
+            'redcap_id_field_name tag in file %s is not present', mapping_xml)
 
     try:
         # Communication with redcap
@@ -1176,12 +1179,15 @@ def research_id_to_redcap_id_converter(
 
     for subject in data.iter('subject'):
         study_id = subject.findtext('STUDY_ID')
-        # tag = subject.find('STUDY_ID')
+
         # if the study id is not null populate the dictionary
         if study_id is not None and study_id != '' and study_id in redcap_dict:
-            # if the study_id in redcap_dict of redcap id's update the study_id
-            # with redcap id
-            subject.find('STUDY_ID').text = redcap_dict[study_id]
+            # if the study_id is in the dictionary then replace it by the redcap_id
+            lab_id_ele = subject.find('STUDY_ID')
+
+            # save the original subject id from the lab data as an attribute
+            subject.set('lab_id', lab_id_ele.text)
+            lab_id_ele.text = redcap_dict[study_id]
         elif study_id is not None and study_id != '' and study_id not in redcap_dict:
             # add the bad research id to list of bad ids
             bad_ids[study_id] += 1
