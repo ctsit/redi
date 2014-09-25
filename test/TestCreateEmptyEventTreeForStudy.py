@@ -54,7 +54,7 @@ class TestCreateEmptyEventTreeForStudy(unittest.TestCase):
         redi.configure_logging(DEFAULT_DATA_DIRECTORY)
         self.one_subject = """<?xml version='1.0' encoding='US-ASCII'?>
             <study>
-            <subject>
+            <subject lab_id="999-123">
             <NAME>TestSubject</NAME>
             <loinc_code>123456</loinc_code>
             <RESULT>123</RESULT>
@@ -70,7 +70,7 @@ class TestCreateEmptyEventTreeForStudy(unittest.TestCase):
         
         self.output_one_subject = """
 <person_form_event>
-    <person>
+    <person lab_id="999-123">
         <study_id>123</study_id>
         <all_form_events>
         <form>
@@ -108,7 +108,7 @@ class TestCreateEmptyEventTreeForStudy(unittest.TestCase):
         redi.configure_logging(DEFAULT_DATA_DIRECTORY)
         self.two_subjects = """<?xml version='1.0' encoding='US-ASCII'?>
             <study>
-                <subject>
+                <subject lab_id="999-123">
                 <NAME>TestSubject_1</NAME>
                 <loinc_code>123456</loinc_code>
                 <RESULT>123</RESULT>
@@ -118,7 +118,7 @@ class TestCreateEmptyEventTreeForStudy(unittest.TestCase):
                 <DATE_TIME_STAMP/>
                 <STUDY_ID>123</STUDY_ID>
             <timestamp/><redcapFormName>cbc</redcapFormName><eventName/><formDateField>cbc_lbdtc</formDateField><formCompletedFieldName>cbc_complete</formCompletedFieldName><formImportedFieldName>cbc_nximport</formImportedFieldName><redcapFieldNameValue>hemo_lborres</redcapFieldNameValue><redcapFieldNameUnits>hemo_lborresu</redcapFieldNameUnits><redcapFieldNameStatus>hemo_lbstat</redcapFieldNameStatus></subject>
-            <subject>
+            <subject lab_id="999-1234">
             <NAME>TestSubject_2</NAME>
             <loinc_code>123456</loinc_code>
             <RESULT>123</RESULT>
@@ -134,7 +134,7 @@ class TestCreateEmptyEventTreeForStudy(unittest.TestCase):
         
         self.output_two_subjects = """
 <person_form_event>
-    <person>
+    <person lab_id="999-1234">
         <study_id>1234</study_id>
         <all_form_events>
         <form>
@@ -160,7 +160,7 @@ class TestCreateEmptyEventTreeForStudy(unittest.TestCase):
         </form>
         </all_form_events>
     </person>
-    <person>
+    <person lab_id="999-123">
         <study_id>123</study_id>
         <all_form_events>
         <form>

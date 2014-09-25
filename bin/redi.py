@@ -1453,18 +1453,22 @@ def create_empty_event_tree_for_study(raw_data_tree, all_form_events_tree):
     if all_form_events_root is None:
         raise Exception('All form Events tree is empty')
 
-    subjects_list = set()
+    subjects_dict = {}
 
+    # Collect the `study_id => lab_id` mappings
     for subject in raw_data_root.iter('subject'):
-        subjects_list.add(subject.find('STUDY_ID').text)
+        study_id = subject.findtext('STUDY_ID')
+        subjects_dict[study_id] = subject.attrib['lab_id']
 
-    if not subjects_list:
+    if not subjects_dict:
         raise Exception("There are no subjects in the raw data. " \
                 "This can be caused by an incorrect input file or "\
                 "by lack of enrollment data in the REDCap database." )
 
-    for subject_id in subjects_list:
+    for subject_id in subjects_dict.iterkeys():
         person = etree.Element("person")
+        # Copy `lab_id` attribute from `subject` to `person` element
+        person.set('lab_id', subjects_dict.get(subject_id))
         study_id = etree.SubElement(person, "study_id")
         study_id.text = subject_id
         person_index = person.index(person.find('study_id')) + 1
