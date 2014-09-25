@@ -7,11 +7,27 @@
     <xsl:template match="/">
         <html>
             <head>
-                <style>table,th,td
-       {
-            border:1px solid black;
-            border-collapse:collapse;
-        }</style>
+                <style>
+table, th, td {
+    border: 1px solid black;
+    border-collapse: collapse;
+}
+
+table#redi_summary thead,
+table#subject_details thead {
+    color: #fff;
+    background: #11772D;
+}
+
+table#subject_details tr:nth-child(odd) {
+    backround: #ccc;
+}
+
+table#errors thead {
+    color: #fff;
+    background: #D37C90;
+}
+</style>
                 <title>Summary Report</title>
             </head>
             <body>
@@ -44,7 +60,7 @@
                 </table>
                 <br />
                 <h3>Summary</h3>
-                <table>
+                <table id="redi_summary">
                     <thead>
                         <tr>
                             <th>Total Subjects</th>
@@ -114,10 +130,11 @@
                 </xsl:if>
                 <br />
                 <h3>Subject Details</h3>
-                <table>
+                <table id="subject_details">
                     <thead>
                         <tr>
-                            <th>Subject</th>
+                            <th>Lab ID</th>
+                            <th>REDCap ID</th>
                             <xsl:for-each select="report/summary/forms/form">
                                 <th>
                                     <xsl:value-of select="form_name" />
@@ -126,10 +143,13 @@
                         </tr>
                     </thead>
                     <tbody>
-                        <xsl:for-each select="report/subjectsDetails/Subject">
+                        <xsl:for-each select="report/subjectsDetails/subject">
                             <tr>
                                 <td>
-                                    <xsl:value-of select="ID" />
+                                    <xsl:value-of select="lab_id" />
+                                </td>
+                                <td>
+                                    <xsl:value-of select="redcap_id" />
                                 </td>
                                 <xsl:for-each select="forms/form">
                                 <td>
@@ -142,7 +162,7 @@
                 </table>
                 <br />
                 <h3>Errors</h3>
-                <table>
+                <table id="errors">
                     <xsl:for-each select="report/errors/error">
                     <tr>
                         <td>

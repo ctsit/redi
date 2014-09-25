@@ -1306,15 +1306,20 @@ def updateReportAlerts(root, alert_summary):
         msg = etree.SubElement(values_alert, 'message')
         msg.text = value
 
-
 def updateSubjectDetails(root, subject_details):
+    """
+    Helper method for #create_summary_report()
+    Adds subject information to the xml tree which is later formated
+    by `bin/utils/report.xsl` into the html `table#subject_details"`
+    """
     subjectsDetails = root[3]
     for key in sorted(subject_details.keys()):
-        subject = etree.SubElement(subjectsDetails, "Subject")
+        subject = etree.SubElement(subjectsDetails, "subject")
         details = subject_details.get(key)
-        subjectId = etree.SubElement(subject, "ID")
-        subjectId.text = key
+        redcap_id_ele = gen_ele("redcap_id", key)
+        subject.append(redcap_id_ele)
         forms = etree.SubElement(subject, "forms")
+
         for k in sorted(details.keys()):
             if(k.endswith("_Forms")):
                 form = etree.SubElement(forms, "form")
@@ -2049,6 +2054,10 @@ class PersonFormEventsRepository(object):
                        xml_declaration=True,
                        method="xml",
                        pretty_print=True)
+
+def gen_ele(ele_name, ele_text):
+    """ Create an xml element with given name and content """
+    return etree.XML("<{}>{}</{}>".format(ele_name, ele_text, ele_name))
 
 
 if __name__ == "__main__":

@@ -31,10 +31,10 @@ class TestCreateSummaryReport(unittest.TestCase):
                 'Total_cbc_Forms': 53
             },
             'subject_details': {
-                '60': {'cbc_Forms': 1, 'chemistry_Forms': 1},
-                '61': {'cbc_Forms': 2, 'chemistry_Forms': 1},
-                '63': {'cbc_Forms': 11, 'chemistry_Forms': 4},
-                '59': {'cbc_Forms': 39, 'chemistry_Forms': 16}
+                '60': {'cbc_Forms': 1, 'chemistry_Forms': 1, 'lab_id': '999-0060'},
+                '61': {'cbc_Forms': 2, 'chemistry_Forms': 1, 'lab_id': '999-0061'},
+                '63': {'cbc_Forms': 11, 'chemistry_Forms': 4, 'lab_id': '999-0063'},
+                '59': {'cbc_Forms': 39, 'chemistry_Forms': 16, 'lab_id': '999-0059'}
             },
             'errors' : [],
         }
@@ -92,7 +92,8 @@ class TestCreateSummaryReport(unittest.TestCase):
         </valuesAlert></tooManyValues>
     </alerts>
     <subjectsDetails>
-        <Subject><ID>59</ID>
+        <subject>
+        <redcap_id>59</redcap_id>
         <forms>
             <form>
                 <form_name>cbc_Forms</form_name>
@@ -103,9 +104,10 @@ class TestCreateSummaryReport(unittest.TestCase):
                 <form_count>16</form_count>
             </form>
         </forms>
-        </Subject>
-        <Subject>
-            <ID>60</ID>
+        <lab_id>999-0059</lab_id>
+        </subject>
+        <subject>
+            <redcap_id>60</redcap_id>
             <forms>
                 <form>
                     <form_name>cbc_Forms</form_name>
@@ -115,8 +117,10 @@ class TestCreateSummaryReport(unittest.TestCase):
                     <form_count>1</form_count>
                 </form>
             </forms>
-        </Subject>
-        <Subject><ID>61</ID>
+            <lab_id>999-0060</lab_id>
+        </subject>
+        <subject>
+            <redcap_id>61</redcap_id>
             <forms>
                 <form>
                     <form_name>cbc_Forms</form_name>
@@ -127,9 +131,10 @@ class TestCreateSummaryReport(unittest.TestCase):
                     <form_count>1</form_count>
                 </form>
             </forms>
-        </Subject>
-        <Subject>
-            <ID>63</ID>
+            <lab_id>999-0061</lab_id>
+        </subject>
+        <subject>
+            <redcap_id>63</redcap_id>
             <forms>
                 <form>
                     <form_name>cbc_Forms</form_name>
@@ -140,7 +145,8 @@ class TestCreateSummaryReport(unittest.TestCase):
                     <form_count>4</form_count>
                 </form>
             </forms>
-        </Subject>
+            <lab_id>999-0063</lab_id>
+        </subject>
     </subjectsDetails>
     <errors/>
     <summaryOfSpecimenTakenTimes>
@@ -222,10 +228,10 @@ class TestCreateSummaryReport(unittest.TestCase):
         <xs:element name="subjectsDetails">
           <xs:complexType>
             <xs:sequence>
-              <xs:element name="Subject" maxOccurs="unbounded" minOccurs="0">
+              <xs:element name="subject" maxOccurs="unbounded" minOccurs="0">
                 <xs:complexType>
                   <xs:sequence>
-                    <xs:element type="xs:byte" name="ID"/>
+                    <xs:element type="xs:int" name="redcap_id"/>
                     <xs:element name="forms">
                       <xs:complexType>
                         <xs:sequence>
@@ -240,6 +246,7 @@ class TestCreateSummaryReport(unittest.TestCase):
                         </xs:sequence>
                       </xs:complexType>
                     </xs:element>
+                    <xs:element type="xs:string" name="lab_id"/>
                   </xs:sequence>
                 </xs:complexType>
               </xs:element>
