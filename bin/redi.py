@@ -1117,14 +1117,15 @@ def research_id_to_redcap_id_converter(
 ...
     <STUDY_ID>1</STUDY_ID> <!-- originally this was "999-0001" -->
 </subject>
+
+    Note: The next function which reads the "data" tree
+        is #create_empty_event_tree_for_study()
     """
     # read each of the study_id's from the data etree
     study_id_recap_id_dict = {}
 
-    ''' Configuration data from the mapping xml
-
-  '''
-    mapping_xml = os.path.join(configuration_directory,\
+    # Configuration data from the mapping xml
+    mapping_xml = os.path.join(configuration_directory,
      research_id_to_redcap_id)
 
     # read the field names from the research_id_to_redcap_id_map.xml
@@ -1363,7 +1364,7 @@ def create_empty_events_for_one_subject(
         form_events_tree,
         translation_table_tree):
     #logger.debug('Creating all form events template for one subject')
-    from lxml import etree
+
     root = etree.Element("all_form_events")
     form_event_root = form_events_tree.getroot()
     translation_table_root = translation_table_tree.getroot()
@@ -1436,13 +1437,15 @@ def create_empty_events_for_one_subject(
 
 def create_empty_event_tree_for_study(raw_data_tree, all_form_events_tree):
     """
-    This function uses raw_data_tree and all_form_events_tree and creates a person_form_event_tree for study
+    This function uses raw_data_tree and all_form_events_tree and creates
+    a person_form_event_tree for study
+
     :param raw_data_tree: This parameter holds raw data tree
     :param all_form_events_tree: This parameter holds all form events tree
     """
     logger.info('Creating all form events template for all subjects')
-    from lxml import etree
-    root = etree.Element("person_form_event")
+
+    pfe_element = etree.Element("person_form_event")
     raw_data_root = raw_data_tree.getroot()
     all_form_events_root = all_form_events_tree.getroot()
     if raw_data_root is None:
@@ -1456,25 +1459,23 @@ def create_empty_event_tree_for_study(raw_data_tree, all_form_events_tree):
         subjects_list.add(subject.find('STUDY_ID').text)
 
     if not subjects_list:
-        raise Exception('There is no subjects in the raw data')
+        raise Exception("There are no subjects in the raw data. " \
+                "This can be caused by an incorrect input file or "\
+                "by lack of enrollment data in the REDCap database." )
 
     for subject_id in subjects_list:
         person = etree.Element("person")
         study_id = etree.SubElement(person, "study_id")
         study_id.text = subject_id
-        person.insert(
-            person.index(
-                person.find('study_id')) + 1,
-            etree.XML(
-                etree.tostring(
-                    all_form_events_root,
-                    method='html',
-                    pretty_print=True)))
-        root.append(person)
+        person_index = person.index(person.find('study_id')) + 1
 
-    tree = etree.ElementTree(root)
-    return tree
+        # insert the pretty-fied form events
+        pretty_form_events = etree.XML(
+            etree.tostring(all_form_events_root, method='html', pretty_print=True))
+        person.insert(person_index, pretty_form_events)
+        pfe_element.append(person)
 
+    return etree.ElementTree(pfe_element)
 
 def setStat(
         event,
