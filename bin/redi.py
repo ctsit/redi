@@ -245,7 +245,9 @@ def _run(config_file, configuration_directory, do_keep_gen_files, dry_run,
     report_parameters = {
         'report_file_path': report_file_path,
         'project': settings.project,
-        'redcap_uri': settings.redcap_uri}
+        'redcap_uri': settings.redcap_uri,
+        'is_sort_by_lab_id': settings.is_sort_by_lab_id,
+    }
 
     report_xsl = proj_root + "bin/utils/report.xsl"
     send_email = settings.send_email
@@ -1263,6 +1265,10 @@ def create_summary_report(report_parameters, report_data, alert_summary, \
     updateReportAlerts(root, alert_summary)
     updateReportErrors(root, report_data['errors'])
     updateSummaryOfSpecimenTakenTimes(root, collection_date_summary_dict)
+
+    sort_by_value = 'lab_id' if report_parameters['is_sort_by_lab_id'] else 'redcap_id'
+    root.append(gen_ele("sort_details_by", sort_by_value))
+
     tree = etree.ElementTree(root)
     write_element_tree_to_file(tree,report_parameters.get('report_file_path'))
     return tree
@@ -2059,6 +2065,10 @@ def gen_ele(ele_name, ele_text):
     """ Create an xml element with given name and content """
     return etree.XML("<{}>{}</{}>".format(ele_name, ele_text, ele_name))
 
+def gen_subele(parent, subele_name, subele_text):
+    subele = etree.SubElement(parent, subele_name)
+    subele.text = subele_text
+    return subele
 
 if __name__ == "__main__":
     main()

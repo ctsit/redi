@@ -22,7 +22,9 @@ class TestCreateSummaryReport(unittest.TestCase):
         self.test_report_params = {
             'project': 'hcvtarget-uf',
             'report_file_path': proj_root + 'config/report.xml',
-            'redcap_uri': 'https://hostname.org'}
+            'redcap_uri': 'https://hostname.org',
+            'is_sort_by_lab_id': True,
+            }
 
         self.test_report_data = {
             'total_subjects': 5,
@@ -154,6 +156,7 @@ class TestCreateSummaryReport(unittest.TestCase):
         <blank>3</blank>
         <percent>20.0</percent>
     </summaryOfSpecimenTakenTimes>
+    <sort_details_by>lab_id</sort_details_by>
 </report>'''
 
         self.schema_str = StringIO('''\
@@ -264,6 +267,7 @@ class TestCreateSummaryReport(unittest.TestCase):
             </xs:sequence>
           </xs:complexType>
         </xs:element>
+        <xs:element name="sort_details_by"></xs:element>
       </xs:sequence>
     </xs:complexType>
   </xs:element>
