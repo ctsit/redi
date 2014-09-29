@@ -6,7 +6,7 @@ before_install:
 install:
   - pip install requests
   - pip install lxml
-  - pip install appdirs
+  - pip install sftpserver
 
 script: make test
 

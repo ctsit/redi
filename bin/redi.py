@@ -8,7 +8,7 @@ redi.py - Converter from raw clinical data in XML format to REDCap API data
 __author__ = "Nicholas Rejack"
 __copyright__ = "Copyright 2013, University of Florida"
 __license__ = "BSD 2-Clause"
-__version__ = "0.11.1"
+__version__ = "0.11.3"
 __email__ = "nrejack@ufl.edu"
 __status__ = "Development"
 
@@ -34,7 +34,7 @@ from utils import redi_email
 from utils.redcapClient import redcapClient
 import utils.SimpleConfigParser as SimpleConfigParser
 import utils.GetEmrData as GetEmrData
-from utils.GetEmrData import EmrConnectionDetails
+from utils.GetEmrData import EmrFileAccessDetails
 
 
 def get_proj_root():
@@ -56,8 +56,6 @@ import redi_lib
 
 
 # Command line default argument values
-default_do_keep_gen_files = None
-
 _person_form_events_service = None
 
 translational_table_tree = None
@@ -108,8 +106,8 @@ def main():
     configuration_directory = args['configuration_directory_path']
     if configuration_directory is None:
         configuration_directory = os.path.join(data_directory, "config")
-    do_keep_gen_files = False if args['keep'] is None else True
-    get_emr_data = False if args['emrdata'] is None else True
+    do_keep_gen_files = args['keep']
+    get_emr_data = args['emrdata']
     dry_run = args['dryrun']
 
     #configure logger
@@ -211,14 +209,16 @@ def _run(config_file, configuration_directory, do_keep_gen_files, dry_run,
 
     # Getting EMR data
     if get_emr_data:
-        props = EmrConnectionDetails(
+        connection_details = EmrFileAccessDetails(
+            os.path.join(settings.emr_sftp_project_name, settings.emr_data_file),
             settings.emr_sftp_server_hostname,
             settings.emr_sftp_server_username,
             settings.emr_sftp_server_password,
-            settings.emr_sftp_project_name,
-            settings.emr_data_file)
-        print props
-        GetEmrData.get_emr_data(configuration_directory, props)
+            settings.emr_sftp_server_port,
+            settings.emr_sftp_server_private_key,
+            settings.emr_sftp_server_private_key_pass,
+            )
+        GetEmrData.get_emr_data(configuration_directory, connection_details)
 
     # load custom post-processing rules
     rules = load_rules(settings.rules, configuration_directory)
@@ -535,16 +535,18 @@ def parse_args(arguments=None):
     # read the optional argument `-k` for keeping the generated files
     parser.add_argument(
         '-k', '--keep',
-        default=default_do_keep_gen_files,
+        default=False,
+        action='store_true',
         required=False,
-        help='Specify `yes` to preserve the files generated during execution')
+        help='Provide this argument to preserve the files generated during execution')
 
     # read the optional argument `-e` for getting EMR data
     parser.add_argument(
         '-e', '--emrdata',
-        default=None,
+        default=False,
+        action='store_true',
         required=False,
-        help='Specify `yes` to get EMR data')
+        help='Provide this argument to retrieve EMR data from the source server via sftp')
 
     # read the optional argument `-d` for running redi.py in dry run state
     parser.add_argument(
