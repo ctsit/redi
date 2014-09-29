@@ -9,10 +9,6 @@ from StringIO import StringIO
 import time
 import redi
 
-file_dir = os.path.dirname(os.path.realpath(__file__))
-goal_dir = os.path.join(file_dir, "../")
-proj_root = os.path.abspath(goal_dir)+'/'
-
 DEFAULT_DATA_DIRECTORY = os.getcwd()
 
 class TestCreateSummaryReport(unittest.TestCase):
@@ -21,7 +17,7 @@ class TestCreateSummaryReport(unittest.TestCase):
         redi.configure_logging(DEFAULT_DATA_DIRECTORY)
         self.test_report_params = {
             'project': 'hcvtarget-uf',
-            'report_file_path': proj_root + 'config/report.xml',
+            'report_file_path': os.path.join(DEFAULT_DATA_DIRECTORY, 'unittest_report.xml'),
             'redcap_uri': 'https://hostname.org',
             'is_sort_by_lab_id': True,
             }
@@ -275,13 +271,11 @@ class TestCreateSummaryReport(unittest.TestCase):
         return
 
     def test_create_summary_report(self):
-
+        """
+        Validates the summary xml structure using xsd
+        Validate the summary xml content
+        """
         sys.path.append('config')
-        self.newpath = proj_root+'config'
-        self.configFolderCreatedNow = False
-        if not os.path.exists(self.newpath):
-            self.configFolderCreatedNow = True
-            os.makedirs(self.newpath)
 
         result = redi.create_summary_report(\
                 self.test_report_params, \
@@ -294,20 +288,16 @@ class TestCreateSummaryReport(unittest.TestCase):
         xml_schema = etree.XMLSchema(xmlschema_doc)
         # validate the xml against the xsd schema
         self.assertEqual(xml_schema.validate(result), True)
+
         # validate the actual data in xml but strip the white space first
         parser = etree.XMLParser(remove_blank_text=True)
         clean_tree = etree.XML(self.expected_xml, parser=parser)
         self.expected_xml = etree.tostring(clean_tree)
-
         self.assertEqual(self.expected_xml, result_string)
 
     def tearDown(self):
         # delete the created xml file
-        with open(proj_root + 'config/report.xml'):
-            os.remove(proj_root + 'config/report.xml')
-
-            if self.configFolderCreatedNow:
-                os.rmdir(self.newpath)
+        os.remove(self.test_report_params['report_file_path'])
         return
 
 if __name__ == '__main__':
