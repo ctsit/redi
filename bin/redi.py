@@ -1252,6 +1252,10 @@ def configure_logging(data_folder, verbose=False):
 
 def create_summary_report(report_parameters, report_data, alert_summary, \
     collection_date_summary_dict):
+    """
+    Generates the xml to be transformed by `bin/utils/report.xsl`
+    into an html report with details about data import completed.
+    """
     root = etree.Element("report")
     root.append(etree.Element("header"))
     root.append(etree.Element("summary"))
@@ -1266,13 +1270,13 @@ def create_summary_report(report_parameters, report_data, alert_summary, \
     updateReportErrors(root, report_data['errors'])
     updateSummaryOfSpecimenTakenTimes(root, collection_date_summary_dict)
 
+    # TODO: remove dependency on the order of the xml elements in the report
     sort_by_value = 'lab_id' if report_parameters['is_sort_by_lab_id'] else 'redcap_id'
     root.append(gen_ele("sort_details_by", sort_by_value))
 
     tree = etree.ElementTree(root)
     write_element_tree_to_file(tree,report_parameters.get('report_file_path'))
     return tree
-
 
 def updateReportHeader(root, report_parameters):
     """ Update the passed `root` element tree with date, project name and url"""
@@ -1322,8 +1326,7 @@ def updateSubjectDetails(root, subject_details):
     for key in sorted(subject_details.keys()):
         subject = etree.SubElement(subjectsDetails, "subject")
         details = subject_details.get(key)
-        redcap_id_ele = gen_ele("redcap_id", key)
-        subject.append(redcap_id_ele)
+        subject.append(gen_ele("redcap_id", key))
         forms = etree.SubElement(subject, "forms")
 
         for k in sorted(details.keys()):
