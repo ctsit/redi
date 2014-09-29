@@ -2,6 +2,8 @@
 <xsl:stylesheet xmlns:xsl="http://www.w3.org/1999/XSL/Transform" version="1.0">
 <xsl:output method="html" version="4.0" encoding="UTF-8" indent="yes" />
 
+<xsl:variable name="sort_column" select="/report/sort_details_by" />
+
 <xsl:template match="/">
 <html>
 <head>
@@ -153,29 +155,16 @@ $(document).ready(function() {
                         </tr>
                     </thead>
                     <tbody>
-<!--
-                        <xsl:variable name="sort_by">
-                            <xsl:choose>
-                                <xsl:when test="/report/sort_by = 'redcap_id' ">
-                                    <xsl:value-of select="redcap_id"/>
-                                </xsl:when>
-                                <xsl:otherwise>
-                                    <xsl:value-of select="lab_id"/>
-                                </xsl:otherwise>
-                            </xsl:choose>
-                        </xsl:variable>
-                            <xsl:if test="/report/is_sort_by_lab_id = 'True'"> </xsl:if>
-                            <xsl:sort select="'lab_id'  [/report/is_sort_by_lab_id = 'True'] | 'redcap_id' [/report/is_sort_by_lab_id != 'True' "] />
-
--->
+                        <caption>
+                            <xsl:value-of select="
+                                concat(
+                                    'Number of forms for each of the ',
+                                    count(report/subjectsDetails/subject),
+                                    ' subject(s)') " />
+                        </caption>
                         <xsl:for-each select="report/subjectsDetails/subject">
-                            <!--
-                            <xsl:sort select="report/sort_details_by" />
-                            <xsl:sort select="string(//report/sort_details_by)" />
-                            <xsl:sort select="redcap_id" />
-                            -->
+                            <xsl:sort select="*[name() = $sort_column]" order="ascending" />
 
-                            <xsl:sort select="lab_id" />
                             <tr>
                                 <td>
                                     <xsl:value-of select="lab_id" />
