@@ -151,8 +151,8 @@ $(document).ready(function() {
                     </caption>
                     <thead>
                         <tr>
-                            <th>Lab ID</th>
-                            <th>REDCap ID</th>
+                            <th>Subject ID</th>
+                            <th>Subject Number</th>
                             <xsl:for-each select="report/summary/forms/form">
                                 <th>
                                     <xsl:value-of select="form_name" />
