@@ -5,11 +5,11 @@
 CONTENTS OF THIS FILE
 ---------------------
 
- * [Introduction](##Introduction)
- * [How to Install RED-I](##How to Install RED-I)
- * [How to Test RED-I with a Sample Project](##How to Test RED-I with a Sample Project)
- * [How to Configure RED-I for a New Project](##How to Configure RED-I for a New Project)
- * [How to Contribute](##How to Contribute)
+ * [Introduction](#Introduction)
+ * [How to Install RED-I](#How to Install RED-I)
+ * [How to Test RED-I with a Sample Project](#How to Test RED-I with a Sample Project)
+ * [How to Configure RED-I for a New Project](#How to Configure RED-I for a New Project)
+ * [How to Contribute](#How to Contribute)
 
 ## Introduction
 
@@ -44,7 +44,7 @@ to configure it to help you with data translation and import tasks.
 The good news is that you do not have to change any configuration file to test
 RED-I -- we provide examples of working files for you:
 
- * [settings.ini](config-example/settings)
+ * [settings.ini](config-example/settings.ini)
  * [redi_sample_project_v5.7.4.sql](config-example/vagrant-data/redi_sample_project_v5.7.4.sql)
  * [Vagrantfile](vagrant/Vagrantfile)
 
@@ -63,8 +63,14 @@ prevent us from including the code in an open source project.
 To use RED-I in production you will have to edit the 'settings.ini' file
 with values matching your environment.
 
+Please refer to the [RED-I Configuration](doc/redi_configuration.md)
+for more details about the meaning of each parameter in 'settings.ini' file.
+
 Please refer to the [Add new REDCap Project and API Key](doc/add_new_redcap_project.md)
 document for more details about new project setup.
+
+Please refer to the [advanced usage guide](doc/redi_usage.md) for more details
+about supported command line arguments.
 
 ## How to Contribute
 
