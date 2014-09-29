@@ -7,9 +7,9 @@ CONTENTS OF THIS FILE
 
  * [Introduction](##Introduction)
  * [How to Install RED-I](##How to Install RED-I)
- * [How to Test RED-I with a Sample Project]()
- * [How to Configure RED-I for a New Project]()
- * [How to Contribute]()
+ * [How to Test RED-I with a Sample Project](##How to Test RED-I with a Sample Project)
+ * [How to Configure RED-I for a New Project](##How to Configure RED-I for a New Project)
+ * [How to Contribute](##How to Contribute)
 
 ## Introduction
 
@@ -34,15 +34,37 @@ From source:
     $ make
     $ make install
 
-Reference [README-install](doc/README-install.md) for more installation details.
+Please refer to [README-install](doc/README-install.md) for more help with
+installation.
 
 ## How to Test RED-I with a Sample Project
 
+Now that you installed the RED-I application you are probably wondering how
+to configure it to help you with data translation and import tasks.
+The good news is that you do not have to change any configuration file to test
+RED-I -- we provide examples of working files for you:
+
+ * [settings.ini](config-example/settings)
+ * [redi_sample_project_v5.7.4.sql](config-example/vagrant-data/redi_sample_project_v5.7.4.sql)
+ * [Vagrantfile](vagrant/Vagrantfile)
+
+These files make it very easy to see how RED-I imports data from a
+[csv file](config-example/synthetic-lab-data.csv) into a local instance of REDCap.
+
+Please refer to the [Testing RED-I with a sample REDCap Project](vagrant/README.md)
+for more details on how to run RED-I against a locally-running virtual machine.
+
+Note: You will need to obtain your own copy of the REDCap since
+[the license terms](https://redcap.vanderbilt.edu/consortium/participate.php)
+prevent us from including the code in an open source project.
 
 ## How to Configure RED-I for a New Project
 
 To use RED-I in production you will have to edit the 'settings.ini' file
 with values matching your environment.
+
+Please refer to the [Add new REDCap Project and API Key](doc/add_new_redcap_project.md)
+document for more details about new project setup.
 
 ## How to Contribute
 
