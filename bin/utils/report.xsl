@@ -29,11 +29,10 @@ table#errors thead {
 }
 </style>
 
-<script src="//ajax.googleapis.com/ajax/libs/jquery/1.11.1/jquery.min.js"></script>
-<link rel="stylesheet" href="//ajax.googleapis.com/ajax/libs/jqueryui/1.11.1/themes/smoothness/jquery-ui.css" />
-<script src="//ajax.googleapis.com/ajax/libs/jqueryui/1.11.1/jquery-ui.min.js"></script>
-<script src="//tablesorter.com/__jquery.tablesorter.min.js"></script>
-
+<script src="http://ajax.googleapis.com/ajax/libs/jquery/1.11.1/jquery.min.js"></script>
+<link rel="stylesheet" href="http://ajax.googleapis.com/ajax/libs/jqueryui/1.11.1/themes/smoothness/jquery-ui.css" />
+<script src="http://ajax.googleapis.com/ajax/libs/jqueryui/1.11.1/jquery-ui.min.js"></script>
+<script src="http://tablesorter.com/__jquery.tablesorter.min.js"></script>
 <script>
 $(document).ready(function() {
     $("#subject_details").tablesorter();
@@ -143,6 +142,13 @@ $(document).ready(function() {
                 <br />
                 <h3>Subject Details</h3>
                 <table id="subject_details" class="tablesorter">
+                    <caption>
+                        <xsl:value-of select="
+                                concat(
+                                    'Number of forms for each of the ',
+                                    count(report/subjectsDetails/subject),
+                                    ' subject(s)') " />
+                    </caption>
                     <thead>
                         <tr>
                             <th>Lab ID</th>
@@ -155,13 +161,6 @@ $(document).ready(function() {
                         </tr>
                     </thead>
                     <tbody>
-                        <caption>
-                            <xsl:value-of select="
-                                concat(
-                                    'Number of forms for each of the ',
-                                    count(report/subjectsDetails/subject),
-                                    ' subject(s)') " />
-                        </caption>
                         <xsl:for-each select="report/subjectsDetails/subject">
                             <xsl:sort select="*[name() = $sort_column]" order="ascending" />
 
