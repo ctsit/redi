@@ -117,6 +117,7 @@ optional_parameters_dict = {
     "replace_fields_in_raw_data_xml": None,
     "include_rule_errors_in_report": False,
     "redcap_support_sender_email": 'please-do-not-reply@example.com',
+    "is_sort_by_lab_id": True,
 }
 
 class ConfigurationError(Exception):
