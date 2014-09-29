@@ -1,44 +1,63 @@
 """
-Python module to connect to server using sftp, get raw EMR data, get log file
-and return possibly modified log file to the server.
+This module is used to connect to an sftp server
+and retrieve the raw EMR file to be used as input for RED-I.
 """
 
 import os
 import csv
 from xml.sax import saxutils
-
+import logging
 import pysftp
 
 from csv2xml import openio, Writer
 
+logger = logging.getLogger(__name__)
+logger.setLevel(logging.INFO)
 
-class EmrConnectionDetails(object) :
+class EmrFileAccessDetails(object) :
     """
-    Encapsulate the settings specific for Emr SFTP connections
-    @see #get_emr_data()
+    Encapsulate the settings used to retrieve the EMR
+    source file using an SFTP connection
+    @see redi#_run()
     """
     def __init__(self,
-            emr_server,
+            emr_download_file,
+            emr_host,
             emr_username,
             emr_password,
-            emr_project_name,
-            emr_data_file) :
+            emr_port,
+            emr_private_key,
+            emr_private_key_pass
+            ):
 
-        self.server                 = emr_server
-        self.username               = emr_username
-        self.password               = emr_password
-        self.project_name           = emr_project_name
-        self.data_file              = emr_data_file
-
+        self.download_file = emr_download_file
+        self.host = emr_host
+        self.username = emr_username
+        self.password = emr_password
+        self.port = emr_port
+        self.private_key = emr_private_key
+        self.private_key_pass = emr_private_key_pass
 
 #============================
 # Module level functions
 #============================
 
-def download_file(source, destination, server, username, password):
-    with pysftp.Connection(host=server, username=username, password=password) as sftp:
-        sftp.get(source, destination)
+def download_file(destination, access_details):
+    """
+    Download a file from the sftp server
+    :destination the name of the file which will be downloaded
+    :access_details holds info for accessing the source file over sftp
 
+    @see get_emr_data()
+    """
+    connection_info = access_details.__dict__
+    # delete unnecessary element form the dictionary
+    del connection_info['emr_download_file']
+
+    with pysftp.Connection(**connection_info) as sftp:
+        logger.info("User %s connected to sftp server %s" % \
+            (connection_info['username'], connection_info['host']))
+        sftp.get(access_details.download_file, destination)
 
 def data_preprocessing(input_filename, output_filename):
     # replace &, >, < with &amp;, &>;, &<;
@@ -99,36 +118,26 @@ def generate_xml(input_filename, output_filename):
             writer = Writer(ofile, args)
             writer.write_file(csvreader)
 
-
 def cleanup(file_to_delete):
     os.remove(file_to_delete)
 
-
-def get_emr_data(configuration_directory_path, props):
+def get_emr_data(conf_dir, connection_details):
     """
-    @param configuration_directory_path : string
-    @param props                        : EmrConnectionDetails object
+    :conf_dir configuration directory name
+    :connection_details EmrFileAccessDetails object
     """
-
-    project_name    = props.project_name + "/"
-    data_file       = props.data_file
-    configuration_directory_path = configuration_directory_path + "/"
+    raw_txt_file = os.path.join(conf_dir, 'raw.txt')
+    escaped_file = os.path.join(conf_dir, 'rawEscaped.txt')
+    raw_xml_file = os.path.join(conf_dir, 'raw.xml')
 
     # download csv file
-    download_file(
-        project_name + data_file,
-        configuration_directory_path + 'raw.txt',
-        props.server, props.username, props.password)
+    download_file(raw_txt_file, connection_details)
 
     # replace certain characters with escape sequences
-    data_preprocessing(
-        configuration_directory_path + 'raw.txt',
-        configuration_directory_path + 'rawEscaped.txt')
+    data_preprocessing(raw_txt_file, escaped_file)
 
     # run csv2xml.py to generate data in xml format
-    generate_xml(
-        configuration_directory_path + 'rawEscaped.txt',
-        configuration_directory_path + 'raw.xml')
+    generate_xml(escaped_file, raw_xml_file)
 
     # delete rawEscaped.txt
-    cleanup(configuration_directory_path + 'rawEscaped.txt')
+    cleanup(escaped_file)
