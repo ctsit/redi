@@ -8,7 +8,7 @@ import csv
 from xml.sax import saxutils
 import logging
 import pysftp
-
+import copy
 from csv2xml import openio, Writer
 
 logger = logging.getLogger(__name__)
@@ -50,9 +50,9 @@ def download_file(destination, access_details):
 
     @see get_emr_data()
     """
-    connection_info = access_details.__dict__
+    connection_info = copy.copy(access_details.__dict__)
     # delete unnecessary element form the dictionary
-    del connection_info['emr_download_file']
+    del connection_info['download_file']
 
     with pysftp.Connection(**connection_info) as sftp:
         logger.info("User %s connected to sftp server %s" % \
