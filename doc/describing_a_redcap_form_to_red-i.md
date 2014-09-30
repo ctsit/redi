@@ -1,8 +1,12 @@
 # Describing a REDCap Form to RED-I
 
-RED-I needs to know certain information about REDCap forms and events so that it can correctly translate and insert clinical data into them.
+RED-I needs to know certain information about REDCap forms and events so that
+it can correctly translate and insert clinical data into them.
 
-The two relevant files are called the **[Form Events](#form-events)** and **[Translation Table](#translation-table)** files. Their locations are specified in the ```settings.ini``` configuration file. Both of them are XML files.
+The description of the forms is done in two XML files called
+**[Form Events](#form-events)** and **[Translation Table](#translation-table)**.
+The location of these files is specified in the ```settings.ini```
+configuration file.
 
 ***See:*** [How to Add a Simple REDCap Form to RED-I](#howto)
 
@@ -111,7 +115,10 @@ Required | ```name``` | Name of the **REDCap Event** | 1
 ```
 
 ### Clinical Components
-**Clinical Component** is a generic term for test, measurement, or observation. Each Clinical Component is represented by a ```clinicalComponent``` XML element whose children elements are as follows:
+
+**Clinical Component** is a generic term for test, measurement, or observation.
+Each Clinical Component is represented by a ```clinicalComponent``` XML element
+whose children elements are as follows:
 
 Required? | Name | Description | Max | Notes
 -|-
@@ -125,7 +132,9 @@ Optional | ```redcapStatusFieldName``` | ID of the REDCap Field that holds the o
 Optional | ```redcapStatusFieldValue``` | Value of the REDCap Field that represents the default Status | 1
 
 ## [How to Add a Simple REDCap Form to RED-I](id:howto)
-Remember, when "adding a form" you are describing it to RED-I. So, you can open your browser and use the actual REDCap Form to guide you.
+
+Remember, when "adding a form" you are describing it to RED-I. So, you can open
+your browser and use the actual REDCap Form to guide you.
 
 1. Edit ```formEvents.xml```
    1. Copy the contents of the sample data for a ```form``` element.
@@ -142,4 +151,4 @@ You can lookup a field's ID using REDCap's **Data Collection Instruments** edito
 1. Under _Design your data collection instruments_, click  _Online Designer_.
 1. Find the name of your form (called an Instrument), such as "Demographics".
 1. Find the field you are looking for and copy it's _Variable_ name.
-![image](screenshot-field-name-lookup.png "Screenshot showing the location of the "Subject Number" field's ID")
+![image](images/screenshot-field-name-lookup.png "Screenshot showing the location of the "Subject Number" field's ID")
