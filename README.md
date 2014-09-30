@@ -24,6 +24,8 @@ reporting systems, error checked, and uploaded into REDCap. It provides the
 investigator with feedback on upload success in the form of summary reporting
 of the data upload process.
 
+You can view a presentation of RED-I tool in action on
+[youtube](https://www.youtube.com/watch?v=0x04y5SNPL8&feature=youtu.be).
 
 ## How to Install RED-I
 
