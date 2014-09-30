@@ -5,11 +5,11 @@
 CONTENTS OF THIS FILE
 ---------------------
 
- * [Introduction](#Introduction)
- * [How to Install RED-I](#How to Install RED-I)
- * [How to Test RED-I with a Sample Project](#How to Test RED-I with a Sample Project)
- * [How to Configure RED-I for a New Project](#How to Configure RED-I for a New Project)
- * [How to Contribute](#How to Contribute)
+ * [Introduction](#introduction)
+ * [How to Install RED-I](#how-to-install-red-i)
+ * [How to Test RED-I with a Sample Project](#how-to-test-red-i-with-a-sample-project)
+ * [How to Configure RED-I for a New Project](#how-to-configure-red-i-for-a-new-project)
+ * [How to Contribute](#how-to-contribute)
 
 ## Introduction
 
