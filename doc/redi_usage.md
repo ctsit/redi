@@ -40,7 +40,7 @@ Currently the RED-I application can be only executed from the command line:
     of `redi`. Data will not be written to the REDCap server nor will emails 
     be sent.
 
-    If `-d` is used, `--keep=yes` is implied; therefore, you do not need to
+    If `-d` is used, `--keep` is implied; therefore, you do not need to
     specify it or provide any path for storing the output files.
 
     By default, this parameter is disabled.
