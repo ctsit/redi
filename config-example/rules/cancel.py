@@ -16,6 +16,7 @@ __license__ = "BSD 3-Clause"
 from form import Form
 import re
 
+
 def run_rules(data):
     """Mandatory function which runs the rules pertaining
         to this module

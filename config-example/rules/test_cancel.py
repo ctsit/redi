@@ -2,8 +2,6 @@ __author__ = "Radha Kandula <rkandula@ufl.edu>"
 __copyright__ = "Copyright 2014, University of Florida"
 __license__ = "BSD 3-Clause"
 
-print __name__
-
 import unittest
 from StringIO import StringIO
 
