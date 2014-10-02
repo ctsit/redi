@@ -10,6 +10,7 @@ CONTENTS OF THIS FILE
  * [How to Test RED-I with a Sample Project](#how-to-test-red-i-with-a-sample-project)
  * [How to Configure RED-I for a New Project](#how-to-configure-red-i-for-a-new-project)
  * [How to Use RED-I](#how-to-use-red-i)
+ * [How to Get Support](#how-to-get-support)
  * [How to Contribute](#how-to-contribute)
 
 ## Introduction
@@ -132,6 +133,11 @@ $ redi -c config-example
 
 Please refer to the [advanced usage guide](doc/redi_usage.md) for more details
 about all arguments supported in the command line.
+
+## How to Get Support
+
+If you need any help with using RED-I please email us at
+|CTS-IT-ALL| at |ctsi.ufl.edu|
 
 ## How to Contribute
 
