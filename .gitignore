@@ -27,6 +27,7 @@ person_form_event_tree.xml
 person_form_event_tree_with_data.xml
 .figleaf
 build/
+_build/
 dist/
 vagrant/Makefile.ini
 vagrant/projectDataBootstrap.sql
