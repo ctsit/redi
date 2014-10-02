@@ -16,11 +16,20 @@ Module unit test: test/TestRediEmail.py
 
 def send_email_redcap_connection_error(email_settings, subject='', msg=''):
     """
+    Return True if the email was sent.
     Notify the designated `REDCap support` person about problems
     with reaching REDCap
 
-    :return True if the email was sent
+    Parameters
+    ----------
+    email_settings : dict
+        The dictionary with smtp server parameters
+    subject : str
+        The email subject
+    msg : str
+        The content to be emailed
     """
+
     sender = email_settings['redcap_support_sender_email']
     to_addr_list = email_settings['redcap_support_receiving_list']
     host = email_settings['smtp_host_for_outbound_mail']
