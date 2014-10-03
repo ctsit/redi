@@ -1,6 +1,6 @@
 *.pyc
 *.pyo
-REDI.egg-info/
+*.egg-info/
 config-example/vagrant-data/redcap.zip
 formData.xml
 rawData.xml

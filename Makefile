@@ -27,7 +27,7 @@ clean:
 	rm -rf out
 	rm -rf dist
 	rm -rf build
-	rm -rf REDI.egg-info
+	rm -rf *.egg-info
 	rm -rf nosetests.xml cover .coverage coverage.xml
 	rm -rf *.egg
 	rm -f pylint.out
@@ -46,3 +46,7 @@ clean:
 	rm -f person_form_event_tree_with_data.xml
 	rm -rf vagrant/data/
 	rm -f vagrant/redi.db
+
+pypi:
+	#https://pythonhosted.org/Distutils2/distutils/packageindex.html
+	python setup.py sdist register upload -r pypi
