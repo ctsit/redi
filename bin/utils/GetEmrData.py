@@ -8,7 +8,6 @@ import csv
 from xml.sax import saxutils
 import logging
 import pysftp
-import copy
 from csv2xml import openio, Writer
 
 logger = logging.getLogger(__name__)
@@ -34,7 +33,7 @@ class EmrFileAccessDetails(object) :
         self.host = emr_host
         self.username = emr_username
         self.password = emr_password
-        self.port = emr_port
+        self.port = int(emr_port)
         self.private_key = emr_private_key
         self.private_key_pass = emr_private_key_pass
 
@@ -50,7 +49,7 @@ def download_file(destination, access_details):
 
     @see get_emr_data()
     """
-    connection_info = copy.copy(access_details.__dict__)
+    connection_info = dict(access_details.__dict__)
     # delete unnecessary element form the dictionary
     del connection_info['download_file']
 
