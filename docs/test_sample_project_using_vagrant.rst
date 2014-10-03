@@ -139,6 +139,6 @@ Verify that the output of this command ends with:
 If this step succeded you have verified that RED-I can be used to save
 time by automating EHR data imports into REDCap.
 
- Congratulations! You can now `add your own REDCap
-project <../doc/add_new_redcap_project.md>`__ and start using RED-I to
-move data.
+Congratulations! You can now add your own REDCap project
+and start using RED-I to move data.
+Please refer to :doc:`add_new_redcap_project` document for help.

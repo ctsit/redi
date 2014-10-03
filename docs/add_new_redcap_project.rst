@@ -21,7 +21,11 @@ Open in the browser the REDCap url. Select the ``Create New Project``
 tab. Enter ``<your_project_name>`` for the project title. Please check
 below images for reference.
 
-|alt text| |alt text|
+.. figure:: images/add_new_redcap_project/image_0.png
+   :alt: alt text
+
+.. figure:: images/add_new_redcap_project/image_1.png
+   :alt: alt text
 
 2. Authorize People
 -------------------
@@ -32,20 +36,17 @@ left side of the REDCap screen.
 .. figure:: images/add_new_redcap_project/image_02.png
    :alt: alt text
 
-   alt text
 or click on ``User Rights`` button in the ``Project Setup``
 
 .. figure:: images/add_new_redcap_project/image_4.png
    :alt: alt text
 
-   alt text
 In REDCap User Rights, set ``Data Entry Rights`` as per your
 needs.Please check below image
 
 .. figure:: images/add_new_redcap_project/image_6.png
    :alt: alt text
 
-   alt text
 3. Create an API Token
 ----------------------
 
@@ -61,9 +62,11 @@ in this REDCap project with the permissions shown below:
 .. figure:: images/add_new_redcap_project/image_11.png
    :alt: alt text
 
-   alt text
 After you have created the new user, login as that user and request an
-Read-only API button on the left hand toolbar. |alt text|
+Read-only API button on the left hand toolbar.
+
+.. figure:: images/add_new_redcap_project/image_12.png
+   :alt: alt text
 
 4. Export Data
 --------------
@@ -84,7 +87,3 @@ procedures in section ``2``.
 
 Please update the README-projects.md document with a detailed decription
 of the new project.
-
-.. |alt text| image:: images/add_new_redcap_project/image_0.png
-.. |alt text| image:: images/add_new_redcap_project/image_1.png
-.. |alt text| image:: images/add_new_redcap_project/image_12.png

@@ -92,8 +92,8 @@ package to be available system-wide.
       $ make && make install
    </pre>
 
-Please refer to `README-install <redi_installation.md>`__ for more help
-with installation.
+Please refer to :doc:`redi_installation` document for more help
+with the installation.
 
 Installation Steps Using Binary Distribution
 --------------------------------------------
@@ -108,25 +108,24 @@ how to configure it to help you with data translation and import tasks.
 The good news is that you do not have to change any configuration file
 to test RED-I -- we provide examples of working files for you:
 
--  `Vagrantfile <vagrant/Vagrantfile>`__ - allows to run a local REDCap
-   instance
--  `settings.ini <config-example/settings.ini>`__ - pre-configures RED-I
-   to send data to the local REDCap instance
--  `Makefile.ini <config-example/vagrant-data/Makefile.ini>`__ -
-   configures the `make <http://www.gnu.org/software/make/manual/>`__
-   tasks from `Makefile <vagrant/Makefile>`__ to simplify testing
--  `redi\_sample\_project\_v5.7.4.sql <config-example/vagrant-data/redi_sample_project_v5.7.4.sql>`__
-   - provides the data for the sample project running in the local
-   REDCap instance
+-  :download:`Vagrantfile <../vagrant/Vagrantfile>`
+      --> allows to run a local REDCap instance
+-  :download:`settings.ini <../config-example/settings.ini>`
+      --> pre-configures RED-I to send data to the local REDCap instance
+-  :download:`Makefile.ini <../config-example/vagrant-data/Makefile.ini>`
+      --> configures the `make <http://www.gnu.org/software/make/manual/>`__
+      tasks from :download:`Makefile <../vagrant/Makefile>` to simplify testing
+-  :download:`redi\_sample\_project\_v5.7.4.sql <../config-example/vagrant-data/redi_sample_project_v5.7.4.sql>`
+      --> provides the data for the sample project running in the local
+      REDCap instance
 
 These files make it very easy to see how RED-I imports data from a `csv
 file <config-example/synthetic-lab-data.csv>`__ into a local instance of
-REDCap. You just have to follow the instructions from the `Testing RED-I
-with a sample REDCap Project <../vagrant/README.md>`__.
+REDCap. You just have to follow the instructions from the
+:doc:`test_sample_project_using_vagrant` document.
 
 **Note:** You will need to obtain your own copy of the REDCap since `the
-license
-terms <https://redcap.vanderbilt.edu/consortium/participate.php>`__
+license terms <https://redcap.vanderbilt.edu/consortium/participate.php>`__
 prevent us from including the code in an open source project.
 
 How to Configure RED-I for a New Project
@@ -135,17 +134,15 @@ How to Configure RED-I for a New Project
 To use RED-I in production you will have to edit the 'settings.ini' file
 with values matching your environment.
 
-Please refer to the `RED-I Configuration <redi_configuration.md>`__ for
+Please refer to the :doc:`redi_configuration` for
 more details about the meaning of each parameter in 'settings.ini' file.
 
-Please refer to the `Add new REDCap Project and API
-Key <add_new_redcap_project.md>`__ document for more details about new
-project setup.
+Please refer to the :doc:`add_new_redcap_project` document for more details
+about new project setup.
 
 One of the advantages of using RED-I is that it allows to be customized
 in order to send data to multiple types forms in REDCap projects. Please
-refer to `Describing a REDCap Form to
-RED-I <describing_a_redcap_form_to_red-i.md>`__ document for more
+refer to :doc:`describing_a_redcap_form_to_redi` document for more
 details on how to create two of the required configuration files.
 
 How to use RED-I
@@ -153,11 +150,11 @@ How to use RED-I
 
 .. raw:: html
 
-   <pre style="background: #000; color: #0f0; font: normal 1em Courier, Andale Mono">
+   <pre style="padding: 1em; background: #000; color: #0f0; font: normal 1em Courier, Andale Mono">
    $ redi -c config-example
    </pre>
 
-Please refer to the `advanced usage guide <redi_usage.md>`__ for more
+Please refer to the :doc:`redi_usage` for more
 details about all arguments supported in the command line.
 
 How to Get Support
@@ -170,10 +167,10 @@ How to Contribute
 -----------------
 
 -  Fork the source-code
--  Create a branch (``git checkout -b my_branch``)
+-  Create a branch (:command:`git checkout -b my_branch`)
 -  Commit your changes
-   (``git commit -am "Details about feature/bug fixes in the commit"``)
--  Push to the branch (``git push origin my_branch``)
--  Open a pull request and we will accept it as long as it passes
-   through our `code review procedure <code-review-checklist.md>`__
+   (:command:`git commit -am "Details about feature/bug fixes in the commit"`)
+-  Push to the branch (:command:`git push origin my_branch`)
+-  Open a pull request and we will accept it as long as it conforms to our
+  :doc:`code_review_checklist`
 
