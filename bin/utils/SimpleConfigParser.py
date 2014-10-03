@@ -41,7 +41,7 @@ __version__ = '0.02'
 # OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
 
 #-------------------------------------------------------------------------
-# CHANGELOG:
+# CHANGELOG
 # 2009-02-12 v0.01 PL: - initial version
 # 2010-03-15 v0.02 PL: - updated tests and comments
 
@@ -95,7 +95,6 @@ required_server_parameters_list = [
     'smtp_port_for_outbound_mail',
     'emr_sftp_server_hostname',
     'emr_sftp_server_username',
-    'emr_sftp_server_password',
     'emr_sftp_project_name',
     'emr_data_file']
 
@@ -118,6 +117,7 @@ optional_parameters_dict = {
     "include_rule_errors_in_report": False,
     "redcap_support_sender_email": 'please-do-not-reply@example.com',
     "emr_sftp_server_port": 22,
+    "emr_sftp_server_password": None,
     "emr_sftp_server_private_key": None,
     "emr_sftp_server_private_key_pass": None,
 }
