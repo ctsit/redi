@@ -20,8 +20,10 @@ class TestGetEMRData(unittest.TestCase):
     def setUp(self):
         pass
 
+
     def _noop(*args, **kwargs):
         pass
+
 
     @patch.multiple(pysftp, Connection=_noop)
     @patch.multiple(GetEmrData, download_file=_noop)
@@ -43,11 +45,11 @@ class TestGetEMRData(unittest.TestCase):
             f.write(input_string)
 
         props = EmrFileAccessDetails(
-            'raw.csv',
+            emr_download_file='raw.csv',
             emr_host='localhost',
             emr_username='admin',
             emr_password='admin',
-            emr_port=7788,
+            emr_port='7788',
             emr_private_key=None,
             emr_private_key_pass=None,
             )
@@ -87,6 +89,7 @@ class TestGetEMRData(unittest.TestCase):
         self.assertEqual(result, expected)
         shutil.rmtree(temp_folder)
 
+
     def test_pysftp_using_rsa_key(self):
         """
         Starts a sftp server and transfers a file
@@ -121,6 +124,7 @@ class TestGetEMRData(unittest.TestCase):
             try:
                 # this block depends on a running sftp server
                 connection_info = get_connection_info(key_file)
+                connection_info['port'] = int(connection_info['port'])
                 with pysftp.Connection(**connection_info) as sftp:
                     logging.info("User %s connected to sftp server %s" % \
                         (connection_info['username'], connection_info['host']))
@@ -136,19 +140,16 @@ class TestGetEMRData(unittest.TestCase):
             if proc:
                 proc.terminate()
 
-        try:
-            fresh_file = open(destination_file)
+        with open(destination_file) as fresh_file:
             actual = fresh_file.read()
-        finally:
-            fresh_file.close()
-
-        self.assertEqual(actual, "SFTP TEST")
+            self.assertEqual(actual, "SFTP TEST")
 
         # Cleanup created files
         os.remove(source_file)
         os.remove(destination_file)
         os.remove(key_file)
         os.remove(key_file +".pub")
+
 
 def create_rsa_key(rsa_key_file):
     """Create a RSA private key pair to be used by sftp"""
@@ -161,6 +162,7 @@ def create_rsa_key(rsa_key_file):
         logging.warn("RSA key file already exists: %s" % rsa_key_file)
 
     return rsa_key_file
+
 
 def create_sample_file(sample_file):
     """ Create a sample file to be transfered ofe sftp"""
@@ -176,17 +178,24 @@ def create_sample_file(sample_file):
         logging.info("Sample file %s already exists" % sample_file)
     return sample_file
 
+
 def get_connection_info(private_key):
     """Return a dictionary of parameters for creating a sftp connection"""
-    connection_info = {
-            'host': 'localhost',
-            'username': 'admin',
-            'password': 'pass',
-            'port' : 7788,
-            'private_key': private_key,
-            'private_key_pass': ''
-    }
+    access_details = EmrFileAccessDetails(
+        emr_download_file='raw.csv',
+        emr_host='localhost',
+        emr_username='admin',
+        emr_password='admin',
+        emr_port='7788',
+        emr_private_key=private_key,
+        emr_private_key_pass=None,
+    )
+
+    connection_info = dict(access_details.__dict__)
+    # delete unnecessary element form the dictionary
+    del connection_info['download_file']
     return connection_info
+
 
 if __name__ == '__main__':
     unittest.main()
