@@ -39,7 +39,7 @@ For more details on how to install python on your system please visit
 `Downloading
 Python <https://wiki.python.org/moin/BeginnersGuide/Download>`__ page.
 
-Installation Steps Using Source Code
+Installation Using Source Code
 ------------------------------------
 
 We recommend to install RED-I in a Python virtual environment in order
@@ -82,10 +82,25 @@ package to be available system-wide.
 Please refer to :doc:`redi_installation` document for more help
 with the installation.
 
-Installation Steps Using Binary Distribution
+Installation Using Binary Distribution
 --------------------------------------------
 
-@TODO
+.. raw:: html
+
+   <pre>
+      $ pip install redi-py
+   </pre>
+
+To uninstall the application:
+
+.. raw:: html
+
+   <pre>
+      $ pip uninstall redi-py
+   </pre>
+
+.. seealso:: http://pip.readthedocs.org/en/latest/reference/pip.html
+
 
 How to Test RED-I with a Sample Project
 ---------------------------------------

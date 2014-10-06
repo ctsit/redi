@@ -19,7 +19,6 @@ User Documentation
    :maxdepth: 2
 
    about
-   redi_installation
    redi_configuration
    redi_usage
    add_new_redcap_project
