@@ -6,7 +6,20 @@ egg:
 	python setup.py bdist_egg
 
 install:
-	easy_install dist/REDI*.egg
+	easy_install dist/redi*.egg
+
+help:
+	@echo "Available tasks :"
+	@echo "\t build            - generate the dist/*.egg file"
+	@echo "\t install          - run the installation of the dist/*.egg file"
+	@echo "\t test             - rin all unit tests"
+	@echo "\t coverage         - run code coverage analysis"
+	@echo "\t lint             - check code for sytax error"
+	@echo "\t clean            - remove generated files"
+	@echo "\t pypi             - upload files to https://pypi.python.org/pypi/redi-py"
+	@echo "\t show_pips        - show python packages installed globally"
+	@echo "\t venv_help        - show commands for installing 'redi-py' package in the 'venv' virtual environment"
+	@echo "\t venv_show_pips   - show python packages installed in the 'venv' virtual environment"
 
 test: tests
 tests: coverage
@@ -27,7 +40,7 @@ clean:
 	rm -rf out
 	rm -rf dist
 	rm -rf build
-	rm -rf REDI.egg-info
+	rm -rf *.egg-info
 	rm -rf nosetests.xml cover .coverage coverage.xml
 	rm -rf *.egg
 	rm -f pylint.out
@@ -46,3 +59,17 @@ clean:
 	rm -f person_form_event_tree_with_data.xml
 	rm -rf vagrant/data/
 	rm -f vagrant/redi.db
+
+pypi:
+	#https://pythonhosted.org/Distutils2/distutils/packageindex.html
+	python setup.py sdist register upload -r pypi
+
+show_pips:
+	find /Library/Python/2.7/site-packages/ -maxdepth 2 -name __init__.py | cut -d '/' -f 6
+
+venv_help:
+	@echo "\n To install 'redi' in the virtual environment please execute: \n\n\t virtualenv venv && source venv/bin/activate && pip install redi-py"
+	@echo "\n To destroy the virtual environment please execute: \n\n\t deactivate && rm -rf ./venv"
+
+venv_show_pips:
+	find venv/lib/python2.7/site-packages/ -maxdepth 2 -name __init__.py | cut -d '/' -f5
