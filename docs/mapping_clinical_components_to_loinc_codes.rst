@@ -83,7 +83,7 @@ The root element **MUST** be ``clinical_datum``.
 +-------------+-------------------+----------------------------------------------------------------------+-------+---------------------------------------+
 | Optional    | ``Description``   | Description of the XML document                                      | 1     | Potentially helpful to readers        |
 +-------------+-------------------+----------------------------------------------------------------------+-------+---------------------------------------+
-| Required    | ``components``    | The parent element for `Clinical Components Mappings <#mapping>`__   | 1     |
+| Required    | ``components``    | The parent element for `Clinical Components Mappings <#mapping>`__   | 1     |                                       |
 +-------------+-------------------+----------------------------------------------------------------------+-------+---------------------------------------+
 
 `Clinical Component Mapping <id:mapping>`__
@@ -103,17 +103,17 @@ value, create a new block and complete it according to the below table.
 +=============+====================+=============================================+=======+==================================+
 | Optional    | ``Description``    | Description of the Component                | 1     | Potentially helpful to readers   |
 +-------------+--------------------+---------------------------------------------+-------+----------------------------------+
-| Required    | ``source``         | Parent element for the Source information   | 1     |
+| Required    | ``source``         | Parent element for the Source information   | 1     |                                  |
 +-------------+--------------------+---------------------------------------------+-------+----------------------------------+
-| Required    | ``source/name``    | Name of the XML Element                     | 1     |
+| Required    | ``source/name``    | Name of the XML Element                     | 1     |                                  |
 +-------------+--------------------+---------------------------------------------+-------+----------------------------------+
-| Required    | ``source/value``   | Value of the XML Element                    | 1     |
+| Required    | ``source/value``   | Value of the XML Element                    | 1     |                                  |
 +-------------+--------------------+---------------------------------------------+-------+----------------------------------+
-| Required    | ``target``         | Parent element for the Target information   | 1     |
+| Required    | ``target``         | Parent element for the Target information   | 1     |                                  |
 +-------------+--------------------+---------------------------------------------+-------+----------------------------------+
-| Required    | ``source/name``    | Name of the XML Element                     | 1     |
+| Required    | ``source/name``    | Name of the XML Element                     | 1     |                                  |
 +-------------+--------------------+---------------------------------------------+-------+----------------------------------+
-| Required    | ``source/value``   | Value of the XML Element                    | 1     |
+| Required    | ``source/value``   | Value of the XML Element                    | 1     |                                  |
 +-------------+--------------------+---------------------------------------------+-------+----------------------------------+
 
 Example

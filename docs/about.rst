@@ -4,19 +4,6 @@ RED-I Project
 .. figure:: https://zenodo.org/badge/doi/10.5281/zenodo.10014.png
    :alt: .
 
-.. CONTENTS OF THIS FILE
-.. ---------------------
-.. 
-.. -  `Introduction <#introduction>`__
-.. -  `How to Install RED-I <#how-to-install-red-i>`__
-.. -  `How to Test RED-I with a Sample
-..    Project <#how-to-test-red-i-with-a-sample-project>`__
-.. -  `How to Configure RED-I for a New
-..    Project <#how-to-configure-red-i-for-a-new-project>`__
-.. -  `How to Use RED-I <#how-to-use-red-i>`__
-.. -  `How to Get Support <#how-to-get-support>`__
-.. -  `How to Contribute <#how-to-contribute>`__
-
 Introduction
 ------------
 
@@ -32,7 +19,7 @@ systems, error checked, and uploaded into REDCap. It provides the
 investigator with feedback on upload success in the form of summary
 reporting of the data upload process.
 
-You can view a presentation of RED-I tool in action on
+You can view a presentation of the RED-I tool in action on
 `youtube <https://www.youtube.com/watch?v=0x04y5SNPL8&feature=youtu.be>`__.
 
 How to Install RED-I
@@ -172,5 +159,5 @@ How to Contribute
    (:command:`git commit -am "Details about feature/bug fixes in the commit"`)
 -  Push to the branch (:command:`git push origin my_branch`)
 -  Open a pull request and we will accept it as long as it conforms to our
-  :doc:`code_review_checklist`
+:doc:`code_review_checklist`
 
