@@ -22,5 +22,6 @@ reporting of the data upload process.
 You can view a presentation of the RED-I tool in action on
 `youtube <https://www.youtube.com/watch?v=0x04y5SNPL8&feature=youtu.be>`__.
 
-.. seealso:: The official documentation `http://redi.readthedocs.org/`__
-or on `github <https://github.com/ctsit/redi/blob/master/docs/about.rst>
+For the official documentation please refer to
+`<http://redi.readthedocs.org>`__ or
+`<https://github.com/ctsit/redi/blob/master/docs/about.rst>`__.
