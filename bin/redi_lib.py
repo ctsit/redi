@@ -92,7 +92,7 @@ Note: This function communicates with the redcap application.
 Steps:
     - loop for each person/form/event element
     - generate a csv fragment `using create_eav_output`
-    - send csv fragment to RedCap using `send_eav_data_to_redcap`
+    - send csv fragment to REDCap using `send_eav_data_to_redcap`
 
 
 @return the report_data dictionary
