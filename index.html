@@ -1,0 +1,306 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset='utf-8'>
+    <meta http-equiv="X-UA-Compatible" content="chrome=1">
+    <link href='https://fonts.googleapis.com/css?family=Chivo:900' rel='stylesheet' type='text/css'>
+    <link rel="stylesheet" type="text/css" href="stylesheets/stylesheet.css" media="screen">
+    <link rel="stylesheet" type="text/css" href="stylesheets/pygment_trac.css" media="screen">
+    <link rel="stylesheet" type="text/css" href="stylesheets/print.css" media="print">
+    <!--[if lt IE 9]>
+    <script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script>
+    <![endif]-->
+    <title>Redi by ctsit</title>
+  </head>
+
+  <body>
+    <div id="container">
+      <div class="inner">
+
+        <header>
+          <h1>Redi</h1>
+          <h2>REDCap Electronic Data - I (Ingester/Integrator/Importer)</h2>
+        </header>
+
+        <section id="downloads" class="clearfix">
+          <a href="https://github.com/ctsit/redi/zipball/master" id="download-zip" class="button"><span>Download .zip</span></a>
+          <a href="https://github.com/ctsit/redi/tarball/master" id="download-tar-gz" class="button"><span>Download .tar.gz</span></a>
+          <a href="https://github.com/ctsit/redi" id="view-on-github" class="button"><span>View on GitHub</span></a>
+        </section>
+
+        <hr>
+
+        <section id="main_content">
+          <h1>
+<a name="red-i-project" class="anchor" href="#red-i-project"><span class="octicon octicon-link"></span></a>RED-I Project</h1>
+
+<p><img src="https://zenodo.org/badge/doi/10.5281/zenodo.10014.png" alt="DOI" title="."></p>
+
+<p>The REDCap Electronic Data Importer (RED-I) is a tool to automate the process of loading clinical data from Electronic Medical Records (EMRs) into <a href="http://www.project-redcap.org/">REDCap</a> Study data capture systems. RED-I is a general purpose tool for REDCap data importing suitable for use on any study in any REDCap system. It uses XML lookups to translate data stored in comma separated values (CSV) files and uploads it to a REDCAP Server using the REDCap API. The tool allows study data to be securely uploaded from clinical reporting systems, error checked, and uploaded into REDCap. It provides the investigator with feedback on upload success in the form of summary reporting of the data upload process.</p>
+
+<h2>
+<a name="directory-layout" class="anchor" href="#directory-layout"><span class="octicon octicon-link"></span></a>Directory Layout</h2>
+
+<pre><code>redi : This is the common repository for RED-I. This repository contains generic artifacts
+├── CHANGELOG : Log of changes to the RED-I project
+├── bin/ : Contains the Python modules
+├── config-example/ : Example configuration files
+├── doc/ : Contains documentation such as installation instructions and process flow
+├── README.md : This README markdown file
+├── scripts/ : Contains useful scripts to developers
+└── test/ : Contains the test modules and test suite
+</code></pre>
+
+<h2>
+<a name="installation" class="anchor" href="#installation"><span class="octicon octicon-link"></span></a>Installation</h2>
+
+<p>From source:</p>
+
+<pre><code>$ git clone https://github.com/ctsit/redi.git redi
+$ cd redi
+$ make
+$ make install
+</code></pre>
+
+<p>Reference <a href="doc/README-install.md">README-install</a> for more installation details.</p>
+
+<h2>
+<a name="configuration" class="anchor" href="#configuration"><span class="octicon octicon-link"></span></a>Configuration</h2>
+
+<p>Adapt the example configuration folder and the <strong>settings.ini</strong> to fit your needs.</p>
+
+<h3>
+<a name="required-parameters" class="anchor" href="#required-parameters"><span class="octicon octicon-link"></span></a>Required Parameters</h3>
+
+<p>The following parameters are required to have a value in <strong>settings.ini</strong>:</p>
+
+<ul>
+<li>raw_xml_file</li>
+<li>translation_table_file</li>
+<li>form_events_file</li>
+<li>research_id_to_redcap_id</li>
+<li>component_to_loinc_code_xml</li>
+</ul><p>The program will terminate if they are missing or do not have a value in <strong>settings.ini</strong>. A message about this will be displayed to the user before the program terminates as well as written to the log file.</p>
+
+<h3>
+<a name="conditional-parameters" class="anchor" href="#conditional-parameters"><span class="octicon octicon-link"></span></a>Conditional Parameters</h3>
+
+<p>While the parameters mentioned above are always required, the following
+parameters are only required to have a value in <strong>settings.ini</strong> when
+<strong>redi</strong> is not performing a dry run:</p>
+
+<ul>
+<li>redcap_uri</li>
+<li>token</li>
+<li>redcap_support_receiver_email</li>
+<li>redcap_support_sender_email</li>
+<li>smtp_host_for_outbound_mail</li>
+<li>smtp_port_for_outbound_mail</li>
+<li>sender_email <em>(only required when **send_email*</em> is set to <strong>Y</strong>)*</li>
+<li>receiver_email <em>(only required when **send_email*</em> is set to <strong>Y</strong>)*</li>
+</ul><p>The program will terminate if they are missing or do not have a value in <strong>settings.ini</strong>. A message about this will be displayed to the user before the program terminates as well as written to the log file.</p>
+
+<p>The following parameters are required only when <code>--emrdata=yes</code> is specified on the command line:</p>
+
+<ul>
+<li>emr_sftp_server_hostname</li>
+<li>emr_sftp_server_username</li>
+<li>emr_sftp_server_password</li>
+<li>emr_sftp_project_name</li>
+<li>emr_data_file</li>
+</ul><p>These parameters are essential for establishing a connection with the SFTP server to obtain EMR data; so, if they are missing or do not have a value in settings.ini, then the program will terminate. As with the required parameters, a message about this will be displayed to the user before the program terminates as well as written to the log file.</p>
+
+<h3>
+<a name="optional-parameters" class="anchor" href="#optional-parameters"><span class="octicon octicon-link"></span></a>Optional Parameters</h3>
+
+<p>Following parameters in settings.ini are optional:</p>
+
+<table>
+<thead><tr>
+<th>Parameter Name</th>
+<th>Default Value</th>
+</tr></thead>
+<tbody>
+<tr>
+<td>report_file_path</td>
+<td>report.xml</td>
+</tr>
+<tr>
+<td>report_file_path2</td>
+<td>report.html</td>
+</tr>
+<tr>
+<td>input_date_format</td>
+<td>%Y-%m-%d %H:%M:%S</td>
+</tr>
+<tr>
+<td>output_date_format</td>
+<td>%Y-%m-%d</td>
+</tr>
+<tr>
+<td>project</td>
+<td>DEFAULT_PROJECT</td>
+</tr>
+<tr>
+<td>rate_limiter</td>
+<td>600</td>
+</tr>
+<tr>
+<td>batch_warning_days</td>
+<td>13</td>
+</tr>
+</tbody>
+</table><p>If the above parameters are missing or do not have a value in <strong>settings.ini</strong> then the corresponding default value is used. Whenever a default value is used, a message about is written to the log file.</p>
+
+<h2>
+<a name="usage" class="anchor" href="#usage"><span class="octicon octicon-link"></span></a>Usage</h2>
+
+<p><code>$ redi</code></p>
+
+<p>Optional command-line arguments:</p>
+
+<ul>
+<li>-h, --help: show the help message</li>
+<li>
+<p>-c: Specify the path to the configuration folder.</p>
+
+<pre><code>$ redi -c /Users/admin/redi-config
+</code></pre>
+
+<p>Default path for config folder is <strong>/config</strong>.
+For "data directory" refer --datadir.</p>
+</li>
+<li>
+<p>-k, --keep: Prevents deletion of the output files generated during data processing.</p>
+
+<pre><code>$ redi -k yes
+</code></pre>
+
+<p>When this parameter is provided, the output files are stored in <strong>/out/out_&lt;timestamp&gt;</strong>.</p>
+
+<p>The timestamp has the format: <strong>YYYY_MM_DD-HH_MM_SS</strong>.</p>
+
+<p>If the parameter is not provided, the output files are stored in a temporary folder during the execution of <strong>redi</strong> and then deleted along with the temporary folder once <strong>redi</strong> finishes execution.</p>
+</li>
+<li>
+<p>-d, --dryrun : Performs a dry run.</p>
+
+<pre><code>$ redi --dryrun
+</code></pre>
+
+<p>When this parameter is provided, all data transformations are performed and execution stops after writing out the final data set to <strong>/out/out_&lt;timestamp&gt;</strong>.</p>
+
+<p>The purpose of this switch is to assist developers in performing a dry run of <code>redi</code>. Data will not be written to the REDCap server nor will emails be sent.</p>
+
+<p>If <code>-d</code> is used, <code>--keep=yes</code> is implied; therefore, you do not need to specify it or provide any path for storing the output files.</p>
+
+<p>By default, this parameter is disabled.</p>
+</li>
+<li>
+<p>-e, --emrdata: Runs the script for fetching EMR data.</p>
+
+<pre><code>$ redi --emrdata=yes
+</code></pre>
+
+<p>When this parameter us provided, a connection will be established with the sftp server mentioned in the settings.ini file in the config folder and EMR data required for the execution of <strong>redi</strong> will be downloaded.</p>
+
+<p>Following parameters need to be set in config/settings.ini before using this option:</p>
+
+<ul>
+<li>emr_sftp_server_hostname = URL of the SFTP Server</li>
+<li>emr_sftp_server_username</li>
+<li>emr_sftp_server_password</li>
+<li>emr_sftp_project_name = folder on the SFTP server containing the EMR data</li>
+<li>emr_data_file = file containing the EMR data</li>
+</ul>
+<p>By default, this parameter is disabled.</p>
+</li>
+<li>
+<p>-r, --resume: Resumes a previously stopped run of <code>redi</code>.</p>
+
+<p><strong><em>WARNING!!!</em></strong> This is used in a very specific case. Use with caution.</p>
+
+<p>Once <strong>redi</strong> has completed processing, it sends its data to configured REDCap Server. Each transaction is initially marked as <em>unsent</em> and only after a response from the REDCap Server is it changed to <em>sent</em>. If you stop <strong>redi</strong> from running during this time, it is possible to resume where it left off by specifying the <code>--resume</code> switch.</p>
+
+<p>Do not use <code>--resume</code> for a first run; it will fail. Using <code>--resume</code> once a run has completed is unsupported, but won't do much other than send the email the report again.</p>
+
+<p>The development team is looking to make this a more robust and safer feature in the future.</p>
+</li>
+<li>
+<p>--datadir: Specify path to the data directory</p>
+
+<p>$ redi --datadir /Users/admin/redi_output</p>
+
+<p>The data directory is the directory that will store the following:</p>
+
+<ul>
+<li>log file</li>
+<li>SQLite database used for storing checksums</li>
+<li>intermediate output files which are required for debugging and used by the resume logic</li>
+<li>configuration directory (unless a different path for this is specified by the user)</li>
+</ul>
+<p>By default, the data directory is assumed to be the current working directory.
+Using this switch, one can run multiple instances of redi simultaneously.</p>
+</li>
+<li>
+<p>-v, --verbose: increase verbosity of output</p>
+
+<p>$ redi --verbose</p>
+</li>
+<li>
+<p>--skip-blanks: skip blank events when sending event data to RedCAP</p>
+
+<p>$ redi --skip-blanks</p>
+</li>
+</ul><h2>
+<a name="testing" class="anchor" href="#testing"><span class="octicon octicon-link"></span></a>Testing</h2>
+
+<p>To run all tests:</p>
+
+<pre><code>$ make tests
+</code></pre>
+
+<p>Some tests may require a REDCap instance to pass.</p>
+
+<ol>
+<li>
+<p>Go to the vagrant folder and remove the old virtual machine (VM) instance:</p>
+
+<pre><code>$ cd vagrant &amp;&amp; vagrant destroy
+</code></pre>
+</li>
+<li>
+<p>Start a fresh VM:</p>
+
+<pre><code>$ vagrant up
+</code></pre>
+</li>
+<li>
+<p>To run the tests:</p>
+
+<pre><code>$ make tests
+</code></pre>
+</li>
+</ol><h2>
+<a name="contributing" class="anchor" href="#contributing"><span class="octicon octicon-link"></span></a>Contributing</h2>
+
+<ol>
+<li>Fork it.</li>
+<li>Create a branch (<code>git checkout -b my_branch</code>)</li>
+<li>Commit your changes (<code>git commit -am "Add blah blah blah"</code>)</li>
+<li>Push to the branch (<code>git push origin my_branch</code>)</li>
+<li>Open a pull request</li>
+<li>Enjoy a refreshing Diet Coke (diet only) and wait</li>
+</ol>
+        </section>
+
+        <footer>
+          Redi is maintained by <a href="https://github.com/ctsit">ctsit</a><br>
+          This page was generated by <a href="http://pages.github.com">GitHub Pages</a>. Tactile theme by <a href="https://twitter.com/jasonlong">Jason Long</a>.
+        </footer>
+
+        
+      </div>
+    </div>
+  </body>
+</html>
