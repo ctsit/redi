@@ -22,5 +22,5 @@ You can view a presentation of the RED-I tool in action on
 [youtube](https://www.youtube.com/watch?v=0x04y5SNPL8&feature=youtu.be)
 
 For the official documentation please refer to
-[http://redi.readthedocs.org]() or
-[https://github.com/ctsit/redi/blob/master/docs/about.rst]().
+[http://redi.readthedocs.org](http://redi.readthedocs.org) or
+[RED-I Project](https://github.com/ctsit/redi/blob/master/docs/about.rst).
