@@ -38,6 +38,7 @@ setup(
         "lxml >= 3.3.5",
         "PyCap >= 1.0",
         "pysftp >= 0.2.8",
+        "docopt >= 0.6.2",
     ],
     entry_points={
         'console_scripts': [

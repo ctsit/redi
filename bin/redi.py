@@ -1,8 +1,31 @@
 #!/usr/bin/env python
 """
-
 redi.py - Converter from raw clinical data in XML format to REDCap API data
 
+Usage:
+        redi.py -h | --help
+        redi.py [-v] [-k] [-e] [-d] [-r] [-c=<path>] [-D=<datadir>] [-s]
+
+Options:
+        -h --help                   show this help message and exit
+        -v --verbose                Increase verbosity of output [default:False]
+        -k --keep                   Specify this option to preserve the files generated during execution [default:False]
+        -e --emrdata                Specify this option to get EMR data [default:False]
+        -d --dryrun                 To execute redi.py in dry run state. This is to be
+                                    able to test each release by doing a dry run, where
+                                    the data is fetched and processed but not transferred
+                                    to the production REDCap. Email is also not sent. The
+                                    processed data is stored as output files under the
+                                    "out" folder under project root [default:False].
+        -r --resume                 WARNING!!! Resumes the last run of the program. This
+                                    switch is for a specific scenario. Check the
+                                    documentation before using it [default:False]
+        -c --config-path=<path>     Specify the path to the configuration directory
+        -D --datadir=<datadir>      Specify the path to the directory containing project
+                                    specific input and output data which will help in
+                                    running multiple simultaneous instances of redi for
+                                    different projects
+        -s --skip-blanks            skip blank events when sending event data to REDCap [default:False]
 """
 
 __author__ = "Nicholas Rejack"
@@ -29,6 +52,7 @@ import os
 
 from requests import RequestException
 from lxml import etree
+from docopt import docopt
 
 from utils import redi_email
 from utils.redcapClient import redcapClient
@@ -100,18 +124,20 @@ def main():
     global _person_form_events_service
 
     # obtaining command line arguments for path to configuration directory
-    args = parse_args()
+    args = docopt(__doc__, help=True)
 
-    data_directory = args['datadir']
-    configuration_directory = args['configuration_directory_path']
+    data_directory = args['--datadir']
+    if data_directory is None:
+        data_directory = DEFAULT_DATA_DIRECTORY
+    configuration_directory = args['--config-path']
     if configuration_directory is None:
         configuration_directory = os.path.join(data_directory, "config")
-    do_keep_gen_files = args['keep']
-    get_emr_data = args['emrdata']
-    dry_run = args['dryrun']
+    do_keep_gen_files = args['--keep']
+    get_emr_data = args['--emrdata']
+    dry_run = args['--dryrun']
 
     #configure logger
-    logger = configure_logging(data_directory, args['verbose'])
+    logger = configure_logging(data_directory, args['--verbose'])
 
     # Parsing the config file using a method from module SimpleConfigParser
     settings = SimpleConfigParser.SimpleConfigParser()
@@ -145,7 +171,7 @@ def main():
          logger)
 
     _run(config_file, configuration_directory, do_keep_gen_files, dry_run,
-         get_emr_data, settings, output_files, db_path, args['resume'], args['skip_blanks'])
+         get_emr_data, settings, output_files, db_path, args['--resume'], args['--skip-blanks'])
 
 
 def _makedirs(data_folder):
@@ -524,8 +550,9 @@ def read_config(config_file, configuration_directory, file_list):
                 .format(item, config_file, configuration_directory, item))
             sys.exit()
 
+"""
 def parse_args(arguments=None):
-    """Parses command line arguments"""
+    """ """Parses command line arguments""" """
     parser = argparse.ArgumentParser()
     parser.add_argument(
         '-c', dest='configuration_directory_path',
@@ -583,7 +610,7 @@ def parse_args(arguments=None):
         default=False,
         action='store_true',
         required=False,
-        help='skip blank events when sending event data to REDCap')
+        help=)
 
     if arguments:
         parsed = parser.parse_args(arguments)
@@ -591,7 +618,7 @@ def parse_args(arguments=None):
         parsed = parser.parse_args()
 
     return vars(parsed)
-
+"""
 
 def parse_raw_xml(raw_xml_file):
     """
