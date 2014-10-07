@@ -18,7 +18,7 @@ from setuptools import setup, find_packages
 
 setup(
     name='redi-py',
-    version='0.11.3',
+    version='0.12.0',
     author='https://www.ctsi.ufl.edu/research/study-development/informatics-consulting/',
     author_email='cts-it-red@ctsi.ufl.edu',
     packages=find_packages(exclude=['test']),
@@ -28,7 +28,7 @@ setup(
         'redi': ['README.md'],
     },
     url='https://github.com/ctsit/redi',
-    download_url = 'https://github.com/ctsit/redi/releases/tag/0.11.3',
+    download_url = 'https://github.com/ctsit/redi/releases/tag/0.12.0',
     keywords = ['EMR', 'EHR', 'REDCap', 'Clinical Data'],
     license='BSD 3-Clause',
     description='REDCap Electronic Data Importer',
