@@ -5,7 +5,7 @@ from lxml import etree
 from mock import patch
 import redi
 from utils import redi_email
-from utils.redcapClient import redcapClient
+from utils.redcapClient import RedcapClient
 import utils.SimpleConfigParser as SimpleConfigParser
 from requests import RequestException
 
@@ -141,37 +141,29 @@ class TestResearchIdToRedcapId(unittest.TestCase):
     def dummy_send_email_redcap_connection_error(email_settings):
         raise Exception
 
-    @patch.multiple(redcapClient, __init__ = dummy_redcapClient_initializer, get_data_from_redcap = dummy_get_data_from_redcap)
     def test_research_id_to_redcap_id_converter(self):
         redi.configure_logging(DEFAULT_DATA_DIRECTORY)
-        email_settings = {}
-        redcap_settings = {}
-        redcap_settings['redcap_uri'] = 'https://example.org/redcap/api/'
-        redcap_settings['token'] = 'ABCDEF878D219CFA5D3ADF7F9AB12345'
-        redcap_settings['verify_ssl'] = False
-        redi.research_id_to_redcap_id_converter(self.data, redcap_settings, email_settings, self.research_id_to_redcap_id, False, self.configuration_directory)
+
+        class MockRedcapClient(RedcapClient):
+            def __init__(self, context):
+                self.__context = context
+
+            def send_data_to_redcap(self, data, overwrite=False):
+                raise NotImplementedError()
+
+            def get_data_from_redcap(self, records_to_fetch=None,
+                                     events_to_fetch=None, fields_to_fetch=None,
+                                     forms_to_fetch=None, return_format='xml'):
+                return self.__context.dummy_get_data_from_redcap(
+                    records_to_fetch, events_to_fetch, fields_to_fetch,
+                    forms_to_fetch, return_format)
+
+        redi.research_id_to_redcap_id_converter(self.data,
+                                                MockRedcapClient(self),
+                                                self.research_id_to_redcap_id,
+                                                self.configuration_directory)
         result = etree.tostring(self.data)
         self.assertEqual(self.expect, result)
-
-    @patch.multiple(redcapClient, __init__ = dummy_redcapClient_initializer_with_exception, get_data_from_redcap = dummy_get_data_from_redcap)
-    def test_research_id_to_redcap_id_converter_connection_error(self):
-        redi.configure_logging(DEFAULT_DATA_DIRECTORY)
-        email_settings = {}
-        redcap_settings = {}
-        redcap_settings['redcap_uri'] = 'https://example.org/redcap/api/'
-        redcap_settings['token'] = 'ABCDEF878D219CFA5D3ADF7F9AB12345'
-        redcap_settings['verify_ssl'] = False
-        self.assertRaises(SystemExit,redi.research_id_to_redcap_id_converter,self.data,redcap_settings,email_settings, self.research_id_to_redcap_id, True, self.configuration_directory)
-    
-    @patch.multiple(redcapClient, __init__ = dummy_redcapClient_initializer_with_exception, get_data_from_redcap = dummy_get_data_from_redcap)
-    @patch.multiple(redi_email,send_email_redcap_connection_error=dummy_send_email_redcap_connection_error)
-    def test_research_id_to_redcap_id_converter_mail_key_error(self):
-        redi.configure_logging(DEFAULT_DATA_DIRECTORY)
-        email_settings = {}
-        redcap_settings = {}
-        redcap_settings['redcap_uri'] = 'https://example.org/redcap/api/'
-        redcap_settings['token'] = 'ABCDEF878D219CFA5D3ADF7F9AB12345'
-        self.assertRaises(Exception,redi.research_id_to_redcap_id_converter,self.data,redcap_settings,email_settings, self.research_id_to_redcap_id, False, self.configuration_directory)
 
     def tearDown(self):
         try:

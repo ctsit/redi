@@ -19,7 +19,7 @@ import sqlite3 as lite
 from datetime import date
 import hashlib
 import utils.redi_email as redi_email
-from utils.redcapClient import redcapClient
+from utils.redcapClient import RedcapClient
 from requests import RequestException
 from lxml import etree
 import logging
@@ -99,7 +99,7 @@ Steps:
 """
 
 
-def generate_output(person_tree, redcap_settings, email_settings, data_repository, skip_blanks=False):
+def generate_output(person_tree, redcap_client, rate_limit, data_repository, skip_blanks=False):
 
     # the global dictionary to be returned
     report_data = {
@@ -125,16 +125,7 @@ def generate_output(person_tree, redcap_settings, email_settings, data_repositor
     root = person_tree.getroot()
     persons = root.xpath('//person')
 
-    try:
-        # Communication with redcap
-        redcapClientObject = redcapClient(redcap_settings['redcap_uri'],
-                                          redcap_settings['token'],
-                                          redcap_settings['verify_ssl'])
-    except RequestException:
-        redi_email.send_email_redcap_connection_error(email_settings)
-        quit()
-
-    rate_limiter_value_in_redcap = float(redcap_settings['rate_limiter_value_in_redcap'])
+    rate_limiter_value_in_redcap = float(rate_limit)
 
 
     ideal_time_per_request = 60 / float(rate_limiter_value_in_redcap)
@@ -186,7 +177,7 @@ def generate_output(person_tree, redcap_settings, email_settings, data_repositor
 
                 try:
                     import_dict = {
-                        redcapClientObject.project.def_field: study_id.text}
+                        redcap_client.project.def_field: study_id.text}
                     import_dict = create_import_data_json(
                         import_dict,
                         event)
@@ -216,7 +207,7 @@ def generate_output(person_tree, redcap_settings, email_settings, data_repositor
 
                     try:
                         found_error = False
-                        response = redcapClientObject.send_data_to_redcap([json_data_dict], overwrite = True)
+                        response = redcap_client.send_data_to_redcap([json_data_dict], overwrite = True)
                         status = event.find('status')
                         if status is not None:
                             status.text = 'sent'
