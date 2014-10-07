@@ -1,6 +1,7 @@
 include CHANGELOG
-include LICENSE
+include LICENSE.txt
 include AUTHORS.md
+include README.md
 include setup.py
 recursive-include bin *.py
 recursive-include test *.py

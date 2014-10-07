@@ -17,18 +17,19 @@ Prerequisites on Debian Wheezy:
 from setuptools import setup, find_packages
 
 setup(
-    name='REDI',
-    version='0.11.3',
-    author='Christopher P Barnes, Philip Chase, Nicholas Rejack',
-    author_email='cpb@ufl.edu, pbc@ufl.edu, nrejack@ufl.edu',
+    name='redi-py',
+    version='0.12.0',
+    author='https://www.ctsi.ufl.edu/research/study-development/informatics-consulting/',
+    author_email='cts-it-red@ctsi.ufl.edu',
     packages=find_packages(exclude=['test']),
     include_package_data=True,
     package_data={
         'bin': ['utils/*.xsl', 'utils/*.xsd'],
         'redi': ['README.md'],
-        'db': ['Makefile']
     },
-    url='http://it.ctsi.ufl.edu/about/',
+    url='https://github.com/ctsit/redi',
+    download_url = 'https://github.com/ctsit/redi/releases/tag/0.12.0',
+    keywords = ['EMR', 'EHR', 'REDCap', 'Clinical Data'],
     license='BSD 3-Clause',
     description='REDCap Electronic Data Importer',
     long_description=open('README.md').read(),
@@ -37,6 +38,7 @@ setup(
         "lxml >= 3.3.5",
         "PyCap >= 1.0",
         "pysftp >= 0.2.8",
+        "docopt >= 0.6.2",
     ],
     entry_points={
         'console_scripts': [

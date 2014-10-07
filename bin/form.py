@@ -41,6 +41,10 @@ class Event(object):
             raise Exception("Malformed XML: multiple fields with the name {0}".
                             format(name))
 
+    def fields(self):
+        for node in self._node.xpath("./field[.]"):
+            yield Field(node)
+
     @property
     def name(self):
         return self._node.findtext('name')

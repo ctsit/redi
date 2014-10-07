@@ -79,6 +79,12 @@ def main():
         dest='events',
         default='',
         help='Specify a list of events, separated by spaces, for which data should be returned.')
+    parser.add_argument(
+        '-r',
+        '--records',
+        dest='records',
+        default='',
+        help='Specify a list of records, separated by spaces, for which data should be returned.')
 
     # prepare the arguments we were given
     args = vars(parser.parse_args())
@@ -106,11 +112,13 @@ def main():
         my_forms = args['forms'].split()
         my_fields = args['fields'].split()
         my_events = args['events'].split()
+        my_records = args['records'].split()
         data = project.export_records(
             forms=my_forms,
             format = data_type,
             fields=my_fields,
             events=my_events,
+            records=my_records,
             event_name='unique')
         if 'json' == data_type:
             print json.dumps(data, ensure_ascii=False)

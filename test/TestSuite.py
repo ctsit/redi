@@ -40,7 +40,6 @@ from TestGetEMRData import TestGetEMRData
 from TestResume import TestResume
 from TestPersonFormEventsRepository import TestPersonFormEventsRepository
 from TestVerifyAndCorrectCollectionDate import TestVerifyAndCorrectCollectionDate
-from TestSkipBlanks import TestSkipBlanks
 from TestRediEmail import TestRediEmail
 
 class redi_suite(unittest.TestSuite):
@@ -81,7 +80,6 @@ class redi_suite(unittest.TestSuite):
         redi_test_suite.addTest(TestGetEMRData)
         redi_test_suite.addTest(TestResume)
         redi_test_suite.addTest(TestPersonFormEventsRepository)
-        redi_test_suite.addTest(TestSkipBlanks)
         redi_test_suite.addTest(TestRediEmail)
 
         # return the suite
