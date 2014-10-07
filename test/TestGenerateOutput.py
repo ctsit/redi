@@ -14,40 +14,24 @@ __email__       = "asura@ufl.edu"
 __status__      = "Development"
 
 import unittest
-import logging
 import os
-import tempfile
 from lxml import etree
-from mock import patch
 import redi
 import redi_lib
-from utils.redcapClient import redcapClient
-import utils.SimpleConfigParser as SimpleConfigParser
+from utils.redcapClient import RedcapClient
 
-file_dir = os.path.dirname(os.path.realpath(__file__))
-goal_dir = os.path.join(file_dir, "../")
-proj_root = os.path.abspath(goal_dir)+'/'
 
 DEFAULT_DATA_DIRECTORY = os.getcwd()
 
+
 class TestGenerateOutput(unittest.TestCase):
-    
+
     def setUp(self):
         redi.configure_logging(DEFAULT_DATA_DIRECTORY)
 
-    def dummy_redcapClient_initializer(self, redcap_uri, token, verify_ssl):
-        pass
-        
     class dummyClass:
         def_field = 'test'
-        
 
-    def dummy_send_data_to_redcap(self, data, overwrite = False):
-        dummy_output = """Data sent"""
-        return dummy_output
-    
-    @patch.multiple(redcapClient, __init__= dummy_redcapClient_initializer,
-            project = dummyClass(), send_data_to_redcap = dummy_send_data_to_redcap)
     def test_person_form_event(self):
         redi.logger.info("Running " + __name__ 
             + "#test_person_form_event() using xml: " )
@@ -157,9 +141,6 @@ class TestGenerateOutput(unittest.TestCase):
 </person_form_event>
 
 """
-        #date_format = "%Y-%m-%d"
-        #earliest_date   = datetime.datetime.strptime('1905-10-01', date_format).date()
-        #latest_date     = datetime.datetime.strptime('1906-10-01', date_format).date()
 
         form_details    = {'Total_cbc_Forms': 2, 'Total_inr_Forms': 3}
         subject_details = {
@@ -174,36 +155,34 @@ class TestGenerateOutput(unittest.TestCase):
             'subject_details'       : subject_details,
             'errors'                : []
         }
-        
-        redcap_settings = {
-            'rate_limiter_value_in_redcap':500,
-            'redcap_uri':'http://fakeURI:fakeport/',
-            'token'     : 'faketoken',
-            'verify_ssl': False
-        }
-        email_settings = {
-            'smtp_host_for_outbound_mail': 'smtp.example.com',
-            'redcap_support_sender_email': 'please-do-not-reply@example.com',
-            'redcap_uri': 'http://localhost:8998/redcap/api/',
-            'smtp_port_for_outbound_mail': 25,
-            'redcap_support_receiver_email': 'please-do-not-reply@example.com'
-        }
 
         class MockDataRepository(object):
             def store(self, data):
                 pass
 
+        class MockRedcapClient(RedcapClient):
+            def __init__(self):
+                self.project = TestGenerateOutput.dummyClass()
+
+            def get_data_from_redcap(self, records_to_fetch=None,
+                                     events_to_fetch=None,
+                                     fields_to_fetch=None,
+                                     forms_to_fetch=None,
+                                     return_format='xml'):
+                raise NotImplementedError()
+
+            def send_data_to_redcap(self, data, overwrite=False):
+                return """Data sent"""
+
         etree_1 = etree.ElementTree(etree.fromstring(string_1_xml))
-        result = redi_lib.generate_output(etree_1, redcap_settings, email_settings, MockDataRepository())
+        result = redi_lib.generate_output(etree_1, MockRedcapClient(), 500,
+                                          MockDataRepository())
         self.assertEqual(report_data['total_subjects'], result['total_subjects'])
         self.assertEqual(report_data['form_details'], result['form_details'])
         self.assertEqual(report_data['subject_details'], result['subject_details'])
         self.assertEqual(report_data['errors'], result['errors'])
 
-    def tearDown(self):
-        return()
 
-    
 if __name__ == "__main__":
     unittest.main()
 

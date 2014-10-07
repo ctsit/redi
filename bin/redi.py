@@ -55,7 +55,7 @@ from lxml import etree
 from docopt import docopt
 
 from utils import redi_email
-from utils.redcapClient import redcapClient
+from utils.redcapClient import RedcapClient
 import utils.SimpleConfigParser as SimpleConfigParser
 import utils.GetEmrData as GetEmrData
 from utils.GetEmrData import EmrFileAccessDetails
@@ -170,8 +170,12 @@ def main():
         os.path.join(output_files, 'person_form_event_tree_with_data.xml'),\
          logger)
 
+    redcap_client = connect_to_redcap(get_email_settings(settings),
+                                      get_redcap_settings(settings), dry_run)
+
     _run(config_file, configuration_directory, do_keep_gen_files, dry_run,
-         get_emr_data, settings, output_files, db_path, args['--resume'], args['--skip-blanks'])
+         get_emr_data, settings, output_files, db_path, redcap_client,
+         args['--resume'], args['--skip-blanks'])
 
 
 def _makedirs(data_folder):
@@ -227,8 +231,22 @@ def _save(obj, path):
         pickle.dump(obj, fp)
 
 
+def connect_to_redcap(email_settings, redcap_settings, dry_run=False):
+    try:
+        return RedcapClient(redcap_settings['redcap_uri'],
+                            redcap_settings['token'],
+                            redcap_settings['verify_ssl'])
+    except RequestException as error:
+        logger.exception(error)
+        logger.info("Sending email to redcap support")
+        if not dry_run:
+            redi_email.send_email_redcap_connection_error(email_settings)
+        sys.exit()
+
+
 def _run(config_file, configuration_directory, do_keep_gen_files, dry_run,
-         get_emr_data, settings, data_folder, database_path, resume=False, skip_blanks=False):
+         get_emr_data, settings, data_folder, database_path, redcap_client,
+         resume=False, skip_blanks=False):
     global translational_table_tree
 
     assert _person_form_events_service is not None
@@ -255,7 +273,6 @@ def _run(config_file, configuration_directory, do_keep_gen_files, dry_run,
     # we need the batch information to set the
     # status to `completed` an ste the `rbEndTime`
     email_settings = get_email_settings(settings)
-    redcap_settings = get_redcap_settings(settings)
     db_path = database_path
     batch = _check_input_file(db_path, email_settings, raw_xml_file, settings)
 
@@ -281,9 +298,9 @@ def _run(config_file, configuration_directory, do_keep_gen_files, dry_run,
 
         alert_summary, person_form_event_tree_with_data, rule_errors, \
         collection_date_summary_dict = _create_person_form_event_tree_with_data(
-            config_file, configuration_directory, email_settings,\
-             form_events_file, raw_xml_file, redcap_settings, rules,\
-              settings, data_folder, translation_table_file, dry_run)
+            config_file, configuration_directory, redcap_client,
+            form_events_file, raw_xml_file, rules, settings, data_folder,
+            translation_table_file)
 
         _store_run_data(data_folder, alert_summary,
                         person_form_event_tree_with_data, rule_errors,
@@ -296,10 +313,13 @@ def _run(config_file, configuration_directory, do_keep_gen_files, dry_run,
     # redi.py is not executing in dry run state.
     if not dry_run:
         unsent_events = person_form_event_tree_with_data.xpath("//event/status[.='unsent']")
+
         # Use the new method to communicate with REDCap
         report_data = redi_lib.generate_output(
-            person_form_event_tree_with_data, redcap_settings, email_settings,
-            _person_form_events_service, skip_blanks)
+            person_form_event_tree_with_data, redcap_client,
+            settings.rate_limiter_value_in_redcap, _person_form_events_service,
+            skip_blanks)
+
         # write person_form_event_tree to file
         write_element_tree_to_file(person_form_event_tree_with_data,\
          os.path.join(data_folder, 'person_form_event_tree_with_data.xml'))
@@ -342,6 +362,7 @@ def _run(config_file, configuration_directory, do_keep_gen_files, dry_run,
     if not do_keep_gen_files:
         redi_lib.delete_temporary_folder(data_folder)
 
+
 def deliver_report_as_file(html_report_path, html):
     """
     Deliver the summary report by writing it to a file
@@ -369,6 +390,7 @@ def deliver_report_as_file(html_report_path, html):
     if problem_found:
         logger.info("== Summary report ==" + html)
 
+
 def deliver_report_as_email(email_settings, html):
     """
     Deliver summary report as an email
@@ -383,10 +405,11 @@ def deliver_report_as_email(email_settings, html):
         logger.error("Unable to deliver the summary report due error: %s" % e)
         deliver_report_as_file("report.html", html)
 
-def _create_person_form_event_tree_with_data(config_file, \
-    configuration_directory, email_settings, form_events_file, raw_xml_file,\
-     redcap_settings, rules, settings, data_folder, translation_table_file,\
-      dry_run):
+
+def _create_person_form_event_tree_with_data(
+        config_file, configuration_directory, redcap_client, form_events_file,
+        raw_xml_file, rules, settings, data_folder, translation_table_file):
+
     global translational_table_tree
     # parse the raw.xml file and fill the etree rawElementTree
     data = parse_raw_xml(raw_xml_file)
@@ -500,14 +523,14 @@ def _create_person_form_event_tree_with_data(config_file, \
     # write back the changed global Element Tree
     write_element_tree_to_file(data, os.path.join(data_folder, \
         'rawDataWithAllUpdates.xml'))
+
     # Research ID - to - Redcap ID converter
     research_id_to_redcap_id_converter(
         data,
-        redcap_settings,
-        email_settings,
-        settings.research_id_to_redcap_id,dry_run,
+        redcap_client,
+        settings.research_id_to_redcap_id,
         configuration_directory)
-    # create person_form_event_tree.xml
+
     person_form_event_tree = create_empty_event_tree_for_study(
         data,
         all_form_events_per_subject)
@@ -1059,9 +1082,7 @@ def update_event_name(data, lookup_data, undefined):
 
 # @TODO: remove settings from signature
 def research_id_to_redcap_id_converter(
-        data,redcap_settings,
-        email_settings,research_id_to_redcap_id,dry_run,
-        configuration_directory):
+        data, redcap_client, research_id_to_redcap_id, configuration_directory):
     """
     This function converts the research_id to redcap_id
      1. prepare a dictionary with [key, value] --> [study_id, redcap_id]
@@ -1107,18 +1128,8 @@ def research_id_to_redcap_id_converter(
             'redcap_id_field_name tag in file %s is not present',
             mapping_xml)
 
-    try:
-        # Communication with redcap
-        redcapClientObject = redcapClient(
-            redcap_settings['redcap_uri'],redcap_settings['token'], redcap_settings['verify_ssl'])
-    except RequestException:
-        logger.info("Sending email to redcap support")
-        if not dry_run:
-            redi_email.send_email_redcap_connection_error(email_settings)
-        sys.exit()
-
     # query the redcap for the response with redcap id's
-    response = redcapClientObject.get_data_from_redcap(
+    response = redcap_client.get_data_from_redcap(
         fields_to_fetch=[
             research_id_field_name,
             redcap_id_field_name])

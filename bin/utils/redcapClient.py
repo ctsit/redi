@@ -1,26 +1,23 @@
-from lxml import etree
+import logging
+
 from redcap import Project, RedcapError
 from requests import RequestException
-import pprint
-import redi_email
-import logging
+
+# Configure module's logger
 logger = logging.getLogger(__name__)
 logger.addHandler(logging.NullHandler())
 
 
-class redcapClient:
-    # Helper class for getting data from redcap instace
+class RedcapClient(object):
+    """ Client for a REDCap server.
 
-    project = None
+    :param redcap_uri: URI for to REDCap server's API
+    :param token: API Token for a REDCap project.
+    :param verify_ssl: verify the SSL certificate? (default: True)
+    :raises RedcapError: if we failed to get the project's metadata
+    :raises RequestException: if some other network-related failure occurs
     """
-    __init__:
-    This constructor in redcapClient takes a SimpleConfigParser object and establishes connection with REDCap instance.
-    Parameters:
-        settings: an object of class SimpleConfigParser (in SimpleConfigParser module) that is used for parsing configuration details
-    """
-
-    def __init__(self, redcap_uri, token, verify_ssl):
-
+    def __init__(self, redcap_uri, token, verify_ssl=True):
         self.redcap_uri = redcap_uri
         msg = 'Initializing redcap interface for: ' + redcap_uri
         logger.info(msg)
@@ -30,20 +27,9 @@ class redcapClient:
         try:
             self.project = Project(redcap_uri, token, "", verify_ssl)
             logger.info("redcap interface initialzed")
-        except (RequestException,RedcapError) as e:
+        except (RequestException, RedcapError) as e:
             logger.exception(e.message)
             raise
-
-    """
-    get_data_from_redcap:
-    This function is used to get data from the REDCap instance
-    Parameters:
-        records_to_fetch    : a list object containing records
-        events_to_fetch     : a list object containing events
-        fields_to_fetch     : a list object containing fields
-        forms_to_fetch      : a list object containing forms
-        return_format       : specifies the format of the REDCap response. Default value is xml
-    """
 
     def get_data_from_redcap(
             self,
@@ -52,6 +38,29 @@ class redcapClient:
             fields_to_fetch=None,
             forms_to_fetch=None,
             return_format='xml'):
+        """ Exports REDCap records.
+
+        :param records_to_fetch: if specified, only includes records in this
+            list. Otherwise, includes all records.
+        :type records_to_fetch: list or None
+
+        :param events_to_fetch: if specified, only includes events in this list.
+            Otherwise, includes all events.
+        :type events_to_fetch: list or None
+
+        :param fields_to_fetch: if specified, only includes fields in this list.
+            Otherwise, includes all fields
+        :type fields_to_fetch: list or None
+
+        :param forms_to_fetch: if specified, only includes forms in this list.
+            Otherwise, includes all forms.
+        :type forms_to_fetch: list or None
+
+        :param return_format: specifies the format of the REDCap response
+            (default: xml)
+
+        :return: response
+        """
         logger.info('getting data from redcap')
         try:
             response = self.project.export_records(
@@ -64,23 +73,21 @@ class redcapClient:
             logger.debug(e.message)
         return response
 
-    """
-    send_data:
-    This function is used to send data to the REDCap instance
-    Parameters:
-        data: This parameter contains the data that should be sent to the REDCap instance.
-    """
+    def send_data_to_redcap(self, data, overwrite=False):
+        """ Sends records to REDCap.
 
-    def send_data_to_redcap(self, data, overwrite = False) :
-        #logger.info('Sending data for subject id: ' + data[0]['dm_subjid'])
-        #logger.info(data)
-        overwrite_value = 'normal'
-
-        if overwrite:
-            overwrite_value = 'overwrite'
+        :param list of dict objects data: records to send.
+        :param bool overwrite: treat blank values as intentional?
+            (default: False) When sending a record, if a field is blank, by
+            default REDCap will not overwrite any existing value with a blank.
+        :return: response
+        :raises RedcapError: if failed to send records for any reason.
+        """
+        overwrite_value = 'overwrite' if overwrite else 'normal'
 
         try:
-            response = self.project.import_records(data, overwrite = overwrite_value)
+            response = self.project.import_records(data,
+                                                   overwrite=overwrite_value)
             return response
         except RedcapError as e:
             logger.debug(e.message)
