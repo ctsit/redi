@@ -2,6 +2,9 @@ import smtplib
 from smtplib import SMTPException
 from email.mime.text import MIMEText
 from email.mime.multipart import MIMEMultipart
+from email.MIMEBase import MIMEBase
+from email import Encoders
+from datetime import date
 import logging
 
 logger = logging.getLogger(__name__)
@@ -49,6 +52,27 @@ def send_email_input_data_unchanged(email_settings, subject='', msg=''):
     Please investigate.""".format(email_settings['batch_warning_days'])
     return send_email(host, str(port), sender, to_addr_list, None, subject, msg)
 
+
+def add_attachment(msg, body):
+    """
+    Add the html report as attachment
+
+    Parameters
+    ----------
+    msg : MIMEMultipart
+        The object to which we attach the body content
+    body : string
+        The html content to be attached
+    """
+    part = MIMEBase('application', "octet-stream")
+    part.set_payload(body)
+    Encoders.encode_base64(part)
+    file_name = "redi_report_{}.html".format(date.today())
+    part.add_header('Content-Disposition', \
+            'attachment; filename="{}"'.format(file_name))
+    msg.attach(part)
+
+
 def send_email_data_import_completed(email_settings, body=''):
     """
     Email the html report after redi completed the data transfer
@@ -68,6 +92,7 @@ def send_email_data_import_completed(email_settings, body=''):
     msg['To'] = ",".join(to_addr_list)
     msg['Subject'] = subject
     msg.attach(MIMEText(body, 'html'))
+    add_attachment(msg, body)
 
     refused_list = {}
     try:
