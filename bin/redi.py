@@ -288,9 +288,7 @@ def _run(config_file, configuration_directory, do_keep_gen_files, dry_run,
     report_parameters = {
         'report_file_path': report_file_path,
         'project': settings.project,
-        'redcap_uri': settings.redcap_uri,
-        'is_sort_by_lab_id': settings.is_sort_by_lab_id,
-    }
+        'redcap_uri': settings.redcap_uri}
 
     report_xsl = proj_root + "bin/utils/report.xsl"
     send_email = settings.send_email
@@ -1089,25 +1087,16 @@ def research_id_to_redcap_id_converter(
     This function converts the research_id to redcap_id
      1. prepare a dictionary with [key, value] --> [study_id, redcap_id]
      2. replace the element tree study_id with the new redcap_id's
-     for each bad id, log it as warn.
-
-    Example of xml fragment produced:
-<subject lab_id="999-0001">
-    <NAME>HEMOGLOBIN</NAME>
-    <loinc_code>1534435</loinc_code>
-    <RESULT>1234</RESULT>
-...
-    <STUDY_ID>1</STUDY_ID> <!-- originally this was "999-0001" -->
-</subject>
-
-    Note: The next function which reads the "data" tree
-        is #create_empty_event_tree_for_study()
+     for each bad id, log it as warn
     """
+
     # read each of the study_id's from the data etree
     study_id_recap_id_dict = {}
 
-    # Configuration data from the mapping xml
-    mapping_xml = os.path.join(configuration_directory,
+    ''' Configuration data from the mapping xml
+
+  '''
+    mapping_xml = os.path.join(configuration_directory,\
      research_id_to_redcap_id)
 
     # read the field names from the research_id_to_redcap_id_map.xml
@@ -1118,21 +1107,26 @@ def research_id_to_redcap_id_converter(
             mapping_xml)
 
     mapping_data = etree.parse(mapping_xml)
-    root = mapping_data.getroot()
-    redcap_id_field_name = root.findtext('redcap_id_field_name')
-    research_id_field_name = root.findtext('research_id_field_name')
+    redcap_id_field_name = mapping_data.getroot().findtext(
+        'redcap_id_field_name')
+    research_id_field_name = mapping_data.getroot().findtext(
+        'research_id_field_name')
 
     if research_id_field_name is None or research_id_field_name == '':
         logger.error(
-            'research_id_field_name tag in file %s is not present', mapping_xml)
+            'research_id_field_name tag in file %s is not present',
+            mapping_xml)
         raise Exception(
-            'research_id_field_name tag in file %s is not present', mapping_xml)
+            'research_id_field_name tag in file %s is not present',
+            mapping_xml)
 
     if redcap_id_field_name is None or redcap_id_field_name == '':
         logger.error(
-            'redcap_id_field_name tag in file %s is not present', mapping_xml)
+            'redcap_id_field_name tag in file %s is not present',
+            mapping_xml)
         raise Exception(
-            'redcap_id_field_name tag in file %s is not present', mapping_xml)
+            'redcap_id_field_name tag in file %s is not present',
+            mapping_xml)
 
     # query the redcap for the response with redcap id's
     response = redcap_client.get_data_from_redcap(
@@ -1152,15 +1146,12 @@ def research_id_to_redcap_id_converter(
 
     for subject in data.iter('subject'):
         study_id = subject.findtext('STUDY_ID')
-
+        # tag = subject.find('STUDY_ID')
         # if the study id is not null populate the dictionary
         if study_id is not None and study_id != '' and study_id in redcap_dict:
-            # if the study_id is in the dictionary then replace it by the redcap_id
-            lab_id_ele = subject.find('STUDY_ID')
-
-            # save the original subject id from the lab data as an attribute
-            subject.set('lab_id', lab_id_ele.text)
-            lab_id_ele.text = redcap_dict[study_id]
+            # if the study_id in redcap_dict of redcap id's update the study_id
+            # with redcap id
+            subject.find('STUDY_ID').text = redcap_dict[study_id]
         elif study_id is not None and study_id != '' and study_id not in redcap_dict:
             # add the bad research id to list of bad ids
             bad_ids[study_id] += 1
@@ -1222,10 +1213,6 @@ def configure_logging(data_folder, verbose=False):
 
 def create_summary_report(report_parameters, report_data, alert_summary, \
     collection_date_summary_dict):
-    """
-    Generates the xml to be transformed by `bin/utils/report.xsl`
-    into an html report with details about data import completed.
-    """
     root = etree.Element("report")
     root.append(etree.Element("header"))
     root.append(etree.Element("summary"))
@@ -1239,14 +1226,10 @@ def create_summary_report(report_parameters, report_data, alert_summary, \
     updateReportAlerts(root, alert_summary)
     updateReportErrors(root, report_data['errors'])
     updateSummaryOfSpecimenTakenTimes(root, collection_date_summary_dict)
-
-    # TODO: remove dependency on the order of the xml elements in the report
-    sort_by_value = 'lab_id' if report_parameters['is_sort_by_lab_id'] else 'redcap_id'
-    root.append(gen_ele("sort_details_by", sort_by_value))
-
     tree = etree.ElementTree(root)
     write_element_tree_to_file(tree,report_parameters.get('report_file_path'))
     return tree
+
 
 def updateReportHeader(root, report_parameters):
     """ Update the passed `root` element tree with date, project name and url"""
@@ -1286,19 +1269,15 @@ def updateReportAlerts(root, alert_summary):
         msg = etree.SubElement(values_alert, 'message')
         msg.text = value
 
+
 def updateSubjectDetails(root, subject_details):
-    """
-    Helper method for #create_summary_report()
-    Adds subject information to the xml tree which is later formated
-    by `bin/utils/report.xsl` into the html `table#subject_details"`
-    """
     subjectsDetails = root[3]
     for key in sorted(subject_details.keys()):
-        subject = etree.SubElement(subjectsDetails, "subject")
+        subject = etree.SubElement(subjectsDetails, "Subject")
         details = subject_details.get(key)
-        subject.append(gen_ele("redcap_id", key))
+        subjectId = etree.SubElement(subject, "ID")
+        subjectId.text = key
         forms = etree.SubElement(subject, "forms")
-
         for k in sorted(details.keys()):
             if(k.endswith("_Forms")):
                 form = etree.SubElement(forms, "form")
@@ -1348,7 +1327,7 @@ def create_empty_events_for_one_subject(
         form_events_tree,
         translation_table_tree):
     #logger.debug('Creating all form events template for one subject')
-
+    from lxml import etree
     root = etree.Element("all_form_events")
     form_event_root = form_events_tree.getroot()
     translation_table_root = translation_table_tree.getroot()
@@ -1421,15 +1400,13 @@ def create_empty_events_for_one_subject(
 
 def create_empty_event_tree_for_study(raw_data_tree, all_form_events_tree):
     """
-    This function uses raw_data_tree and all_form_events_tree and creates
-    a person_form_event_tree for study
-
+    This function uses raw_data_tree and all_form_events_tree and creates a person_form_event_tree for study
     :param raw_data_tree: This parameter holds raw data tree
     :param all_form_events_tree: This parameter holds all form events tree
     """
     logger.info('Creating all form events template for all subjects')
-
-    pfe_element = etree.Element("person_form_event")
+    from lxml import etree
+    root = etree.Element("person_form_event")
     raw_data_root = raw_data_tree.getroot()
     all_form_events_root = all_form_events_tree.getroot()
     if raw_data_root is None:
@@ -1437,33 +1414,31 @@ def create_empty_event_tree_for_study(raw_data_tree, all_form_events_tree):
     if all_form_events_root is None:
         raise Exception('All form Events tree is empty')
 
-    subjects_dict = {}
+    subjects_list = set()
 
-    # Collect the `study_id => lab_id` mappings
     for subject in raw_data_root.iter('subject'):
-        study_id = subject.findtext('STUDY_ID')
-        subjects_dict[study_id] = subject.attrib['lab_id']
+        subjects_list.add(subject.find('STUDY_ID').text)
 
-    if not subjects_dict:
-        raise Exception("There are no subjects in the raw data. " \
-                "This can be caused by an incorrect input file or "\
-                "by lack of enrollment data in the REDCap database." )
+    if not subjects_list:
+        raise Exception('There is no subjects in the raw data')
 
-    for subject_id in subjects_dict.iterkeys():
+    for subject_id in subjects_list:
         person = etree.Element("person")
-        # Copy `lab_id` attribute from `subject` to `person` element
-        person.set('lab_id', subjects_dict.get(subject_id))
         study_id = etree.SubElement(person, "study_id")
         study_id.text = subject_id
-        person_index = person.index(person.find('study_id')) + 1
+        person.insert(
+            person.index(
+                person.find('study_id')) + 1,
+            etree.XML(
+                etree.tostring(
+                    all_form_events_root,
+                    method='html',
+                    pretty_print=True)))
+        root.append(person)
 
-        # insert the pretty-fied form events
-        pretty_form_events = etree.XML(
-            etree.tostring(all_form_events_root, method='html', pretty_print=True))
-        person.insert(person_index, pretty_form_events)
-        pfe_element.append(person)
+    tree = etree.ElementTree(root)
+    return tree
 
-    return etree.ElementTree(pfe_element)
 
 def setStat(
         event,
@@ -2034,14 +2009,6 @@ class PersonFormEventsRepository(object):
                        method="xml",
                        pretty_print=True)
 
-def gen_ele(ele_name, ele_text):
-    """ Create an xml element with given name and content """
-    return etree.XML("<{}>{}</{}>".format(ele_name, ele_text, ele_name))
-
-def gen_subele(parent, subele_name, subele_text):
-    subele = etree.SubElement(parent, subele_name)
-    subele.text = subele_text
-    return subele
 
 if __name__ == "__main__":
     main()

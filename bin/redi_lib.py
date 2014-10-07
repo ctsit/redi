@@ -155,7 +155,6 @@ def generate_output(person_tree, redcap_client, rate_limit, data_repository, ski
             # init dictionary for a new person in (study_id)
             if study_id_key not in subject_details:
                 subject_details[study_id_key] = {}
-                subject_details[study_id_key]['lab_id'] = person.get('lab_id')
 
             if not form_key in subject_details[study_id_key]:
                 subject_details[study_id_key][form_key] = 0
