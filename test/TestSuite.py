@@ -12,7 +12,6 @@ This file creates a test suite for all the test classes.
 '''
 import unittest
 from TestReadConfig import TestReadConfig
-from TestArgs import TestArgs
 from TestWriteToFile import TestWriteToFile
 from TestUpdateRedcapForm import TestUpdateRedcapForm
 from TestUpdateTimestamp import TestUpdateTimestamp
@@ -41,7 +40,6 @@ from TestGetEMRData import TestGetEMRData
 from TestResume import TestResume
 from TestPersonFormEventsRepository import TestPersonFormEventsRepository
 from TestVerifyAndCorrectCollectionDate import TestVerifyAndCorrectCollectionDate
-from TestSkipBlanks import TestSkipBlanks
 from TestRediEmail import TestRediEmail
 
 class redi_suite(unittest.TestSuite):
@@ -52,7 +50,6 @@ class redi_suite(unittest.TestSuite):
 
         # add the test to the suite in the order to be tested
         redi_test_suite.addTest(TestReadConfig)
-        redi_test_suite.addTest(TestArgs)
         redi_test_suite.addTest(TestWriteToFile)
         redi_test_suite.addTest(TestUpdateRedcapForm)
         redi_test_suite.addTest(TestUpdateTimestamp)
@@ -83,7 +80,6 @@ class redi_suite(unittest.TestSuite):
         redi_test_suite.addTest(TestGetEMRData)
         redi_test_suite.addTest(TestResume)
         redi_test_suite.addTest(TestPersonFormEventsRepository)
-        redi_test_suite.addTest(TestSkipBlanks)
         redi_test_suite.addTest(TestRediEmail)
 
         # return the suite
