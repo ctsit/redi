@@ -53,7 +53,7 @@ class TestGenerateOutput(unittest.TestCase):
             + "#test_person_form_event() using xml: " )
         string_1_xml = """
 <person_form_event>
-    <person>
+    <person lab_id="999-0100">
         <study_id>100</study_id>
         <all_form_events>
             <form>
@@ -79,7 +79,7 @@ class TestGenerateOutput(unittest.TestCase):
  
         </all_form_events>
     </person>
-    <person>
+    <person lab_id="999-0099">
         <study_id>99</study_id>
         <all_form_events>
             <form>
@@ -128,7 +128,7 @@ class TestGenerateOutput(unittest.TestCase):
             </form>
         </all_form_events>
     </person>
-    <person>
+    <person lab_id="999-0098">
         <study_id>98</study_id>
         <all_form_events>
             <form>
@@ -163,9 +163,9 @@ class TestGenerateOutput(unittest.TestCase):
 
         form_details    = {'Total_cbc_Forms': 2, 'Total_inr_Forms': 3}
         subject_details = {
-            '98'  : {'Total_cbc_Forms' : 0, 'Total_inr_Forms' : 1 },
-            '99'  : {'Total_cbc_Forms' : 1, 'Total_inr_Forms' : 1 },
-            '100' : {'Total_cbc_Forms' : 1, 'Total_inr_Forms' : 1 }
+                '98'  : {'Total_cbc_Forms' : 0, 'Total_inr_Forms' : 1, 'lab_id': "999-0098" },
+                '99'  : {'Total_cbc_Forms' : 1, 'Total_inr_Forms' : 1, "lab_id": "999-0099" },
+                '100' : {'Total_cbc_Forms' : 1, 'Total_inr_Forms' : 1, "lab_id": "999-0100" }
         } 
  
         report_data = {
