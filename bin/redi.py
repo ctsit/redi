@@ -54,6 +54,7 @@ from requests import RequestException
 from lxml import etree
 from docopt import docopt
 
+import report
 from utils import redi_email
 from utils.redcapClient import RedcapClient
 import utils.SimpleConfigParser as SimpleConfigParser
@@ -173,9 +174,14 @@ def main():
     redcap_client = connect_to_redcap(get_email_settings(settings),
                                       get_redcap_settings(settings), dry_run)
 
+    if settings.send_email:
+        report_courier = report.ReportEmailSender(get_email_settings(settings), logger)
+    else:
+        report_courier = report.ReportFileWriter(settings.report_file_path2, logger)
+
     _run(config_file, configuration_directory, do_keep_gen_files, dry_run,
          get_emr_data, settings, output_files, db_path, redcap_client,
-         args['--resume'], args['--skip-blanks'])
+         report_courier, args['--resume'], args['--skip-blanks'])
 
 
 def _makedirs(data_folder):
@@ -246,7 +252,7 @@ def connect_to_redcap(email_settings, redcap_settings, dry_run=False):
 
 def _run(config_file, configuration_directory, do_keep_gen_files, dry_run,
          get_emr_data, settings, data_folder, database_path, redcap_client,
-         resume=False, skip_blanks=False):
+         report_courier, resume=False, skip_blanks=False):
     global translational_table_tree
 
     assert _person_form_events_service is not None
@@ -292,9 +298,6 @@ def _run(config_file, configuration_directory, do_keep_gen_files, dry_run,
         'is_sort_by_lab_id': settings.is_sort_by_lab_id,
     }
 
-    report_xsl = proj_root + "bin/utils/report.xsl"
-    send_email = settings.send_email
-
     if not resume:
         _delete_last_runs_data(data_folder)
 
@@ -336,20 +339,19 @@ def _run(config_file, configuration_directory, do_keep_gen_files, dry_run,
             report_data['errors'].extend(rule_errors)
 
         # create summary report
-        xml_report_tree = create_summary_report(report_parameters,
-                                            report_data, alert_summary,
-                                            collection_date_summary_dict)
-        # print etree.tostring(xml_report_tree)
-        report_xsl = proj_root + "bin/utils/report.xsl"
-        xslt = etree.parse(report_xsl)
-        transform = etree.XSLT(xslt)
-        html_report = transform(xml_report_tree)
-        html_str = etree.tostring(html_report, method='html', pretty_print=True)
+        # TODO: remove the need for the ReportWriter object (backwards-compat)
+        class ReportWriter(object):
+            def write(self, element_tree, file_name):
+                write_element_tree_to_file(element_tree, file_name)
 
-        if settings.send_email:
-            deliver_report_as_email(email_settings, html_str)
-        else:
-            deliver_report_as_file(settings.report_file_path2, html_str)
+        creator = report.ReportCreator(report_parameters,
+                                       report_data, alert_summary,
+                                       collection_date_summary_dict,
+                                       ReportWriter())
+        xml_report_tree = creator.create_report()
+        html_str = creator.to_html(xml_report_tree)
+
+        report_courier.deliver(html_str)
 
     if batch:
         # Update the batch row
@@ -363,49 +365,6 @@ def _run(config_file, configuration_directory, do_keep_gen_files, dry_run,
 
     if not do_keep_gen_files:
         redi_lib.delete_temporary_folder(data_folder)
-
-
-def deliver_report_as_file(html_report_path, html):
-    """
-    Deliver the summary report by writing it to a file
-    or logging it to the console if writing the file fails
-
-    :html_report_path the path where the report will be stored
-    :html the actual report content
-    """
-    problem_found = False
-    try:
-        report_file = open(html_report_path, 'w')
-    except (IOError, OSError) as e:
-        logger.exception('Could not open file: %s' % html_report_path)
-        problem_found = True
-    else:
-        try:
-            report_file.write(html)
-            logger.info("==> You can review the summary report by opening: {}"\
-                " in your browser".format(html_report_path))
-        except IOError:
-            logger.exception('Could not write file: %s' % html_report_path)
-            problem_found = True
-        finally:
-            report_file.close()
-    if problem_found:
-        logger.info("== Summary report ==" + html)
-
-
-def deliver_report_as_email(email_settings, html):
-    """
-    Deliver summary report as an email
-
-    :email_settings dictinary with email parameters
-    :html the actual report content
-    """
-    try:
-        redi_email.send_email_data_import_completed(email_settings, html)
-        logger.info("Summary report was emailed: parameter 'send_email = Y'")
-    except Exception as e:
-        logger.error("Unable to deliver the summary report due error: %s" % e)
-        deliver_report_as_file("report.html", html)
 
 
 def _create_person_form_event_tree_with_data(
@@ -1218,115 +1177,6 @@ def configure_logging(data_folder, verbose=False):
         logger.warning('File logging has been disabled.')
 
     return logger
-
-
-def create_summary_report(report_parameters, report_data, alert_summary, \
-    collection_date_summary_dict):
-    """
-    Generates the xml to be transformed by `bin/utils/report.xsl`
-    into an html report with details about data import completed.
-    """
-    root = etree.Element("report")
-    root.append(etree.Element("header"))
-    root.append(etree.Element("summary"))
-    root.append(etree.Element("alerts"))
-    root.append(etree.Element("subjectsDetails"))
-    root.append(etree.Element("errors"))
-    root.append(etree.Element("summaryOfSpecimenTakenTimes"))
-    updateReportHeader(root, report_parameters)
-    updateReportSummary(root, report_data)
-    updateSubjectDetails(root, report_data['subject_details'])
-    updateReportAlerts(root, alert_summary)
-    updateReportErrors(root, report_data['errors'])
-    updateSummaryOfSpecimenTakenTimes(root, collection_date_summary_dict)
-
-    # TODO: remove dependency on the order of the xml elements in the report
-    sort_by_value = 'lab_id' if report_parameters['is_sort_by_lab_id'] else 'redcap_id'
-    root.append(gen_ele("sort_details_by", sort_by_value))
-
-    tree = etree.ElementTree(root)
-    write_element_tree_to_file(tree,report_parameters.get('report_file_path'))
-    return tree
-
-def updateReportHeader(root, report_parameters):
-    """ Update the passed `root` element tree with date, project name and url"""
-    header = root[0]
-    project = etree.SubElement(header, "project")
-    project.text = report_parameters.get('project')
-    date = etree.SubElement(header, "date")
-    date.text = time.strftime("%m/%d/%Y")
-    redcapServerAddress = etree.SubElement(header, "redcapServerAddress")
-    redcapServerAddress.text = report_parameters.get('redcap_uri')
-
-
-def updateReportSummary(root, report_data):
-    summary = root[1]
-    subjectCount = etree.SubElement(summary, "subjectCount")
-    subjectCount.text = str(report_data.get('total_subjects'))
-    forms = etree.SubElement(summary, "forms")
-    form_data = report_data['form_details']
-    for k in sorted(form_data.keys()):
-        form = etree.SubElement(forms, "form")
-        name_element = etree.SubElement(form, "form_name")
-        name_element.text = k
-        count_element = etree.SubElement(form, "form_count")
-        count_element.text = str(form_data.get(k))
-
-
-def updateReportAlerts(root, alert_summary):
-    alerts = root[2]
-    too_many_forms = etree.SubElement(alerts, 'tooManyForms')
-    too_many_values = etree.SubElement(alerts, 'tooManyValues')
-    for event in alert_summary['max_event_alert']:
-        event_alert = etree.SubElement(too_many_forms, 'eventAlert')
-        msg = etree.SubElement(event_alert, 'message')
-        msg.text = event
-    for value in alert_summary['multiple_values_alert']:
-        values_alert = etree.SubElement(too_many_values, 'valuesAlert')
-        msg = etree.SubElement(values_alert, 'message')
-        msg.text = value
-
-def updateSubjectDetails(root, subject_details):
-    """
-    Helper method for #create_summary_report()
-    Adds subject information to the xml tree which is later formated
-    by `bin/utils/report.xsl` into the html `table#subject_details"`
-    """
-    subjectsDetails = root[3]
-    for key in sorted(subject_details.keys()):
-        subject = etree.SubElement(subjectsDetails, "subject")
-        details = subject_details.get(key)
-        subject.append(gen_ele("redcap_id", key))
-        forms = etree.SubElement(subject, "forms")
-
-        for k in sorted(details.keys()):
-            if(k.endswith("_Forms")):
-                form = etree.SubElement(forms, "form")
-                name_element = etree.SubElement(form, "form_name")
-                name_element.text = k
-                count_element = etree.SubElement(form, "form_count")
-                count_element.text = str(details.get(k))
-            else:
-                element = etree.SubElement(subject, k)
-                element.text = str(details.get(k))
-
-
-def updateReportErrors(root, errors):
-    errorsRoot = root[4]
-    for error in errors:
-        errorElement = etree.SubElement(errorsRoot, "error")
-        errorElement.text = str(error)
-
-
-def updateSummaryOfSpecimenTakenTimes(root, collection_date_summary_dict):
-    timeSummaryRoot = root[5]
-    totalElement = etree.SubElement(timeSummaryRoot, "total")
-    totalElement.text = str(collection_date_summary_dict['total'])
-    blankElement = etree.SubElement(timeSummaryRoot, "blank")
-    blankElement.text = str(collection_date_summary_dict['blank'])
-    percentElement = etree.SubElement(timeSummaryRoot, "percent")
-    percentElement.text = str((float(collection_date_summary_dict['blank'])/\
-        collection_date_summary_dict['total'])*100)
 
 
 def create_empty_events_for_one_subject_helper(
