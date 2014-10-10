@@ -41,13 +41,14 @@ virtual machine path "**/var/www/redcap**".
 Now execute the following commands to complete the configuration:
 
 <pre>
+cd ./vagrant	# must be in the redi/vagrant/ directory
 make copy_config_example
 make copy_redcap_code
 make copy_project_data
 make show_config
 </pre>
 
-Please verify that the output from "show_config" matheches your expectations.
+Please verify that the output from "show_config" matches your expectations.
 
 ### 3. Start the VM
 
@@ -55,7 +56,7 @@ To use the vagrant VM you will need to install Vagrant and Virtual Box.
 
 With these packages installed, follow this procedure to use a VM template:
 
-    cd ./vagrant
+    # must be in the redi/vagrant/ directory
     vagrant up
 
 Vagrant will instantiate and provision the new VM.  The REDCap web application should be accessible in the browser at
