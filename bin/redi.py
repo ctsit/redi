@@ -174,6 +174,23 @@ def main():
     redcap_client = connect_to_redcap(get_email_settings(settings),
                                       get_redcap_settings(settings), dry_run)
 
+    report_file_path = os.path.join(configuration_directory,
+                                    settings.report_file_path)
+
+    report_parameters = {
+        'report_file_path': report_file_path,
+        'project': settings.project,
+        'redcap_uri': settings.redcap_uri,
+        'is_sort_by_lab_id': settings.is_sort_by_lab_id,
+    }
+
+    # TODO: remove the need for the ReportWriter object (backwards-compat)
+    class ReportWriter(object):
+        def write(self, element_tree, file_name):
+            write_element_tree_to_file(element_tree, file_name)
+
+    report_creator = report.ReportCreator(report_parameters, ReportWriter())
+
     if settings.send_email:
         report_courier = report.ReportEmailSender(get_email_settings(settings), logger)
     else:
@@ -181,7 +198,8 @@ def main():
 
     _run(config_file, configuration_directory, do_keep_gen_files, dry_run,
          get_emr_data, settings, output_files, db_path, redcap_client,
-         report_courier, args['--resume'], args['--skip-blanks'])
+         report_courier, report_creator, args['--resume'],
+         args['--skip-blanks'])
 
 
 def _makedirs(data_folder):
@@ -252,7 +270,7 @@ def connect_to_redcap(email_settings, redcap_settings, dry_run=False):
 
 def _run(config_file, configuration_directory, do_keep_gen_files, dry_run,
          get_emr_data, settings, data_folder, database_path, redcap_client,
-         report_courier, resume=False, skip_blanks=False):
+         report_courier, report_creator, resume=False, skip_blanks=False):
     global translational_table_tree
 
     assert _person_form_events_service is not None
@@ -287,16 +305,6 @@ def _run(config_file, configuration_directory, do_keep_gen_files, dry_run,
 
     translation_table_file = os.path.join(configuration_directory, \
         settings.translation_table_file)
-
-    report_file_path = os.path.join(configuration_directory,\
-     settings.report_file_path)
-
-    report_parameters = {
-        'report_file_path': report_file_path,
-        'project': settings.project,
-        'redcap_uri': settings.redcap_uri,
-        'is_sort_by_lab_id': settings.is_sort_by_lab_id,
-    }
 
     if not resume:
         _delete_last_runs_data(data_folder)
@@ -339,17 +347,8 @@ def _run(config_file, configuration_directory, do_keep_gen_files, dry_run,
             report_data['errors'].extend(rule_errors)
 
         # create summary report
-        # TODO: remove the need for the ReportWriter object (backwards-compat)
-        class ReportWriter(object):
-            def write(self, element_tree, file_name):
-                write_element_tree_to_file(element_tree, file_name)
-
-        creator = report.ReportCreator(report_parameters,
-                                       report_data, alert_summary,
-                                       collection_date_summary_dict,
-                                       ReportWriter())
-        xml_report_tree = creator.create_report()
-        html_str = creator.to_html(xml_report_tree)
+        html_str = report_creator.create_report(
+            report_data, alert_summary, collection_date_summary_dict)
 
         report_courier.deliver(html_str)
 
@@ -1884,14 +1883,6 @@ class PersonFormEventsRepository(object):
                        method="xml",
                        pretty_print=True)
 
-def gen_ele(ele_name, ele_text):
-    """ Create an xml element with given name and content """
-    return etree.XML("<{}>{}</{}>".format(ele_name, ele_text, ele_name))
-
-def gen_subele(parent, subele_name, subele_text):
-    subele = etree.SubElement(parent, subele_name)
-    subele.text = subele_text
-    return subele
 
 if __name__ == "__main__":
     main()

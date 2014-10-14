@@ -6,6 +6,8 @@ from lxml import etree
 
 from utils import redi_email
 
+REDI_PACKAGE_NAME = 'bin'
+
 
 class ReportCourier(object):
     @abc.abstractmethod
@@ -87,19 +89,12 @@ class ReportEmailSender(ReportCourier):
 
 
 class ReportCreator(object):
-    def __init__(self, report_parameters, report_data, alert_summary,
-                 collection_date_summary_dict, writer):
+    def __init__(self, report_parameters, writer):
         self._report_parameters = report_parameters
-        self._report_data = report_data
-        self._alert_summary = alert_summary
-        self._collection_date_summary_dict = collection_date_summary_dict
         self._writer = writer
 
-    def create_report(self):
+    def create_report(self, report_data, alert_summary, collection_date_summary_dict):
         report_parameters = self._report_parameters
-        report_data = self._report_data
-        alert_summary = self._alert_summary
-        collection_date_summary_dict = self._collection_date_summary_dict
         write_element_tree_to_file = self._writer.write
 
         root = etree.Element("report")
@@ -122,16 +117,12 @@ class ReportCreator(object):
 
         tree = etree.ElementTree(root)
         write_element_tree_to_file(tree,report_parameters.get('report_file_path'))
-        return tree
 
-    def to_html(self, xml_report_tree):
-        report_xsl = pkg_resources.resource_filename('bin', 'utils/report.xsl')
-
-        # print etree.tostring(xml_report_tree)
-        # report_xsl = proj_root + "bin/utils/report.xsl"
+        report_xsl = pkg_resources.resource_filename(REDI_PACKAGE_NAME,
+                                                     'utils/report.xsl')
         xslt = etree.parse(report_xsl)
         transform = etree.XSLT(xslt)
-        html_report = transform(xml_report_tree)
+        html_report = transform(tree)
         html_str = etree.tostring(html_report, method='html', pretty_print=True)
 
         return html_str
@@ -218,3 +209,14 @@ def updateSummaryOfSpecimenTakenTimes(root, collection_date_summary_dict):
     percentElement = etree.SubElement(timeSummaryRoot, "percent")
     percentElement.text = str((float(collection_date_summary_dict['blank'])/\
         collection_date_summary_dict['total'])*100)
+
+
+def gen_ele(ele_name, ele_text):
+    """ Create an xml element with given name and content """
+    return etree.XML("<{}>{}</{}>".format(ele_name, ele_text, ele_name))
+
+
+def gen_subele(parent, subele_name, subele_text):
+    subele = etree.SubElement(parent, subele_name)
+    subele.text = subele_text
+    return subele
