@@ -6,7 +6,7 @@ Purpose
 
 The "vagrant" folder was created with the goal of making testing `RED-I
 software <https://github.com/ctsit/redi>`__ as easy as possible. It
-contains the `Vagrantfile <../vagrant/Vagrantfile>`__ which allows to
+contains the `Vagrantfile <../vagrant/Vagrantfile>`__ which allows you to
 start a virtual machine capable of running the `REDCap
 software <http://http://www.project-redcap.org>`__ -- which means that
 during virtual machine creation the Apache and MySQL software is
