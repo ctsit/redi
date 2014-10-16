@@ -16,9 +16,11 @@ class TestResume(unittest.TestCase):
 
         import bin.redi
         redi = reload(bin.redi)
-
         redi._person_form_events_service = MockPersonFormEvents()
-        redi._check_input_file = lambda *args: None
+
+        import bin.redi_lib
+        redi_lib = reload(bin.redi_lib)
+        redi_lib.check_input_file = lambda *args: None
 
         with self.assertRaises(FileDeleted):
             redi._run(config_file=None, configuration_directory='',
@@ -41,12 +43,15 @@ class TestResume(unittest.TestCase):
         redi = reload(bin.redi)
 
         redi._person_form_events_service = MockPersonFormEvents()
-        redi._check_input_file = lambda *args: None
         redi._create_person_form_event_tree_with_data = lambda *args: (None, None, None, None)
         redi._delete_last_runs_data = lambda *args: None
         redi._removedirs = lambda *args: None
         redi._mkdir = lambda *args: None
         redi.connect_to_redcap = lambda *args: None
+
+        import bin.redi_lib
+        redi_lib = reload(bin.redi_lib)
+        redi_lib.check_input_file = lambda *args: None
 
         with self.assertRaises(FileStored):
             redi._run(config_file=None, configuration_directory='',
@@ -64,9 +69,11 @@ class TestResume(unittest.TestCase):
 
         import bin.redi
         redi = reload(bin.redi)
-
         redi._person_form_events_service = MockPersonFormEvents()
-        redi._check_input_file = lambda *args: None
+
+        import bin.redi_lib
+        redi_lib = reload(bin.redi_lib)
+        redi_lib.check_input_file = lambda *args: None
 
         with self.assertRaises(DataFetched):
             redi._run(config_file=None, configuration_directory='',
