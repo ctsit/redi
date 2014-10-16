@@ -28,7 +28,8 @@ logger = logging.getLogger(__name__)
 logger.addHandler(logging.NullHandler())
 
 DEFAULT_DATA_DIRECTORY = os.getcwd()
-
+BATCH_STATUS_STARTED = 'Started'
+BATCH_STATUS_COMPLETED = 'Completed'
 
 
 """
@@ -351,7 +352,6 @@ file specified as `db_path`
 def create_empty_md5_database(db_path) :
     if os.path.exists(db_path) :
         logger.warn('The file with name ' + db_path + ' already exists')
-        #return
 
     try :
         logger.info('Opening the file:' + db_path)
@@ -378,8 +378,9 @@ def create_empty_table(db_path) :
         cur = db.cursor()
         sql = """CREATE TABLE RediBatch (
     rbID INTEGER PRIMARY KEY AUTOINCREMENT,
-    rbStartTime TEXT NOT NULL,
-    rbEndTime TEXT,
+    rbCreateTime DATETIME DEFAULT CURRENT_TIMESTAMP,
+    rbStartTime DATETIME,
+    rbEndTime DATETIME,
     rbStatus TEXT,
     rbMd5Sum TEXT NOT NULL
 )
@@ -414,7 +415,7 @@ def dict_factory(cursor, row):
 
 Check the md5sum of the input file
     - if the sum *has changed* then continue the data processing and store a row
-        in the SQLite database with `batch status= batch_started/ batch_completed`
+        in the SQLite database with `batch status= started/ completed`
 
     - if the sum *did not change* then check the config option `batch_warning_days`:
         - if       limit = -1       then continue execution (ignore the limit)
@@ -423,10 +424,22 @@ Check the md5sum of the input file
 """
 
 
-def check_input_file(batch_warning_days, db_path, email_settings, raw_xml_file):
+def check_input_file(
+        batch_warning_days,
+        db_path,
+        email_settings,
+        raw_xml_file,
+        start_time):
+    """
+
+    @see #get_md5_input_file()
+    @see #get_last_batch()
+    @see #add_batch_entry()
+    """
     batch = None
 
-    if not os.path.exists(db_path) :
+    #print "db_path: " + str(db_path)
+    if not os.path.exists(db_path):
         create_empty_md5_database(db_path)
 
     new_md5ive = get_md5_input_file(raw_xml_file)
@@ -444,25 +457,27 @@ def check_input_file(batch_warning_days, db_path, email_settings, raw_xml_file):
         logger.info(
             "There is no old md5 recorded yet for the input file. Continue data import...")
         batch = add_batch_entry(db_path, new_md5ive)
-        record_msg = 'Added batch (rbID= %s, rbStartTime= %s, rbMd5Sum= %s' % (
-            batch['rbID'], batch['rbStartTime'], batch['rbMd5Sum'])
+        record_msg = 'Added batch (rbID= %s, rbCreateTime= %s, rbMd5Sum= %s' % (
+            batch['rbID'], batch['rbCreateTime'], batch['rbMd5Sum'])
         logger.info(record_msg)
         return batch
 
     if old_md5ive != new_md5ive:
         # the data has changed... insert a new batch entry
         batch = add_batch_entry(db_path, new_md5ive)
-        record_msg = 'Added batch (rbID= %s, rbStartTime= %s, rbMd5Sum= %s' % (
-            batch['rbID'], batch['rbStartTime'], batch['rbMd5Sum'])
+        record_msg = 'Added batch (rbID= %s, rbCreateTime= %s, rbMd5Sum= %s' % (
+            batch['rbID'], batch['rbCreateTime'], batch['rbMd5Sum'])
         logger.info(record_msg)
         return batch
     else:
-        days_since_today = get_days_since_today(old_batch['rbStartTime'])
+        days_since_today = get_days_since_today(old_batch['rbCreateTime'])
         # TODO: refactor code to use ConfigParser.RawConfigParser in order to
         # preserve data types
 
         if (days_since_today > int(batch_warning_days)):
-            logger.info('Last import was started on: %s which is more than the limit of %s' % (old_batch['rbStartTime'], batch_warning_days))
+            logger.info(
+                'Last import was started on: %s which is more than ' \
+                'the limit of %s' % (old_batch['rbStartTime'], batch_warning_days))
             if (-1 == int(batch_warning_days)):
                 msg_continue = """
                 The configuration `batch_warning_days = -1` indicates that we want to continue
@@ -470,8 +485,7 @@ def check_input_file(batch_warning_days, db_path, email_settings, raw_xml_file):
                 """
                 logger.info(msg_continue)
             else:
-
-                msg_quit = "The input file did not change in the past: %s days. Stop data import." % batch_warning_days
+                msg_quit = "The input file did not change in the past: %s days." % days_since_today
                 logger.critical(msg_quit)
                 redi_email.send_email_input_data_unchanged(email_settings)
                 sys.exit()
@@ -481,23 +495,22 @@ def check_input_file(batch_warning_days, db_path, email_settings, raw_xml_file):
     return old_batch
 
 
-"""
-Retrieve the row corresponding to the last REDI batch completed
-"""
-
-
 def get_last_batch(db_path):
-    db = None
+    batch = None
+    """
+    Retrieve the row corresponding to the last REDI batch completed
+    """
     try:
         db = lite.connect(db_path)
         db.row_factory = dict_factory
         cur = db.cursor()
         sql = """
 SELECT
-    rbID, rbStartTime, rbEndTime, rbMd5Sum
+    rbID, rbCreateTime, rbStartTime, rbEndTime, rbMd5Sum
 FROM
     RediBatch
-ORDER BY rbID DESC
+ORDER BY
+    rbID DESC
 LIMIT 1
 """
         cur.execute(sql)
@@ -513,20 +526,17 @@ LIMIT 1
     return batch
 
 
-"""
-Retrieve the row corresponding to the specified primary key
-"""
-
-
 def get_batch_by_id(db_path, batch_id):
-    db = None
+    """
+    Retrieve the row corresponding to the specified primary key
+    """
     try:
         db = lite.connect(db_path)
         db.row_factory = dict_factory
         cur = db.cursor()
         sql = """
 SELECT
-    rbID, rbStartTime, rbEndTime, rbMd5Sum
+    rbID, rbCreateTime, rbStartTime, rbEndTime, rbMd5Sum
 FROM
     RediBatch
 WHERE
@@ -547,16 +557,14 @@ LIMIT 1
     return batch
 
 
-"""
-@see #check_input_file()
-@see https://docs.python.org/2/library/hashlib.html
-@see https://docs.python.org/2/library/sqlite3.html#sqlite3.Connection.row_factory
-
-Returns the md5 sum for the redi input file
-"""
-
-
 def get_md5_input_file(input_file):
+    """
+    @see #check_input_file()
+    @see https://docs.python.org/2/library/hashlib.html
+    @see https://docs.python.org/2/library/sqlite3.html#sqlite3.Connection.row_factory
+
+    Returns the md5 sum for the redi input file
+    """
     if not os.path.exists(input_file):
         raise Exception('Input file not found at: ' + input_file)
 
@@ -577,30 +585,31 @@ def get_md5_input_file(input_file):
     return md5.hexdigest()
 
 
-"""
-@see #check_input_file()
-@param db_path - the SQLite file
-@param md5 - the md5 sum to be inserted
-"""
-
-
 def add_batch_entry(db_path, md5):
-    logger.info('Execute: add_batch_entry()')
-    batch = None
-
-    db = None
+    """
+    Inserts a row into RediBatch table
+    @see #check_input_file()
+    Parameters
+    ----------
+    db_path : string
+        The SQLite database file name
+    md5 : string
+        The md5 sum to be inserted
+    create_time : string
+        The batch start time
+    """
     try:
         db = lite.connect(db_path)
         db.row_factory = dict_factory
         cur = db.cursor()
         sql = """
 INSERT INTO RediBatch
-    (rbStartTime, rbEndTime, rbStatus, rbMd5Sum)
+    (rbCreateTime, rbStartTime, rbEndTime, rbStatus, rbMd5Sum)
 VALUES
-    ( ?, NULL, 'Started', ?)
+    (?, NULL, NULL, ?, ?)
 """
-        now = get_db_friendly_date_time()
-        cur.execute(sql, (now, md5))
+        create_time = get_db_friendly_date_time()
+        cur.execute(sql, (create_time, BATCH_STATUS_STARTED, md5))
         rbID = cur.lastrowid
         db.commit()
         batch = get_batch_by_id(db_path, rbID)
@@ -615,16 +624,19 @@ VALUES
     return batch
 
 
-"""
-Update the status and the finish time of a specified batch entry in the SQLite db
+def update_batch_entry(db_path, id, status, start_time, end_time):
+    """
+    Update the status and the start/end time of a specified batch entry
+    Return True if update succeeded, False otherwise
 
-@return True if update succeeded, False otherwise
-"""
-
-
-def update_batch_entry(db_path, id, status, timestamp):
-    success = None
-    db = None
+    Parameters
+    ----------
+    db_path : string
+    id : integer
+    status : string
+    start_time : datetime string
+    end_time : datetime string
+    """
     try:
         db = lite.connect(db_path)
         cur = db.cursor()
@@ -632,15 +644,15 @@ def update_batch_entry(db_path, id, status, timestamp):
 UPDATE
     RediBatch
 SET
-    rbEndTime = ?
+    rbStartTime = ?
+    , rbEndTime = ?
     , rbStatus = ?
 WHERE
     rbID = ?
 """
-
-        cur.execute(sql, (timestamp, status, id))
+        cur.execute(sql, (start_time, end_time, status, id))
         db.commit()
-        scuccess = True
+        success = True
     except lite.Error as e:
         logger.exception("SQLite error in update_batch_entry(): %s:" % e.args[0])
         success = False
@@ -651,37 +663,27 @@ WHERE
     return success
 
 
-"""
-@return string in format: "2014-06-24 01:23:24"
-"""
-
-
 def get_db_friendly_date_time():
+    """ @return string in format: 2014-06-24 01:23:24 """
     return datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S')
-
-"""
-@return string in format: 2014-06-24
-"""
 
 
 def get_db_friendly_date():
+    """ @return string in format: 2014-06-24 """
     return date.today()
-
-"""
-@return the number of days passed since the specified date
-"""
 
 
 def get_days_since_today(date_string):
-    num = None
+    """ @return the number of days passed since the specified date """
     other = datetime.datetime.strptime(date_string, '%Y-%m-%d %H:%M:%S')
     now = datetime.datetime.now()
     delta = now - other
     return delta.days
 
-"""
-Helper function for debugging xml content
-"""
+
 def printxml(tree):
+    """
+    Helper function for debugging xml content
+    """
     print etree.tostring(tree, pretty_print = True)
     return

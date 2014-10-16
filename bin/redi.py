@@ -267,14 +267,17 @@ def _run(config_file, configuration_directory, do_keep_gen_files, dry_run,
     # load custom post-processing rules
     rules = load_rules(settings.rules, configuration_directory)
 
-    # read in 3 main data files / translation tables
-
     raw_xml_file = os.path.join(configuration_directory, settings.raw_xml_file)
-    # we need the batch information to set the
-    # status to `completed` an ste the `rbEndTime`
     email_settings = get_email_settings(settings)
-    db_path = database_path
-    batch = _check_input_file(db_path, email_settings, raw_xml_file, settings)
+
+    # Insert/load batch row so we can set the `completed` status
+    start_time = redi_lib.get_db_friendly_date_time()
+    batch = redi_lib.check_input_file(
+            settings.batch_warning_days,
+            database_path,
+            email_settings,
+            raw_xml_file,
+            start_time)
 
     form_events_file = os.path.join(configuration_directory,\
      settings.form_events_file)
@@ -322,10 +325,27 @@ def _run(config_file, configuration_directory, do_keep_gen_files, dry_run,
             settings.rate_limiter_value_in_redcap, _person_form_events_service,
             skip_blanks)
 
+        # Save the time it took to send data to REDCap
+        done_time = redi_lib.get_db_friendly_date_time()
+        # Update the batch row
+        redi_lib.update_batch_entry(database_path,
+                                    batch['rbID'],
+                                    redi_lib.BATCH_STATUS_COMPLETED,
+                                    start_time,
+                                    done_time)
+        duration_dict = {
+            'all' : {
+                'start': start_time,
+                'end': done_time,
+            },
+        }
+
         # write person_form_event_tree to file
-        write_element_tree_to_file(person_form_event_tree_with_data,\
-         os.path.join(data_folder, 'person_form_event_tree_with_data.xml'))
+        write_element_tree_to_file(
+            person_form_event_tree_with_data,
+            os.path.join(data_folder, 'person_form_event_tree_with_data.xml'))
         sent_events = person_form_event_tree_with_data.xpath("//event/status[.='sent']")
+
         if len(unsent_events) != len(sent_events):
             logger.warning('Some of the events are not sent to the redcap. Please check event statuses in '+data_folder+'person_form_event_tree_with_data.xml')
 
@@ -336,9 +356,12 @@ def _run(config_file, configuration_directory, do_keep_gen_files, dry_run,
             report_data['errors'].extend(rule_errors)
 
         # create summary report
-        xml_report_tree = create_summary_report(report_parameters,
-                                            report_data, alert_summary,
-                                            collection_date_summary_dict)
+        xml_report_tree = create_summary_report(
+                report_parameters,
+                report_data,
+                alert_summary,
+                collection_date_summary_dict,
+                duration_dict)
         # print etree.tostring(xml_report_tree)
         report_xsl = proj_root + "bin/utils/report.xsl"
         xslt = etree.parse(report_xsl)
@@ -350,12 +373,6 @@ def _run(config_file, configuration_directory, do_keep_gen_files, dry_run,
             deliver_report_as_email(email_settings, html_str)
         else:
             deliver_report_as_file(settings.report_file_path2, html_str)
-
-    if batch:
-        # Update the batch row
-        done_timestamp = redi_lib.get_db_friendly_date_time()
-        redi_lib.update_batch_entry(db_path,
-                                    batch['rbID'], 'Completed', done_timestamp)
 
     if dry_run:
         logger.info("End of dry run. All output files are ready for review"\
@@ -558,14 +575,13 @@ def _create_person_form_event_tree_with_data(
     collection_date_summary_dict
 
 
-def _check_input_file(db_path, email_settings, raw_xml_file, settings):
-    return redi_lib.check_input_file(settings.batch_warning_days, db_path, email_settings, raw_xml_file)
+
+
 
 
 def read_config(config_file, configuration_directory, file_list):
-    """function to check if files mentioned in configuration files exist
-        Philip
-
+    """
+    Check if files mentioned in configuration files exist
     """
     for item in file_list:
         if not os.path.exists(os.path.join(configuration_directory, item)):
@@ -1221,7 +1237,7 @@ def configure_logging(data_folder, verbose=False):
 
 
 def create_summary_report(report_parameters, report_data, alert_summary, \
-    collection_date_summary_dict):
+    collection_date_summary_dict, duration_dict):
     """
     Generates the xml to be transformed by `bin/utils/report.xsl`
     into an html report with details about data import completed.
@@ -1244,9 +1260,48 @@ def create_summary_report(report_parameters, report_data, alert_summary, \
     sort_by_value = 'lab_id' if report_parameters['is_sort_by_lab_id'] else 'redcap_id'
     root.append(gen_ele("sort_details_by", sort_by_value))
 
+    start = duration_dict['all']['start']
+    end = duration_dict['all']['end']
+    diff = get_time_diff(end, start)
+    root.append(gen_ele('time_all_start', start[-8:]))
+    root.append(gen_ele('time_all_end', end[-8:]))
+    root.append(gen_ele('time_all_diff', format_seconds_as_string(diff)))
+
     tree = etree.ElementTree(root)
     write_element_tree_to_file(tree,report_parameters.get('report_file_path'))
     return tree
+
+
+def get_time_diff(end, start):
+    """
+    Get time difference in seconds from the two dates
+    Parameters
+    ----------
+    end : string
+        The end timestamp
+    start : string
+        The start timestamp
+    """
+    # sqlite: select strftime('%s', rbEndTime) - strftime('%s', rbStartTime) from RediBatch;
+    fmt = '%Y-%m-%d %H:%M:%S'
+    dt_end = datetime.strptime(end, fmt)
+    dt_start = datetime.strptime(start, fmt)
+    diff = (dt_end - dt_start).total_seconds()
+    return diff
+
+
+def format_seconds_as_string(seconds):
+    """
+    Convert seconds to a friendly strings
+        3662  ==> '01:01:02'
+        89662 ==> '1 day, 0:54:22'
+    Parameters
+    ----------
+    seconds : integer
+        The number of seconds to be converted
+    """
+    return str(timedelta(seconds=seconds))
+
 
 def updateReportHeader(root, report_parameters):
     """ Update the passed `root` element tree with date, project name and url"""
