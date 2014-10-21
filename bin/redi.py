@@ -177,19 +177,10 @@ def main():
     report_file_path = os.path.join(configuration_directory,
                                     settings.report_file_path)
 
-    report_parameters = {
-        'report_file_path': report_file_path,
-        'project': settings.project,
-        'redcap_uri': settings.redcap_uri,
-        'is_sort_by_lab_id': settings.is_sort_by_lab_id,
-    }
-
-    # TODO: remove the need for the ReportWriter object (backwards-compat)
-    class ReportWriter(object):
-        def write(self, element_tree, file_name):
-            write_element_tree_to_file(element_tree, file_name)
-
-    report_creator = report.ReportCreator(report_parameters, ReportWriter())
+    report_creator = report.ReportCreator(report_file_path, settings.project,
+                                          settings.redcap_uri,
+                                          settings.is_sort_by_lab_id,
+                                          write_element_tree_to_file)
 
     if settings.send_email:
         report_courier = report.ReportEmailSender(get_email_settings(settings), logger)

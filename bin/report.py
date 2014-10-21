@@ -89,13 +89,19 @@ class ReportEmailSender(ReportCourier):
 
 
 class ReportCreator(object):
-    def __init__(self, report_parameters, writer):
-        self._report_parameters = report_parameters
+    def __init__(self, report_file_path, project_name, redcap_uri,
+                 sort_by_lab_id, writer):
+        self._report_parameters = {
+            'report_file_path': report_file_path,
+            'project': project_name,
+            'redcap_uri': redcap_uri,
+            'is_sort_by_lab_id': sort_by_lab_id
+        }
         self._writer = writer
 
     def create_report(self, report_data, alert_summary, collection_date_summary_dict):
         report_parameters = self._report_parameters
-        write_element_tree_to_file = self._writer.write
+        write_element_tree_to_file = self._writer
 
         root = etree.Element("report")
         root.append(etree.Element("header"))
@@ -126,7 +132,6 @@ class ReportCreator(object):
         html_str = etree.tostring(html_report, method='html', pretty_print=True)
 
         return html_str
-
 
 
 def updateReportHeader(root, report_parameters):
