@@ -47,37 +47,20 @@ import string
 import xml.etree.ElementTree as ET
 import sys
 import imp
-import argparse
 import os
+import pkg_resources
 
 from requests import RequestException
 from lxml import etree
 from docopt import docopt
 
+import redi_lib
 import report
 from utils import redi_email
 from utils.redcapClient import RedcapClient
 import utils.SimpleConfigParser as SimpleConfigParser
 import utils.GetEmrData as GetEmrData
 from utils.GetEmrData import EmrFileAccessDetails
-
-
-def get_proj_root():
-    file_dir = os.path.dirname(os.path.realpath(__file__))
-    proj_root = os.path.abspath(os.path.join(file_dir, "../")) + '/'
-    return proj_root
-
-
-def get_db_path(batch_info_database, database_path):
-    if not os.path.exists(database_path):
-        os.makedirs(database_path)
-
-    db_path = os.path.join(database_path, batch_info_database)
-    return db_path
-
-
-proj_root = get_proj_root()
-import redi_lib
 
 
 # Command line default argument values
@@ -191,6 +174,14 @@ def main():
          get_emr_data, settings, output_files, db_path, redcap_client,
          report_courier, report_creator, args['--resume'],
          args['--skip-blanks'])
+
+
+def get_db_path(batch_info_database, database_path):
+    if not os.path.exists(database_path):
+        os.makedirs(database_path)
+
+    db_path = os.path.join(database_path, batch_info_database)
+    return db_path
 
 
 def _makedirs(data_folder):
@@ -388,8 +379,8 @@ def _create_person_form_event_tree_with_data(
     # Convert COMPONENT_ID to loinc_code in the raw data
     component_to_loinc_code_xml = os.path.join(configuration_directory, \
                                   settings.component_to_loinc_code_xml)
-    component_to_loinc_code_xsd = proj_root + \
-                                  "bin/utils/component_id_to_loinc_code.xsd"
+    component_to_loinc_code_xsd = pkg_resources.resource_filename(
+        'bin', 'utils/component_id_to_loinc_code.xsd')
     component_to_loinc_code_xml_tree = validate_xml_file_and_extract_data \
         (component_to_loinc_code_xml, component_to_loinc_code_xsd)
     convert_component_id_to_loinc_code(data, component_to_loinc_code_xml_tree)
