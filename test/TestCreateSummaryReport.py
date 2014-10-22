@@ -8,6 +8,7 @@ from lxml import etree
 from StringIO import StringIO
 import time
 import redi
+import report
 
 DEFAULT_DATA_DIRECTORY = os.getcwd()
 
@@ -277,11 +278,24 @@ class TestCreateSummaryReport(unittest.TestCase):
         """
         sys.path.append('config')
 
-        result = redi.create_summary_report(\
-                self.test_report_params, \
-                self.test_report_data, \
-                self.test_alert_summary, \
-                self.specimen_taken_time_summary)
+        class MockWriter(object):
+            def __call__(self, *args, **kwargs):
+                #expected call: write(tree, report_file_path)
+                self.result = args[0]
+        writer = MockWriter()
+
+        creator = report.ReportCreator(
+            self.test_report_params['report_file_path'],
+            self.test_report_params['project'],
+            self.test_report_params['redcap_uri'],
+            self.test_report_params['is_sort_by_lab_id'],
+            writer)
+
+        creator.create_report(self.test_report_data, self.test_alert_summary,
+                              self.specimen_taken_time_summary)
+
+        result = writer.result
+
         result_string = etree.tostring(result)
         #print result_string
         xmlschema_doc = etree.parse(self.schema_str)
@@ -297,8 +311,10 @@ class TestCreateSummaryReport(unittest.TestCase):
 
     def tearDown(self):
         # delete the created xml file
-        os.remove(self.test_report_params['report_file_path'])
-        return
+        try:
+            os.remove(self.test_report_params['report_file_path'])
+        except:
+            pass
 
 if __name__ == '__main__':
     unittest.main()
