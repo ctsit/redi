@@ -499,7 +499,7 @@ def _create_person_form_event_tree_with_data(
 
 
 def _check_input_file(db_path, email_settings, raw_xml_file, settings):
-    return redi_lib.check_input_file(settings.batch_warning_days, db_path, email_settings, raw_xml_file)
+    return redi_lib.check_input_file(settings.batch_warning_days, db_path, email_settings, raw_xml_file, settings.project)
 
 
 def read_config(config_file, configuration_directory, file_list):

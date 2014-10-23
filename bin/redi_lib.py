@@ -19,7 +19,7 @@ import sqlite3 as lite
 from datetime import date
 import hashlib
 import utils.redi_email as redi_email
-from utils.redcapClient import RedcapClient
+from utils.rawxml import RawXml
 from requests import RequestException
 from lxml import etree
 import logging
@@ -423,7 +423,7 @@ Check the md5sum of the input file
 """
 
 
-def check_input_file(batch_warning_days, db_path, email_settings, raw_xml_file):
+def check_input_file(batch_warning_days, db_path, email_settings, raw_xml_file, project):
     batch = None
 
     if not os.path.exists(db_path) :
@@ -462,23 +462,26 @@ def check_input_file(batch_warning_days, db_path, email_settings, raw_xml_file):
         # preserve data types
 
         if (days_since_today > int(batch_warning_days)):
+            raw_xml = RawXml(project, raw_xml_file)
+            msg_file_details = "\nXML file details: " + raw_xml.get_info()
             logger.info('Last import was started on: %s which is more than the limit of %s' % (old_batch['rbStartTime'], batch_warning_days))
             if (-1 == int(batch_warning_days)):
                 msg_continue = """
                 The configuration `batch_warning_days = -1` indicates that we want to continue
                 execution even if the input file did not change
-                """
+                """ + msg_file_details
                 logger.info(msg_continue)
             else:
 
                 msg_quit = "The input file did not change in the past: %s days. Stop data import." % batch_warning_days
-                logger.critical(msg_quit)
-                redi_email.send_email_input_data_unchanged(email_settings)
+                logger.critical(msg_quit + msg_file_details)
+                redi_email.send_email_input_data_unchanged(email_settings, raw_xml)
                 sys.exit()
         else:
             logger.info('Reusing md5 entry: ' + str(old_batch['rbID']))
     # return the old batch so we can update the status
     return old_batch
+
 
 
 """
