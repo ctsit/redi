@@ -125,6 +125,9 @@ rc_get_json: check_config
 rc_get_enrollment: check_config
 	$(REDCAP_RECORDS_CMD) -f "$(REDCAP_PROJECT_ENROLLMENT_FORM)" -t csv
 
+rc_get_enrollment_meta:
+	@curl -X POST http://localhost:8998/redcap/api/ -d token=$(REDCAP_VM_TOKEN) -d content=metadata -d format=csv -d forms[]=enrollment
+
 rc_fresh:
 	make copy_project_data
 	make rc_clean

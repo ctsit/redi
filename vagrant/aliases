@@ -2,6 +2,8 @@ alias db='mysql --prompt="(\u@\h) [\d]> " --pager="less -niSFX" -uroot -ppasswor
 alias check_redcap="curl -s http://localhost/redcap/ | grep -i  'Welcome\|Critical Error' "
 alias restart_httpd='sudo /etc/init.d/apache2 reload '
 alias restart_mysql='sudo service mysql restart'
+
+alias cdapi='cd /var/www/redcap/redcap_v5.7.4/API && pwd && ls -al'
 alias ls='ls --color=auto'
 alias lsa='ls -al'
 alias lss='ls -ltr'
