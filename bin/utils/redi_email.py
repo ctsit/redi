@@ -43,22 +43,30 @@ def send_email_redcap_connection_error(email_settings, subject='', msg=''):
     logger.error('Exception: Unable to communicate with REDCap instance at: ' + email_settings['redcap_uri'])
     return send_email(host, str(port), sender, to_addr_list, None, subject, msg)
 
-def send_email_input_data_unchanged(email_settings, subject='', msg=''):
+def send_email_input_data_unchanged(email_settings, raw_xml):
     """
     Send a warning email to the `redcap_support_receiver_email`
     if the input file did not change for more than `batch_warning_days`
+    Return True if the email was sent
 
-    :return True if the email was sent
+    Parameters
+    ----------
+    email_settings : dictionary
+        The email delivery parameters
+    raw_xml : RawXml instance
+        The object storing details about the input file
     """
     sender = email_settings['redcap_support_sender_email']
     to_addr_list = email_settings['redcap_support_receiving_list']
     host = email_settings['smtp_host_for_outbound_mail']
     port = email_settings['smtp_port_for_outbound_mail']
-    subject = 'Input data is static.'
+    subject = "The data for '{0}' project did not change in more than {1} days.".format(raw_xml.get_project(), email_settings['batch_warning_days'])
     msg = """
-    Administrators,
-    For the past {} days the input data for the REDI application did not change.
-    Please investigate.""".format(email_settings['batch_warning_days'])
+Administrators,
+    """ +  subject + """
+
+Please check if the input xml file is in the proper location.
+    """ + raw_xml.get_info()
     return send_email(host, str(port), sender, to_addr_list, None, subject, msg)
 
 
