@@ -157,7 +157,7 @@ def main():
     redcap_client = connect_to_redcap(get_email_settings(settings),
                                       get_redcap_settings(settings), dry_run)
 
-    report_file_path = os.path.join(configuration_directory,
+    report_file_path = os.path.join(data_directory,
                                     settings.report_file_path)
 
     report_creator = report.ReportCreator(report_file_path, settings.project,
