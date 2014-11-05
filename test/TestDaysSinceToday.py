@@ -1,7 +1,7 @@
 import unittest
 import datetime
 from datetime import timedelta
-import redi_lib
+from redi import redi_lib
 
 
 class TestDaysSinceToday(unittest.TestCase):

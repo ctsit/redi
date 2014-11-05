@@ -24,7 +24,7 @@ setup(
     packages=find_packages(exclude=['test']),
     include_package_data=True,
     package_data={
-        'bin': ['utils/*.xsl', 'utils/*.xsd'],
+        'redi': ['utils/*.xsl', 'utils/*.xsd'],
         'redi': ['README.md'],
     },
     url='https://github.com/ctsit/redi',
@@ -42,7 +42,7 @@ setup(
     ],
     entry_points={
         'console_scripts': [
-            'redi = bin.redi:main',
+            'redi = redi.redi:main',
         ],
     },
     test_suite='test.TestSuite',

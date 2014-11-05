@@ -1,16 +1,16 @@
 import unittest
 import smtplib
 from mock import patch, call
-import redi
-from utils.rawxml import RawXml
-from utils import redi_email
+from redi import redi
+from redi.utils.rawxml import RawXml
+from redi.utils import redi_email
 
 
 class TestRediEmail(unittest.TestCase):
     """
     Check functions in the `utils/redi_email` module
     To run individually:
-        $ PYTHONPATH=bin python test/TestRediEmail.py
+        $ PYTHONPATH=redi python test/TestRediEmail.py
     """
 
     def setUp(self):

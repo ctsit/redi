@@ -23,17 +23,14 @@ help:
 
 test: tests
 tests: coverage
-	[ ! -d config/rules ] || PYTHONPATH=bin \
-		python -munittest discover config/rules
+	[ ! -d config/rules ] || python -munittest discover config/rules
 
 coverage:
-	ARCHFLAGS=$(ARCHFLAGS) PYTHONPATH=bin \
-		python setup.py nosetests
+	ARCHFLAGS=$(ARCHFLAGS) python setup.py nosetests
 
 lint:
 	which pylint || sudo easy_install pylint
-	ARCHFLAGS=$(ARCHFLAGS) PYTHONPATH=bin \
-		pylint -f parseable bin | tee pylint.out
+	ARCHFLAGS=$(ARCHFLAGS) pylint -f parseable redi | tee pylint.out
 
 clean:
 	find . -type f -name "*.pyc" -print | xargs rm -f

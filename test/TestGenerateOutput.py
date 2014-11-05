@@ -16,9 +16,9 @@ __status__      = "Development"
 import unittest
 import os
 from lxml import etree
-import redi
-import redi_lib
-from utils.redcapClient import RedcapClient
+from redi import redi
+from redi import redi_lib
+from redi.utils.redcapClient import RedcapClient
 
 
 DEFAULT_DATA_DIRECTORY = os.getcwd()

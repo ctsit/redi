@@ -380,7 +380,7 @@ def _create_person_form_event_tree_with_data(
     component_to_loinc_code_xml = os.path.join(configuration_directory, \
                                   settings.component_to_loinc_code_xml)
     component_to_loinc_code_xsd = pkg_resources.resource_filename(
-        'bin', 'utils/component_id_to_loinc_code.xsd')
+        'redi', 'utils/component_id_to_loinc_code.xsd')
     component_to_loinc_code_xml_tree = validate_xml_file_and_extract_data \
         (component_to_loinc_code_xml, component_to_loinc_code_xsd)
     convert_component_id_to_loinc_code(data, component_to_loinc_code_xml_tree)

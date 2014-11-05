@@ -11,9 +11,9 @@ import sys
 file_dir = os.path.dirname(os.path.realpath(__file__))
 goal_dir = os.path.join(file_dir, "../")
 proj_root = os.path.abspath(goal_dir)+'/'
-sys.path.append(proj_root + 'bin/')
+sys.path.append(proj_root + 'redi/')
 from lxml import etree
-import redi
+from redi import redi
 
 DEFAULT_DATA_DIRECTORY = os.getcwd()
 
