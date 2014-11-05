@@ -168,11 +168,8 @@ def main():
     if settings.send_email:
         report_courier = report.ReportEmailSender(get_email_settings(settings), logger)
     else:
-        index_of_dot_html = settings.report_file_path2.find('.html')
-        report_file_path2 = settings.report_file_path2[:index_of_dot_html] + \
-        '_' + datetime.now().strftime('%Y_%m_%d-%H_%M_%S') + '.html'
-        report_courier = report.ReportFileWriter(os.path.join(data_directory,
-            report_file_path2), logger)
+        report_courier = report.ReportFileWriter(os.path.join(output_files,
+            settings.report_file_path2), logger)
 
     _run(config_file, configuration_directory, do_keep_gen_files, dry_run,
          get_emr_data, settings, output_files, db_path, redcap_client,
