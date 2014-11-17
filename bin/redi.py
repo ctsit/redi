@@ -213,10 +213,12 @@ def _fetch_run_data(data_folder):
     person_form_event_tree_with_data = _person_form_events_service.fetch()
     alert_summary = _load(os.path.join(data_folder, 'alert_summary.obj'))
     rule_errors = _load(os.path.join(data_folder, 'rule_errors.obj'))
-    collection_date_summary_dict = _load(os.path.join(data_folder, 'collection_date_summary_dict.obj'))
+    collection_date_summary_dict = _load(
+        os.path.join(data_folder, 'collection_date_summary_dict.obj'))
+    sent_events = SentEventIndex(os.path.join(data_folder, 'sent_events.obj'))
 
-    return alert_summary, person_form_event_tree_with_data, rule_errors,\
-     collection_date_summary_dict
+    return (alert_summary, person_form_event_tree_with_data, rule_errors,
+            collection_date_summary_dict, sent_events)
 
 
 def _load(path):
@@ -224,12 +226,15 @@ def _load(path):
         return pickle.load(fp)
 
 
-def _store_run_data(data_folder, alert_summary,\
- person_form_event_tree_with_data, rule_errors, collection_date_summary_dict):
+def _store_run_data(data_folder, alert_summary,
+                    person_form_event_tree_with_data, rule_errors,
+                    collection_date_summary_dict):
     _person_form_events_service.store(person_form_event_tree_with_data)
     _save(alert_summary, os.path.join(data_folder, 'alert_summary.obj'))
     _save(rule_errors, os.path.join(data_folder, 'rule_errors.obj'))
-    _save(collection_date_summary_dict, os.path.join(data_folder, 'collection_date_summary_dict.obj'))
+    _save(collection_date_summary_dict,
+          os.path.join(data_folder, 'collection_date_summary_dict.obj'))
+    _save([], os.path.join(data_folder, 'sent_events.obj'))
 
 
 def _save(obj, path):
@@ -301,26 +306,26 @@ def _run(config_file, configuration_directory, do_keep_gen_files, dry_run,
                         person_form_event_tree_with_data, rule_errors,
                         collection_date_summary_dict)
 
-    alert_summary, person_form_event_tree_with_data, rule_errors, collection_date_summary_dict = \
-        _fetch_run_data(data_folder)
+    (alert_summary, person_form_event_tree_with_data, rule_errors,
+     collection_date_summary_dict, sent_events) = _fetch_run_data(data_folder)
 
     # Data will be sent to REDCap server and email will be sent only if
     # redi.py is not executing in dry run state.
     if not dry_run:
-        unsent_events = person_form_event_tree_with_data.xpath("//event/status[.='unsent']")
+        all_form_events = person_form_event_tree_with_data.xpath("//event")
 
         # Use the new method to communicate with REDCap
         report_data = redi_lib.generate_output(
             person_form_event_tree_with_data, redcap_client,
-            settings.rate_limiter_value_in_redcap, _person_form_events_service,
-            skip_blanks)
+            settings.rate_limiter_value_in_redcap, sent_events, skip_blanks)
 
         # write person_form_event_tree to file
         write_element_tree_to_file(person_form_event_tree_with_data,\
          os.path.join(data_folder, 'person_form_event_tree_with_data.xml'))
-        sent_events = person_form_event_tree_with_data.xpath("//event/status[.='sent']")
-        if len(unsent_events) != len(sent_events):
-            logger.warning('Some of the events are not sent to the redcap. Please check event statuses in '+data_folder+'person_form_event_tree_with_data.xml')
+        if len(all_form_events) != len(sent_events):
+            logger.warning('Some of the events were not sent to the REDCap '
+                           'server. Please check the event statuses in '
+                           '{0}/sent_events.obj'.format(data_folder))
 
         # Add any errors from running the rules to the report
         map(logger.warning, rule_errors)
@@ -1864,6 +1869,27 @@ class PersonFormEventsRepository(object):
                        xml_declaration=True,
                        method="xml",
                        pretty_print=True)
+
+
+class SentEventIndex(object):
+
+    def __init__(self, filename, writer=None, reader=None):
+        self.filename = filename
+        loader = reader or _load
+        self._persist = writer or _save
+        self.sent_events = loader(filename)
+
+    def __len__(self):
+        return len(self.sent_events)
+
+    def mark_sent(self, study_id_key, form_name, event_name):
+        form_event_key = study_id_key, form_name, event_name
+        self.sent_events.append(form_event_key)
+        self._persist(self.sent_events, self.filename)
+
+    def was_sent(self, study_id_key, form_name, event_name):
+        form_event_key = study_id_key, form_name, event_name
+        return form_event_key in self.sent_events
 
 
 if __name__ == "__main__":

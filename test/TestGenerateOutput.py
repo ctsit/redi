@@ -156,9 +156,20 @@ class TestGenerateOutput(unittest.TestCase):
             'errors'                : []
         }
 
-        class MockDataRepository(object):
-            def store(self, data):
-                pass
+        class MockSentEventIndex(object):
+            def __init__(self):
+                self.sent_events = []
+
+            def __len__(self):
+                return len(self.sent_events)
+
+            def mark_sent(self, study_id_key, form_name, event_name):
+                form_event_key = study_id_key, form_name, event_name
+                self.sent_events.append(form_event_key)
+
+            def was_sent(self, study_id_key, form_name, event_name):
+                form_event_key = study_id_key, form_name, event_name
+                return form_event_key in self.sent_events
 
         class MockRedcapClient(RedcapClient):
             def __init__(self):
@@ -176,7 +187,7 @@ class TestGenerateOutput(unittest.TestCase):
 
         etree_1 = etree.ElementTree(etree.fromstring(string_1_xml))
         result = redi_lib.generate_output(etree_1, MockRedcapClient(), 500,
-                                          MockDataRepository())
+                                          MockSentEventIndex())
         self.assertEqual(report_data['total_subjects'], result['total_subjects'])
         self.assertEqual(report_data['form_details'], result['form_details'])
         self.assertEqual(report_data['subject_details'], result['subject_details'])
