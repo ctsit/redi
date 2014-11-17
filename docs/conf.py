@@ -22,7 +22,7 @@ import os
 
 sys.path.insert(0, os.path.abspath('..'))
 from bin import redi
-from bin import redi_lib
+from bin import upload
 
 
 # -- General configuration ------------------------------------------------

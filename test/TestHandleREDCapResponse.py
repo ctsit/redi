@@ -1,13 +1,10 @@
 import unittest
 import os
-import redi
-import redi_lib
-
-file_dir = os.path.dirname(os.path.realpath(__file__))
-goal_dir = os.path.join(file_dir, "../")
-proj_root = os.path.abspath(goal_dir)+'/'
+from bin import redi
+from bin import upload
 
 DEFAULT_DATA_DIRECTORY = os.getcwd()
+
 
 class TestHandleErrorsInREDCapResponse(unittest.TestCase):
 
@@ -21,7 +18,7 @@ class TestHandleErrorsInREDCapResponse(unittest.TestCase):
 								"value": "5.4",
 								"message": "This field is located on a form that is locked. You must first unlock this form for this record"}]}"""
         self.report_data = {'errors':[]}
-        self.assertTrue(redi_lib.handle_errors_in_redcap_xml_response(self.redcap_error,self.report_data))
+        self.assertTrue(upload.handle_errors_in_redcap_xml_response(self.redcap_error,self.report_data))
         
     # Below code is made obsolete because we are handling errors only in case of exceptions.We are not checking for errors in valid cases anymore.
     # def test_handle_errors_in_redcap_xml_response_with_no_error(self):
@@ -36,7 +33,7 @@ class TestHandleErrorsInREDCapResponse(unittest.TestCase):
 								"value": "5.4",
 								"message": "This field is located on a form that is locked. You must first unlock this form for this record"}]}"""
         self.report_data = {}
-        self.assertTrue(redi_lib.handle_errors_in_redcap_xml_response(self.redcap_pass,self.report_data))
+        self.assertTrue(upload.handle_errors_in_redcap_xml_response(self.redcap_pass,self.report_data))
         
 
     def tearDown(self):

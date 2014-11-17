@@ -16,8 +16,8 @@ __status__      = "Development"
 import unittest
 import os
 from lxml import etree
-import redi
-import redi_lib
+from bin import redi
+from bin import upload
 from utils.redcapClient import RedcapClient
 
 
@@ -175,7 +175,7 @@ class TestGenerateOutput(unittest.TestCase):
                 return """Data sent"""
 
         etree_1 = etree.ElementTree(etree.fromstring(string_1_xml))
-        result = redi_lib.generate_output(etree_1, MockRedcapClient(), 500,
+        result = upload.generate_output(etree_1, MockRedcapClient(), 500,
                                           MockDataRepository())
         self.assertEqual(report_data['total_subjects'], result['total_subjects'])
         self.assertEqual(report_data['form_details'], result['form_details'])
