@@ -14,8 +14,8 @@ class TestResume(unittest.TestCase):
         class FileDeleted():
             pass
 
-        import bin.redi
-        redi = reload(bin.redi)
+        import redi.redi
+        redi = reload(redi.redi)
 
         redi._person_form_events_service = MockPersonFormEvents()
         redi._check_input_file = lambda *args: None
@@ -38,8 +38,8 @@ class TestResume(unittest.TestCase):
         class FileStored():
             pass
 
-        import bin.redi
-        redi = reload(bin.redi)
+        import redi.redi
+        redi = reload(redi.redi)
 
         redi._person_form_events_service = MockPersonFormEvents()
         redi._check_input_file = lambda *args: None
@@ -64,8 +64,8 @@ class TestResume(unittest.TestCase):
         class DataFetched():
             pass
 
-        import bin.redi
-        redi = reload(bin.redi)
+        import redi.redi
+        redi = reload(redi.redi)
 
         redi._person_form_events_service = MockPersonFormEvents()
         redi._check_input_file = lambda *args: None

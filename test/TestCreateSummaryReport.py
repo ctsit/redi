@@ -7,8 +7,8 @@ import sys
 from lxml import etree
 from StringIO import StringIO
 import time
-import redi
-import report
+from redi import redi
+from redi import report
 
 DEFAULT_DATA_DIRECTORY = os.getcwd()
 

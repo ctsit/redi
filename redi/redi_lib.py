@@ -407,7 +407,7 @@ def dict_factory(cursor, row):
     return d
 
 """
-@see bin/redi.py#main()
+@see redi/redi.py#main()
 @return a dictionary representation of the batch row for the current run
 
 Check the md5sum of the input file

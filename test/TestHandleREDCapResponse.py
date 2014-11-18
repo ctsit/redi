@@ -1,7 +1,7 @@
 import unittest
 import os
-import redi
-import redi_lib
+from redi import redi
+from redi import redi_lib
 
 file_dir = os.path.dirname(os.path.realpath(__file__))
 goal_dir = os.path.join(file_dir, "../")

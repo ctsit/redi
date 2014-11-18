@@ -9,7 +9,7 @@ This file should be run from the project level folder (one level up from /bin)
 import unittest
 import os
 from wsgiref.simple_server import make_server
-import redi
+from redi import redi
 import thread
 
 file_dir = os.path.dirname(os.path.realpath(__file__))

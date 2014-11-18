@@ -6,7 +6,7 @@ from lxml import etree
 
 from utils import redi_email
 
-REDI_PACKAGE_NAME = 'bin'
+REDI_PACKAGE_NAME = 'redi'
 
 
 class ReportCourier(object):
@@ -177,7 +177,7 @@ def updateSubjectDetails(root, subject_details):
     """
     Helper method for #create_summary_report()
     Adds subject information to the xml tree which is later formated
-    by `bin/utils/report.xsl` into the html `table#subject_details"`
+    by `redi/utils/report.xsl` into the html `table#subject_details"`
     """
     subjectsDetails = root[3]
     for key in sorted(subject_details.keys()):
