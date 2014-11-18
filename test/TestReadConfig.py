@@ -3,8 +3,8 @@ import tempfile
 import shutil
 import os
 
-from bin import redi
-from bin.utils import SimpleConfigParser
+from redi import redi
+from redi.utils import SimpleConfigParser
 
 class TestReadConfig(unittest.TestCase):
 

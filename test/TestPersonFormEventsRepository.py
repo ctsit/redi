@@ -3,7 +3,7 @@ import tempfile
 
 from lxml import etree
 
-from bin.redi import PersonFormEventsRepository
+from redi.redi import PersonFormEventsRepository
 
 
 class TestPersonFormEventsRepository(unittest.TestCase):

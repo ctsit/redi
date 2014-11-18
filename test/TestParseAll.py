@@ -17,7 +17,7 @@ import unittest
 from lxml import etree
 import logging
 import os
-import redi
+from redi import redi
 
 file_dir = os.path.dirname(os.path.realpath(__file__))
 goal_dir = os.path.join(file_dir, "../")

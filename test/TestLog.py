@@ -11,7 +11,7 @@ Note: the created file is destroyed at the end
 import unittest
 import os
 import sys
-import redi
+from redi import redi
 
 file_dir = os.path.dirname(os.path.realpath(__file__))
 goal_dir = os.path.join(file_dir, "../")

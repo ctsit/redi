@@ -3,10 +3,10 @@ import tempfile
 import os
 from lxml import etree
 from mock import patch
-import redi
-from utils import redi_email
-from utils.redcapClient import RedcapClient
-import utils.SimpleConfigParser as SimpleConfigParser
+from redi import redi
+from redi.utils import redi_email
+from redi.utils.redcapClient import RedcapClient
+from redi.utils import SimpleConfigParser
 from requests import RequestException
 
 file_dir = os.path.dirname(os.path.realpath(__file__))

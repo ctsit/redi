@@ -3,7 +3,7 @@ import logging
 
 from lxml import etree
 
-from bin import redi
+from redi import redi
 
 
 class TestCopyDataToPersonFormEventTree(unittest.TestCase):
