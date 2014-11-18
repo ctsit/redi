@@ -145,11 +145,6 @@ def generate_output(person_tree, redcap_client, rate_limit, sent_events,
                 event_name = event.findtext('name', '')
                 assert event_name, "Missing name for form event"
 
-                if sent_events.was_sent(study_id_key, form_name, event_name):
-                    logger.debug("Skipping previously sent " + event_name)
-                    continue
-                event_count += 1
-
                 try:
                     import_dict = {
                         redcap_client.project.def_field: study_id.text}
@@ -158,6 +153,15 @@ def generate_output(person_tree, redcap_client, rate_limit, sent_events,
                         event)
                     json_data_dict = import_dict['json_data']
                     contains_data = import_dict['contains_data']
+
+                    if sent_events.was_sent(study_id_key, form_name, event_name):
+                        logger.debug("Skipping previously sent " + event_name)
+                        if contains_data:
+                            # if no error_strings encountered update event counters
+                            subject_details[study_id_key][form_key] += 1
+                            form_details[form_key] += 1
+                        continue
+                    event_count += 1
 
                     # If we're skipping blanks and this event is blank, we
                     # assume all following events are blank; therefore, break
@@ -176,16 +180,14 @@ def generate_output(person_tree, redcap_client, rate_limit, sent_events,
                         upload_data([json_data_dict], overwrite=True)
                         sent_events.mark_sent(study_id_key, form_name, event_name)
                         logger.debug("Sent " + event_name)
+                        if contains_data:
+                            # if no errors encountered update event counters
+                            subject_details[study_id_key][form_key] += 1
+                            form_details[form_key] += 1
                     except RedcapError as e:
                         found_error = handle_errors_in_redcap_xml_response(
                             e.message,
                             report_data)
-
-                    if contains_data:
-                        if not found_error:
-                            # if no errors encountered update event counters
-                            subject_details[study_id_key][form_key] += 1
-                            form_details[form_key] += 1
 
                 except Exception as e:
                     logger.error(e.message)
