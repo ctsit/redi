@@ -49,12 +49,14 @@ import sys
 import imp
 import os
 import pkg_resources
+import shutil
 
 from requests import RequestException
 from lxml import etree
 from docopt import docopt
 
-import redi_lib
+import batch
+import upload
 import report
 from utils import redi_email
 from utils.redcapClient import RedcapClient
@@ -280,7 +282,8 @@ def _run(config_file, configuration_directory, do_keep_gen_files, dry_run,
     # status to `completed` an ste the `rbEndTime`
     email_settings = get_email_settings(settings)
     db_path = database_path
-    batch = _check_input_file(db_path, email_settings, raw_xml_file, settings)
+    current_batch = _check_input_file(db_path, email_settings, raw_xml_file,
+                                  settings)
 
     form_events_file = os.path.join(configuration_directory,\
      settings.form_events_file)
@@ -310,7 +313,7 @@ def _run(config_file, configuration_directory, do_keep_gen_files, dry_run,
         unsent_events = person_form_event_tree_with_data.xpath("//event/status[.='unsent']")
 
         # Use the new method to communicate with REDCap
-        report_data = redi_lib.generate_output(
+        report_data = upload.generate_output(
             person_form_event_tree_with_data, redcap_client,
             settings.rate_limiter_value_in_redcap, _person_form_events_service,
             skip_blanks)
@@ -334,18 +337,18 @@ def _run(config_file, configuration_directory, do_keep_gen_files, dry_run,
 
         report_courier.deliver(html_str)
 
-    if batch:
+    if current_batch:
         # Update the batch row
-        done_timestamp = redi_lib.get_db_friendly_date_time()
-        redi_lib.update_batch_entry(db_path,
-                                    batch['rbID'], 'Completed', done_timestamp)
+        done_timestamp = batch.get_db_friendly_date_time()
+        batch.update_batch_entry(db_path, current_batch['rbID'], 'Completed',
+                                 done_timestamp)
 
     if dry_run:
         logger.info("End of dry run. All output files are ready for review"\
         " in " + data_folder)
 
     if not do_keep_gen_files:
-        redi_lib.delete_temporary_folder(data_folder)
+        shutil.rmtree(data_folder)
 
 
 def _create_person_form_event_tree_with_data(
@@ -499,7 +502,9 @@ def _create_person_form_event_tree_with_data(
 
 
 def _check_input_file(db_path, email_settings, raw_xml_file, settings):
-    return redi_lib.check_input_file(settings.batch_warning_days, db_path, email_settings, raw_xml_file, settings.project)
+    return batch.check_input_file(settings.batch_warning_days, db_path,
+                                  email_settings, raw_xml_file,
+                                  settings.project)
 
 
 def read_config(config_file, configuration_directory, file_list):

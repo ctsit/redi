@@ -38,9 +38,11 @@ from TestConvertComponentIdToLoincCode import TestConvertComponentIdToLoincCode
 from TestCopyDataToPersonFormEventTree import TestCopyDataToPersonFormEventTree
 from TestGetEMRData import TestGetEMRData
 from TestResume import TestResume
+from TestThrottle import TestThrottle
 from TestPersonFormEventsRepository import TestPersonFormEventsRepository
 from TestVerifyAndCorrectCollectionDate import TestVerifyAndCorrectCollectionDate
 from TestRediEmail import TestRediEmail
+from TestDaysSinceToday import TestDaysSinceToday
 
 class redi_suite(unittest.TestSuite):
 
@@ -79,8 +81,10 @@ class redi_suite(unittest.TestSuite):
         redi_test_suite.addTest(TestCopyDataToPersonFormEventTree)
         redi_test_suite.addTest(TestGetEMRData)
         redi_test_suite.addTest(TestResume)
+        redi_test_suite.addTest(TestThrottle)
         redi_test_suite.addTest(TestPersonFormEventsRepository)
         redi_test_suite.addTest(TestRediEmail)
+        redi_test_suite.addTest(TestDaysSinceToday)
 
         # return the suite
         return unittest.TestSuite([redi_test_suite])

@@ -24,6 +24,9 @@ help:
 test: tests
 tests: coverage
 	[ ! -d config/rules ] || python -munittest discover config/rules
+	rm -f .coverage
+	rm -rf cover/
+	rm -f coverage.xml nosetests.xml
 
 coverage:
 	ARCHFLAGS=$(ARCHFLAGS) python setup.py nosetests
@@ -56,6 +59,7 @@ clean:
 	rm -f person_form_event_tree_with_data.xml
 	rm -rf vagrant/data/
 	rm -f vagrant/redi.db
+	rm -f config-example/report.xml
 
 pypi:
 	#https://pythonhosted.org/Distutils2/distutils/packageindex.html
