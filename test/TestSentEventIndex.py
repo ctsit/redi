@@ -3,13 +3,13 @@ Verifies the functionality of bin.redi.SentEventIndex
 """
 import unittest
 
-from bin import redi
+from redi import redi
 
 
 class TestSentEventIndex(unittest.TestCase):
 
     def test_len(self):
-        index = redi.SentEventIndex("", writer=lambda o, f: None,
+        index = redi.SentEvents("", writer=lambda o, f: None,
                                     reader=lambda f: [])
         self.assertEqual(0, len(index))
 
@@ -19,7 +19,7 @@ class TestSentEventIndex(unittest.TestCase):
         self.assertEqual(2, len(index))
 
     def test_was_sent(self):
-        index = redi.SentEventIndex("", writer=lambda o, f: None,
+        index = redi.SentEvents("", writer=lambda o, f: None,
                                     reader=lambda f: [])
 
         index.mark_sent("007", "new_hire", "1_arm_1")
@@ -29,7 +29,7 @@ class TestSentEventIndex(unittest.TestCase):
     def test_mark_sent(self):
         self.__tally = 0
 
-        index = redi.SentEventIndex("", self.__dummy_writer,
+        index = redi.SentEvents("", self.__dummy_writer,
                                     reader=lambda f: [])
         index.mark_sent("007", "new_hire", "1_arm_1")
         index.mark_sent("007", "new_hire", "2_arm_1")

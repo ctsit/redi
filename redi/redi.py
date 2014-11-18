@@ -215,7 +215,7 @@ def _fetch_run_data(data_folder):
     rule_errors = _load(os.path.join(data_folder, 'rule_errors.obj'))
     collection_date_summary_dict = _load(
         os.path.join(data_folder, 'collection_date_summary_dict.obj'))
-    sent_events = SentEventIndex(os.path.join(data_folder, 'sent_events.obj'))
+    sent_events = SentEvents(os.path.join(data_folder, 'sent_events.idx'))
 
     return (alert_summary, person_form_event_tree_with_data, rule_errors,
             collection_date_summary_dict, sent_events)
@@ -234,7 +234,6 @@ def _store_run_data(data_folder, alert_summary,
     _save(rule_errors, os.path.join(data_folder, 'rule_errors.obj'))
     _save(collection_date_summary_dict,
           os.path.join(data_folder, 'collection_date_summary_dict.obj'))
-    _save([], os.path.join(data_folder, 'sent_events.obj'))
 
 
 def _save(obj, path):
@@ -323,9 +322,9 @@ def _run(config_file, configuration_directory, do_keep_gen_files, dry_run,
         write_element_tree_to_file(person_form_event_tree_with_data,\
          os.path.join(data_folder, 'person_form_event_tree_with_data.xml'))
         if len(all_form_events) != len(sent_events):
-            logger.warning('Some of the events were not sent to the REDCap '
-                           'server. Please check the event statuses in '
-                           '{0}/sent_events.obj'.format(data_folder))
+            logger.warning(
+                'Some of the events were not sent to the REDCap server. Please '
+                "check the log file or {0}/sent_events.idx".format(data_folder))
 
         # Add any errors from running the rules to the report
         map(logger.warning, rule_errors)
@@ -1871,12 +1870,18 @@ class PersonFormEventsRepository(object):
                        pretty_print=True)
 
 
-class SentEventIndex(object):
+class SentEvents(object):
+    """
+    List of form events that have been sent to REDCap
 
+    :param filename: file location
+    :param writer: delegate called after an event has been marked sent
+    :param reader: function to read previously sent events from disk
+    """
     def __init__(self, filename, writer=None, reader=None):
         self.filename = filename
-        loader = reader or _load
-        self._persist = writer or _save
+        self._persist = writer or self._append
+        loader = reader or self._readall
         self.sent_events = loader(filename)
 
     def __len__(self):
@@ -1890,6 +1895,25 @@ class SentEventIndex(object):
     def was_sent(self, study_id_key, form_name, event_name):
         form_event_key = study_id_key, form_name, event_name
         return form_event_key in self.sent_events
+
+    @staticmethod
+    def _readall(filename):
+        # Reads events as a list of tuples (default reader delegate)
+        try:
+            with open(filename, 'r') as fp:
+                return [ast.literal_eval(line) for line in fp]
+        except IOError:
+            return []
+
+    @staticmethod
+    def _append(values, filename):
+        # Appends the last value to the file (default handler of on_marked_sent)
+        if not values:
+            return
+
+        with open(filename, 'a') as fp:
+            fp.write(str(values[-1]))
+            fp.write(os.linesep)
 
 
 if __name__ == "__main__":
