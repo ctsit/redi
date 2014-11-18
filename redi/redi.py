@@ -198,6 +198,7 @@ def _delete_last_runs_data(data_folder):
     _remove(os.path.join(data_folder, 'alert_summary.obj'))
     _remove(os.path.join(data_folder, 'rule_errors.obj'))
     _remove(os.path.join(data_folder, 'collection_date_summary_dict.obj'))
+    _remove(os.path.join(data_folder, 'sent_events.idx'))
 
 
 def _remove(path):
