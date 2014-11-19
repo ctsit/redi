@@ -159,7 +159,7 @@ def main():
     redcap_client = connect_to_redcap(get_email_settings(settings),
                                       get_redcap_settings(settings), dry_run)
 
-    report_file_path = os.path.join(configuration_directory,
+    report_file_path = os.path.join(output_files,
                                     settings.report_file_path)
 
     report_creator = report.ReportCreator(report_file_path, settings.project,
@@ -170,7 +170,8 @@ def main():
     if settings.send_email:
         report_courier = report.ReportEmailSender(get_email_settings(settings), logger)
     else:
-        report_courier = report.ReportFileWriter(settings.report_file_path2, logger)
+        report_courier = report.ReportFileWriter(os.path.join(output_files,
+            settings.report_file_path2), logger)
 
     _run(config_file, configuration_directory, do_keep_gen_files, dry_run,
          get_emr_data, settings, output_files, db_path, redcap_client,
