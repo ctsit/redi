@@ -42,7 +42,7 @@ from TestThrottle import TestThrottle
 from TestPersonFormEventsRepository import TestPersonFormEventsRepository
 from TestVerifyAndCorrectCollectionDate import TestVerifyAndCorrectCollectionDate
 from TestRediEmail import TestRediEmail
-from TestDaysSinceToday import TestDaysSinceToday
+from TestSentEventIndex import TestSentEventIndex
 
 class redi_suite(unittest.TestSuite):
 
@@ -70,6 +70,7 @@ class redi_suite(unittest.TestSuite):
         redi_test_suite.addTest(TestCreateEmptyEventTreeForStudy)
         redi_test_suite.addTest(TestVerifyAndCorrectCollectionDate)
         redi_test_suite.addTest(TestParseAll)
+        redi_test_suite.addTest(TestSentEventIndex)
 
         # The redesign functions May 2014
         redi_test_suite.addTest(TestCreateImportDataJson)
