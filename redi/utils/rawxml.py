@@ -5,7 +5,7 @@ import datetime
 class RawXml(object):
     """
     This class is used to store details about the input file
-    @see redi_lib/check_input_file()
+    @see redi.batch.check_input_file()
     """
 
     def __init__(self, project, path):

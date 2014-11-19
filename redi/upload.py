@@ -62,7 +62,8 @@ def create_import_data_json(import_data_dict, event_tree):
     return {'json_data': import_data_dict, 'contains_data': contains_data}
 
 
-def generate_output(person_tree, redcap_client, rate_limit, data_repository, skip_blanks=False):
+def generate_output(person_tree, redcap_client, rate_limit, sent_events,
+                    skip_blanks=False):
     """
     Note: This function communicates with the redcap application.
     Steps:
@@ -141,8 +142,11 @@ def generate_output(person_tree, redcap_client, rate_limit, data_repository, ski
 
             # loop through the events of one form
             for event in form.xpath('event'):
-                event_status = event.findtext('status')
-                if event_status == 'sent':
+                event_name = event.findtext('name', '')
+                assert event_name, "Missing name for form event"
+
+                if sent_events.was_sent(study_id_key, form_name, event_name):
+                    logger.debug("Skipping previously sent " + event_name)
                     continue
                 event_count += 1
 
@@ -170,14 +174,8 @@ def generate_output(person_tree, redcap_client, rate_limit, data_repository, ski
                     try:
                         found_error = False
                         upload_data([json_data_dict], overwrite=True)
-                        status = event.find('status')
-                        if status is not None:
-                            status.text = 'sent'
-                        else:
-                            status_element = etree.Element("status")
-                            status_element.text = 'sent'
-                            event.append(status_element)
-                        data_repository.store(person_tree)
+                        sent_events.mark_sent(study_id_key, form_name, event_name)
+                        logger.debug("Sent " + event_name)
                     except RedcapError as e:
                         found_error = handle_errors_in_redcap_xml_response(
                             e.message,

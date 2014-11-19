@@ -184,8 +184,8 @@ class TestGenerateOutput(unittest.TestCase):
                 return """Data sent"""
 
         etree_1 = etree.ElementTree(etree.fromstring(string_1_xml))
-        result = redi_lib.generate_output(etree_1, MockRedcapClient(), 500,
-                                          MockSentEventIndex())
+        result = upload.generate_output(etree_1, MockRedcapClient(), 500,
+                                        MockSentEventIndex())
         self.assertEqual(report_data['total_subjects'], result['total_subjects'])
         self.assertEqual(report_data['form_details'], result['form_details'])
         self.assertEqual(report_data['subject_details'], result['subject_details'])
