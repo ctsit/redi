@@ -97,7 +97,7 @@ Erase the data in the correct project if necessary:
 
    ::
 
-        $ ../bin/utils/redcap_records.py --token=121212 --url=http://localhost:8998/redcap/api/ -i demographic_test_data.csv
+        $ ../redi/utils/redcap_records.py --token=121212 --url=http://localhost:8998/redcap/api/ -i demographic_test_data.csv
 
 On success the following text is returned:
 
@@ -119,7 +119,7 @@ On success the following text is returned:
        Find and adjust the "Rate Limiter" field to something like 60000
 
 
-       $ python ../bin/redi.py
+       $ python ../redi/redi.py
 
 If the output from the command above produces an exception then check if
 your IP was not banned due to numerous requests sent (@see related code
@@ -149,7 +149,7 @@ If the token is invalid the following error is returned:
 
    ::
 
-        $ ../bin/utils/redcap_records.py --token=121212 --url=http://localhost:8998/redcap/api/ -f "demgraphics chemistry" > output_B.csv
+        $ ../redi/utils/redcap_records.py --token=121212 --url=http://localhost:8998/redcap/api/ -f "demgraphics chemistry" > output_B.csv
 
 If you have a lot of forms, the output comparison is easier if you
 export the forms separately like this:
@@ -166,7 +166,7 @@ export the forms separately like this:
         
         for form in $forms
             do
-              ../bin/utils/redcap_records.py --token=121212 --url=http://localhost:8998/redcap/api/ --forms=$form > $batch/$form.csv
+              ../redi/utils/redcap_records.py --token=121212 --url=http://localhost:8998/redcap/api/ --forms=$form > $batch/$form.csv
             done
 
 Later do the diff like this:
