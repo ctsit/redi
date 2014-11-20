@@ -14,8 +14,8 @@ class TestResume(unittest.TestCase):
         class FileDeleted():
             pass
 
-        import bin.redi
-        redi = reload(bin.redi)
+        import redi.redi
+        redi = reload(redi.redi)
 
         redi._person_form_events_service = MockPersonFormEvents()
         redi._check_input_file = lambda *args: None
@@ -24,7 +24,8 @@ class TestResume(unittest.TestCase):
             redi._run(config_file=None, configuration_directory='',
                       do_keep_gen_files=None, dry_run=True, get_emr_data=False,
                       settings=MockSettings(), data_folder=None,
-                      database_path=None, redcap_client=None)
+                      database_path=None, redcap_client=None,
+                      report_courier=None, report_creator=None)
 
     def test_no_resume_stores(self):
         class MockPersonFormEvents(object):
@@ -37,8 +38,8 @@ class TestResume(unittest.TestCase):
         class FileStored():
             pass
 
-        import bin.redi
-        redi = reload(bin.redi)
+        import redi.redi
+        redi = reload(redi.redi)
 
         redi._person_form_events_service = MockPersonFormEvents()
         redi._check_input_file = lambda *args: None
@@ -52,7 +53,8 @@ class TestResume(unittest.TestCase):
             redi._run(config_file=None, configuration_directory='',
                       do_keep_gen_files=None, dry_run=True, get_emr_data=False,
                       settings=MockSettings(), data_folder=None,
-                      database_path=None, redcap_client=None)
+                      database_path=None, redcap_client=None,
+                      report_courier=None, report_creator=None)
 
     def test_resume_fetches_data_from_last_run(self):
         class MockPersonFormEvents(object):
@@ -62,8 +64,8 @@ class TestResume(unittest.TestCase):
         class DataFetched():
             pass
 
-        import bin.redi
-        redi = reload(bin.redi)
+        import redi.redi
+        redi = reload(redi.redi)
 
         redi._person_form_events_service = MockPersonFormEvents()
         redi._check_input_file = lambda *args: None
@@ -72,7 +74,8 @@ class TestResume(unittest.TestCase):
             redi._run(config_file=None, configuration_directory='',
                       do_keep_gen_files=None, dry_run=True, get_emr_data=False,
                       settings=MockSettings(), data_folder=None,
-                      database_path=None, resume=True, redcap_client=None)
+                      database_path=None, resume=True, redcap_client=None,
+                      report_courier=None, report_creator=None)
 
 
 class MockSettings(object):

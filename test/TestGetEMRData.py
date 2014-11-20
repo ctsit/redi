@@ -5,8 +5,8 @@ import shutil
 import tempfile
 import pysftp
 from mock import patch
-import utils.GetEmrData as GetEmrData
-from utils.GetEmrData import EmrFileAccessDetails
+from redi.utils import GetEmrData
+from redi.utils.GetEmrData import EmrFileAccessDetails
 
 import time
 from subprocess import Popen

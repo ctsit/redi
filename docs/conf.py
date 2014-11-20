@@ -21,8 +21,8 @@ import os
 #sys.path.insert(0, os.path.abspath('.'))
 
 sys.path.insert(0, os.path.abspath('..'))
-from bin import redi
-from bin import redi_lib
+from redi import redi
+from redi import upload
 
 
 # -- General configuration ------------------------------------------------

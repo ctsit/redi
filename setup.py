@@ -18,17 +18,17 @@ from setuptools import setup, find_packages
 
 setup(
     name='redi-py',
-    version='0.12.0',
+    version='0.13.0',
     author='https://www.ctsi.ufl.edu/research/study-development/informatics-consulting/',
     author_email='cts-it-red@ctsi.ufl.edu',
     packages=find_packages(exclude=['test']),
     include_package_data=True,
     package_data={
-        'bin': ['utils/*.xsl', 'utils/*.xsd'],
+        'redi': ['utils/*.xsl', 'utils/*.xsd'],
         'redi': ['README.md'],
     },
     url='https://github.com/ctsit/redi',
-    download_url = 'https://github.com/ctsit/redi/releases/tag/0.12.0',
+    download_url = 'https://github.com/ctsit/redi/releases/tag/0.13.0',
     keywords = ['EMR', 'EHR', 'REDCap', 'Clinical Data'],
     license='BSD 3-Clause',
     description='REDCap Electronic Data Importer',
@@ -42,12 +42,13 @@ setup(
     ],
     entry_points={
         'console_scripts': [
-            'redi = bin.redi:main',
+            'redi = redi.redi:main',
         ],
     },
     test_suite='test.TestSuite',
     tests_require=[
         "mock >= 1.0",
+        "sftpserver >= 0.2",
     ],
     setup_requires=[
         "nose >= 1.0",

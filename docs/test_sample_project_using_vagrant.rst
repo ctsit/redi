@@ -6,7 +6,7 @@ Purpose
 
 The "vagrant" folder was created with the goal of making testing `RED-I
 software <https://github.com/ctsit/redi>`__ as easy as possible. It
-contains the `Vagrantfile <../vagrant/Vagrantfile>`__ which allows to
+contains the `Vagrantfile <../vagrant/Vagrantfile>`__ which allows you to
 start a virtual machine capable of running the `REDCap
 software <http://http://www.project-redcap.org>`__ -- which means that
 during virtual machine creation the Apache and MySQL software is
@@ -56,13 +56,14 @@ Now execute the following commands to complete the configuration:
 .. raw:: html
 
    <pre>
+   cd ./vagrant    # must be in the redi/vagrant/ directory
    make copy_config_example
    make copy_redcap_code
    make copy_project_data
    make show_config
    </pre>
 
-Please verify that the output from "show\_config" matheches your
+Please verify that the output from "show\_config" matches your
 expectations.
 
 3. Start the VM
@@ -73,10 +74,13 @@ To use the vagrant VM you will need to install Vagrant and Virtual Box.
 With these packages installed, follow this procedure to use a VM
 template:
 
-::
+.. raw:: html
 
-    cd ./vagrant
-    vagrant up
+   <pre>
+   # must be in the redi/vagrant/ directory
+   cd ./vagrant
+   vagrant up
+   </pre>
 
 Vagrant will instantiate and provision the new VM. The REDCap web
 application should be accessible in the browser at

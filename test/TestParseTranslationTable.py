@@ -8,7 +8,7 @@ This file tests for the function parse_translation_table
 import unittest
 import os
 from lxml import etree
-import redi
+from redi import redi
 
 file_dir = os.path.dirname(os.path.realpath(__file__))
 goal_dir = os.path.join(file_dir, "../")

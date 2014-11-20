@@ -1,18 +1,18 @@
 import unittest
 from lxml import etree
 import os
-import redi
-
-file_dir = os.path.dirname(os.path.realpath(__file__))
-goal_dir = os.path.join(file_dir, "../")
-proj_root = os.path.abspath(goal_dir)+'/'
+from redi import redi
 
 DEFAULT_DATA_DIRECTORY = os.getcwd()
 
 class TestUpdateStatusField(unittest.TestCase):
 
-  def test_update_status_field_value_when_one_subject_with_two_forms_with_one_event_in_each_form(self):
+  def setUp(self):
     redi.configure_logging(DEFAULT_DATA_DIRECTORY)
+
+
+  def test_update_status_field_value_when_one_subject_with_two_forms_with_one_event_in_each_form(self):
+
     self.source = """<person_form_event>
       <person>
           <study_id>99</study_id>
@@ -153,7 +153,6 @@ class TestUpdateStatusField(unittest.TestCase):
     self.assertEqual(self.expect, result)
 
   def test_update_status_field_value_when_one_subject_with_two_forms_with_two_events_in_each_form(self):
-    redi.configure_logging(proj_root+'log/redi.log')
     self.source = """<person_form_event>
       <person>
           <study_id>99</study_id>
@@ -370,7 +369,6 @@ class TestUpdateStatusField(unittest.TestCase):
     self.assertEqual(self.expect, result)
 
   def test_update_status_field_value_when_two_subjects_with_two_forms_with_one_event_in_each_form(self):
-    redi.configure_logging(proj_root+'log/redi.log')
     self.source = """<person_form_event>
           <person>
               <study_id>99</study_id>
@@ -609,7 +607,6 @@ class TestUpdateStatusField(unittest.TestCase):
     self.assertEqual(self.expect, result)
 
   def test_update_status_field_value_when_one_subject_with_no_form(self):
-    redi.configure_logging(proj_root+'log/redi.log')
     self.source = """<person_form_event>
           <person>
               <study_id>99</study_id>
@@ -662,7 +659,6 @@ class TestUpdateStatusField(unittest.TestCase):
     self.assertEqual(self.expect, result)
 
   def test_update_status_field_value_when_one_subject_with_two_forms_event_missing_in_one_of_the_forms(self):
-    redi.configure_logging(proj_root+'log/redi.log')
     self.source = """<person_form_event>
           <person>
               <study_id>99</study_id>
@@ -757,7 +753,6 @@ class TestUpdateStatusField(unittest.TestCase):
     self.assertEqual(self.expect, result)
 
   def test_update_status_field_value_when_one_subject_with_one_form_one_event_value_tag_missing(self):
-    redi.configure_logging(proj_root+'log/redi.log')
     self.source = """<person_form_event>
           <person>
               <study_id>99</study_id>

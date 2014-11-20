@@ -31,7 +31,7 @@ Options:
 __author__ = "Nicholas Rejack"
 __copyright__ = "Copyright 2013, University of Florida"
 __license__ = "BSD 2-Clause"
-__version__ = "0.11.3"
+__version__ = "0.13.0"
 __email__ = "nrejack@ufl.edu"
 __status__ = "Development"
 
@@ -47,36 +47,22 @@ import string
 import xml.etree.ElementTree as ET
 import sys
 import imp
-import argparse
 import os
+import pkg_resources
+import shutil
 
 from requests import RequestException
 from lxml import etree
 from docopt import docopt
 
+import batch
+import upload
+import report
 from utils import redi_email
 from utils.redcapClient import RedcapClient
 import utils.SimpleConfigParser as SimpleConfigParser
 import utils.GetEmrData as GetEmrData
 from utils.GetEmrData import EmrFileAccessDetails
-
-
-def get_proj_root():
-    file_dir = os.path.dirname(os.path.realpath(__file__))
-    proj_root = os.path.abspath(os.path.join(file_dir, "../")) + '/'
-    return proj_root
-
-
-def get_db_path(batch_info_database, database_path):
-    if not os.path.exists(database_path):
-        os.makedirs(database_path)
-
-    db_path = os.path.join(database_path, batch_info_database)
-    return db_path
-
-
-proj_root = get_proj_root()
-import redi_lib
 
 
 # Command line default argument values
@@ -173,9 +159,32 @@ def main():
     redcap_client = connect_to_redcap(get_email_settings(settings),
                                       get_redcap_settings(settings), dry_run)
 
+    report_file_path = os.path.join(output_files,
+                                    settings.report_file_path)
+
+    report_creator = report.ReportCreator(report_file_path, settings.project,
+                                          settings.redcap_uri,
+                                          settings.is_sort_by_lab_id,
+                                          write_element_tree_to_file)
+
+    if settings.send_email:
+        report_courier = report.ReportEmailSender(get_email_settings(settings), logger)
+    else:
+        report_courier = report.ReportFileWriter(os.path.join(output_files,
+            settings.report_file_path2), logger)
+
     _run(config_file, configuration_directory, do_keep_gen_files, dry_run,
          get_emr_data, settings, output_files, db_path, redcap_client,
-         args['--resume'], args['--skip-blanks'])
+         report_courier, report_creator, args['--resume'],
+         args['--skip-blanks'])
+
+
+def get_db_path(batch_info_database, database_path):
+    if not os.path.exists(database_path):
+        os.makedirs(database_path)
+
+    db_path = os.path.join(database_path, batch_info_database)
+    return db_path
 
 
 def _makedirs(data_folder):
@@ -192,6 +201,7 @@ def _delete_last_runs_data(data_folder):
     _remove(os.path.join(data_folder, 'alert_summary.obj'))
     _remove(os.path.join(data_folder, 'rule_errors.obj'))
     _remove(os.path.join(data_folder, 'collection_date_summary_dict.obj'))
+    _remove(os.path.join(data_folder, 'sent_events.idx'))
 
 
 def _remove(path):
@@ -207,10 +217,12 @@ def _fetch_run_data(data_folder):
     person_form_event_tree_with_data = _person_form_events_service.fetch()
     alert_summary = _load(os.path.join(data_folder, 'alert_summary.obj'))
     rule_errors = _load(os.path.join(data_folder, 'rule_errors.obj'))
-    collection_date_summary_dict = _load(os.path.join(data_folder, 'collection_date_summary_dict.obj'))
+    collection_date_summary_dict = _load(
+        os.path.join(data_folder, 'collection_date_summary_dict.obj'))
+    sent_events = SentEvents(os.path.join(data_folder, 'sent_events.idx'))
 
-    return alert_summary, person_form_event_tree_with_data, rule_errors,\
-     collection_date_summary_dict
+    return (alert_summary, person_form_event_tree_with_data, rule_errors,
+            collection_date_summary_dict, sent_events)
 
 
 def _load(path):
@@ -218,12 +230,14 @@ def _load(path):
         return pickle.load(fp)
 
 
-def _store_run_data(data_folder, alert_summary,\
- person_form_event_tree_with_data, rule_errors, collection_date_summary_dict):
+def _store_run_data(data_folder, alert_summary,
+                    person_form_event_tree_with_data, rule_errors,
+                    collection_date_summary_dict):
     _person_form_events_service.store(person_form_event_tree_with_data)
     _save(alert_summary, os.path.join(data_folder, 'alert_summary.obj'))
     _save(rule_errors, os.path.join(data_folder, 'rule_errors.obj'))
-    _save(collection_date_summary_dict, os.path.join(data_folder, 'collection_date_summary_dict.obj'))
+    _save(collection_date_summary_dict,
+          os.path.join(data_folder, 'collection_date_summary_dict.obj'))
 
 
 def _save(obj, path):
@@ -246,7 +260,7 @@ def connect_to_redcap(email_settings, redcap_settings, dry_run=False):
 
 def _run(config_file, configuration_directory, do_keep_gen_files, dry_run,
          get_emr_data, settings, data_folder, database_path, redcap_client,
-         resume=False, skip_blanks=False):
+         report_courier, report_creator, resume=False, skip_blanks=False):
     global translational_table_tree
 
     assert _person_form_events_service is not None
@@ -274,24 +288,14 @@ def _run(config_file, configuration_directory, do_keep_gen_files, dry_run,
     # status to `completed` an ste the `rbEndTime`
     email_settings = get_email_settings(settings)
     db_path = database_path
-    batch = _check_input_file(db_path, email_settings, raw_xml_file, settings)
+    current_batch = _check_input_file(db_path, email_settings, raw_xml_file,
+                                  settings)
 
     form_events_file = os.path.join(configuration_directory,\
      settings.form_events_file)
 
     translation_table_file = os.path.join(configuration_directory, \
         settings.translation_table_file)
-
-    report_file_path = os.path.join(configuration_directory,\
-     settings.report_file_path)
-
-    report_parameters = {
-        'report_file_path': report_file_path,
-        'project': settings.project,
-        'redcap_uri': settings.redcap_uri}
-
-    report_xsl = proj_root + "bin/utils/report.xsl"
-    send_email = settings.send_email
 
     if not resume:
         _delete_last_runs_data(data_folder)
@@ -306,26 +310,26 @@ def _run(config_file, configuration_directory, do_keep_gen_files, dry_run,
                         person_form_event_tree_with_data, rule_errors,
                         collection_date_summary_dict)
 
-    alert_summary, person_form_event_tree_with_data, rule_errors, collection_date_summary_dict = \
-        _fetch_run_data(data_folder)
+    (alert_summary, person_form_event_tree_with_data, rule_errors,
+     collection_date_summary_dict, sent_events) = _fetch_run_data(data_folder)
 
     # Data will be sent to REDCap server and email will be sent only if
     # redi.py is not executing in dry run state.
     if not dry_run:
-        unsent_events = person_form_event_tree_with_data.xpath("//event/status[.='unsent']")
+        all_form_events = person_form_event_tree_with_data.xpath("//event")
 
         # Use the new method to communicate with REDCap
-        report_data = redi_lib.generate_output(
+        report_data = upload.generate_output(
             person_form_event_tree_with_data, redcap_client,
-            settings.rate_limiter_value_in_redcap, _person_form_events_service,
-            skip_blanks)
+            settings.rate_limiter_value_in_redcap, sent_events, skip_blanks)
 
         # write person_form_event_tree to file
         write_element_tree_to_file(person_form_event_tree_with_data,\
          os.path.join(data_folder, 'person_form_event_tree_with_data.xml'))
-        sent_events = person_form_event_tree_with_data.xpath("//event/status[.='sent']")
-        if len(unsent_events) != len(sent_events):
-            logger.warning('Some of the events are not sent to the redcap. Please check event statuses in '+data_folder+'person_form_event_tree_with_data.xml')
+        if len(all_form_events) != len(sent_events):
+            logger.warning(
+                'Some of the events were not sent to the REDCap server. Please '
+                "check the log file or {0}/sent_events.idx".format(data_folder))
 
         # Add any errors from running the rules to the report
         map(logger.warning, rule_errors)
@@ -334,76 +338,23 @@ def _run(config_file, configuration_directory, do_keep_gen_files, dry_run,
             report_data['errors'].extend(rule_errors)
 
         # create summary report
-        xml_report_tree = create_summary_report(report_parameters,
-                                            report_data, alert_summary,
-                                            collection_date_summary_dict)
-        # print etree.tostring(xml_report_tree)
-        report_xsl = proj_root + "bin/utils/report.xsl"
-        xslt = etree.parse(report_xsl)
-        transform = etree.XSLT(xslt)
-        html_report = transform(xml_report_tree)
-        html_str = etree.tostring(html_report, method='html', pretty_print=True)
+        html_str = report_creator.create_report(
+            report_data, alert_summary, collection_date_summary_dict)
 
-        if settings.send_email:
-            deliver_report_as_email(email_settings, html_str)
-        else:
-            deliver_report_as_file(settings.report_file_path2, html_str)
+        report_courier.deliver(html_str)
 
-    if batch:
+    if current_batch:
         # Update the batch row
-        done_timestamp = redi_lib.get_db_friendly_date_time()
-        redi_lib.update_batch_entry(db_path,
-                                    batch['rbID'], 'Completed', done_timestamp)
+        done_timestamp = batch.get_db_friendly_date_time()
+        batch.update_batch_entry(db_path, current_batch['rbID'], 'Completed',
+                                 done_timestamp)
 
     if dry_run:
         logger.info("End of dry run. All output files are ready for review"\
         " in " + data_folder)
 
     if not do_keep_gen_files:
-        redi_lib.delete_temporary_folder(data_folder)
-
-
-def deliver_report_as_file(html_report_path, html):
-    """
-    Deliver the summary report by writing it to a file
-    or logging it to the console if writing the file fails
-
-    :html_report_path the path where the report will be stored
-    :html the actual report content
-    """
-    problem_found = False
-    try:
-        report_file = open(html_report_path, 'w')
-    except (IOError, OSError) as e:
-        logger.exception('Could not open file: %s' % html_report_path)
-        problem_found = True
-    else:
-        try:
-            report_file.write(html)
-            logger.info("==> You can review the summary report by opening: {}"\
-                " in your browser".format(html_report_path))
-        except IOError:
-            logger.exception('Could not write file: %s' % html_report_path)
-            problem_found = True
-        finally:
-            report_file.close()
-    if problem_found:
-        logger.info("== Summary report ==" + html)
-
-
-def deliver_report_as_email(email_settings, html):
-    """
-    Deliver summary report as an email
-
-    :email_settings dictinary with email parameters
-    :html the actual report content
-    """
-    try:
-        redi_email.send_email_data_import_completed(email_settings, html)
-        logger.info("Summary report was emailed: parameter 'send_email = Y'")
-    except Exception as e:
-        logger.error("Unable to deliver the summary report due error: %s" % e)
-        deliver_report_as_file("report.html", html)
+        shutil.rmtree(data_folder)
 
 
 def _create_person_form_event_tree_with_data(
@@ -437,8 +388,8 @@ def _create_person_form_event_tree_with_data(
     # Convert COMPONENT_ID to loinc_code in the raw data
     component_to_loinc_code_xml = os.path.join(configuration_directory, \
                                   settings.component_to_loinc_code_xml)
-    component_to_loinc_code_xsd = proj_root + \
-                                  "bin/utils/component_id_to_loinc_code.xsd"
+    component_to_loinc_code_xsd = pkg_resources.resource_filename(
+        'redi', 'utils/component_id_to_loinc_code.xsd')
     component_to_loinc_code_xml_tree = validate_xml_file_and_extract_data \
         (component_to_loinc_code_xml, component_to_loinc_code_xsd)
     convert_component_id_to_loinc_code(data, component_to_loinc_code_xml_tree)
@@ -557,7 +508,9 @@ def _create_person_form_event_tree_with_data(
 
 
 def _check_input_file(db_path, email_settings, raw_xml_file, settings):
-    return redi_lib.check_input_file(settings.batch_warning_days, db_path, email_settings, raw_xml_file)
+    return batch.check_input_file(settings.batch_warning_days, db_path,
+                                  email_settings, raw_xml_file,
+                                  settings.project)
 
 
 def read_config(config_file, configuration_directory, file_list):
@@ -1087,16 +1040,25 @@ def research_id_to_redcap_id_converter(
     This function converts the research_id to redcap_id
      1. prepare a dictionary with [key, value] --> [study_id, redcap_id]
      2. replace the element tree study_id with the new redcap_id's
-     for each bad id, log it as warn
-    """
+     for each bad id, log it as warn.
 
+    Example of xml fragment produced:
+<subject lab_id="999-0001">
+    <NAME>HEMOGLOBIN</NAME>
+    <loinc_code>1534435</loinc_code>
+    <RESULT>1234</RESULT>
+...
+    <STUDY_ID>1</STUDY_ID> <!-- originally this was "999-0001" -->
+</subject>
+
+    Note: The next function which reads the "data" tree
+        is #create_empty_event_tree_for_study()
+    """
     # read each of the study_id's from the data etree
     study_id_recap_id_dict = {}
 
-    ''' Configuration data from the mapping xml
-
-  '''
-    mapping_xml = os.path.join(configuration_directory,\
+    # Configuration data from the mapping xml
+    mapping_xml = os.path.join(configuration_directory,
      research_id_to_redcap_id)
 
     # read the field names from the research_id_to_redcap_id_map.xml
@@ -1107,26 +1069,21 @@ def research_id_to_redcap_id_converter(
             mapping_xml)
 
     mapping_data = etree.parse(mapping_xml)
-    redcap_id_field_name = mapping_data.getroot().findtext(
-        'redcap_id_field_name')
-    research_id_field_name = mapping_data.getroot().findtext(
-        'research_id_field_name')
+    root = mapping_data.getroot()
+    redcap_id_field_name = root.findtext('redcap_id_field_name')
+    research_id_field_name = root.findtext('research_id_field_name')
 
     if research_id_field_name is None or research_id_field_name == '':
         logger.error(
-            'research_id_field_name tag in file %s is not present',
-            mapping_xml)
+            'research_id_field_name tag in file %s is not present', mapping_xml)
         raise Exception(
-            'research_id_field_name tag in file %s is not present',
-            mapping_xml)
+            'research_id_field_name tag in file %s is not present', mapping_xml)
 
     if redcap_id_field_name is None or redcap_id_field_name == '':
         logger.error(
-            'redcap_id_field_name tag in file %s is not present',
-            mapping_xml)
+            'redcap_id_field_name tag in file %s is not present', mapping_xml)
         raise Exception(
-            'redcap_id_field_name tag in file %s is not present',
-            mapping_xml)
+            'redcap_id_field_name tag in file %s is not present', mapping_xml)
 
     # query the redcap for the response with redcap id's
     response = redcap_client.get_data_from_redcap(
@@ -1146,12 +1103,15 @@ def research_id_to_redcap_id_converter(
 
     for subject in data.iter('subject'):
         study_id = subject.findtext('STUDY_ID')
-        # tag = subject.find('STUDY_ID')
+
         # if the study id is not null populate the dictionary
         if study_id is not None and study_id != '' and study_id in redcap_dict:
-            # if the study_id in redcap_dict of redcap id's update the study_id
-            # with redcap id
-            subject.find('STUDY_ID').text = redcap_dict[study_id]
+            # if the study_id is in the dictionary then replace it by the redcap_id
+            lab_id_ele = subject.find('STUDY_ID')
+
+            # save the original subject id from the lab data as an attribute
+            subject.set('lab_id', lab_id_ele.text)
+            lab_id_ele.text = redcap_dict[study_id]
         elif study_id is not None and study_id != '' and study_id not in redcap_dict:
             # add the bad research id to list of bad ids
             bad_ids[study_id] += 1
@@ -1211,103 +1171,6 @@ def configure_logging(data_folder, verbose=False):
     return logger
 
 
-def create_summary_report(report_parameters, report_data, alert_summary, \
-    collection_date_summary_dict):
-    root = etree.Element("report")
-    root.append(etree.Element("header"))
-    root.append(etree.Element("summary"))
-    root.append(etree.Element("alerts"))
-    root.append(etree.Element("subjectsDetails"))
-    root.append(etree.Element("errors"))
-    root.append(etree.Element("summaryOfSpecimenTakenTimes"))
-    updateReportHeader(root, report_parameters)
-    updateReportSummary(root, report_data)
-    updateSubjectDetails(root, report_data['subject_details'])
-    updateReportAlerts(root, alert_summary)
-    updateReportErrors(root, report_data['errors'])
-    updateSummaryOfSpecimenTakenTimes(root, collection_date_summary_dict)
-    tree = etree.ElementTree(root)
-    write_element_tree_to_file(tree,report_parameters.get('report_file_path'))
-    return tree
-
-
-def updateReportHeader(root, report_parameters):
-    """ Update the passed `root` element tree with date, project name and url"""
-    header = root[0]
-    project = etree.SubElement(header, "project")
-    project.text = report_parameters.get('project')
-    date = etree.SubElement(header, "date")
-    date.text = time.strftime("%m/%d/%Y")
-    redcapServerAddress = etree.SubElement(header, "redcapServerAddress")
-    redcapServerAddress.text = report_parameters.get('redcap_uri')
-
-
-def updateReportSummary(root, report_data):
-    summary = root[1]
-    subjectCount = etree.SubElement(summary, "subjectCount")
-    subjectCount.text = str(report_data.get('total_subjects'))
-    forms = etree.SubElement(summary, "forms")
-    form_data = report_data['form_details']
-    for k in sorted(form_data.keys()):
-        form = etree.SubElement(forms, "form")
-        name_element = etree.SubElement(form, "form_name")
-        name_element.text = k
-        count_element = etree.SubElement(form, "form_count")
-        count_element.text = str(form_data.get(k))
-
-
-def updateReportAlerts(root, alert_summary):
-    alerts = root[2]
-    too_many_forms = etree.SubElement(alerts, 'tooManyForms')
-    too_many_values = etree.SubElement(alerts, 'tooManyValues')
-    for event in alert_summary['max_event_alert']:
-        event_alert = etree.SubElement(too_many_forms, 'eventAlert')
-        msg = etree.SubElement(event_alert, 'message')
-        msg.text = event
-    for value in alert_summary['multiple_values_alert']:
-        values_alert = etree.SubElement(too_many_values, 'valuesAlert')
-        msg = etree.SubElement(values_alert, 'message')
-        msg.text = value
-
-
-def updateSubjectDetails(root, subject_details):
-    subjectsDetails = root[3]
-    for key in sorted(subject_details.keys()):
-        subject = etree.SubElement(subjectsDetails, "Subject")
-        details = subject_details.get(key)
-        subjectId = etree.SubElement(subject, "ID")
-        subjectId.text = key
-        forms = etree.SubElement(subject, "forms")
-        for k in sorted(details.keys()):
-            if(k.endswith("_Forms")):
-                form = etree.SubElement(forms, "form")
-                name_element = etree.SubElement(form, "form_name")
-                name_element.text = k
-                count_element = etree.SubElement(form, "form_count")
-                count_element.text = str(details.get(k))
-            else:
-                element = etree.SubElement(subject, k)
-                element.text = str(details.get(k))
-
-
-def updateReportErrors(root, errors):
-    errorsRoot = root[4]
-    for error in errors:
-        errorElement = etree.SubElement(errorsRoot, "error")
-        errorElement.text = str(error)
-
-
-def updateSummaryOfSpecimenTakenTimes(root, collection_date_summary_dict):
-    timeSummaryRoot = root[5]
-    totalElement = etree.SubElement(timeSummaryRoot, "total")
-    totalElement.text = str(collection_date_summary_dict['total'])
-    blankElement = etree.SubElement(timeSummaryRoot, "blank")
-    blankElement.text = str(collection_date_summary_dict['blank'])
-    percentElement = etree.SubElement(timeSummaryRoot, "percent")
-    percentElement.text = str((float(collection_date_summary_dict['blank'])/\
-        collection_date_summary_dict['total'])*100)
-
-
 def create_empty_events_for_one_subject_helper(
         form_events_file,
         translation_table_file):
@@ -1327,7 +1190,7 @@ def create_empty_events_for_one_subject(
         form_events_tree,
         translation_table_tree):
     #logger.debug('Creating all form events template for one subject')
-    from lxml import etree
+
     root = etree.Element("all_form_events")
     form_event_root = form_events_tree.getroot()
     translation_table_root = translation_table_tree.getroot()
@@ -1400,13 +1263,15 @@ def create_empty_events_for_one_subject(
 
 def create_empty_event_tree_for_study(raw_data_tree, all_form_events_tree):
     """
-    This function uses raw_data_tree and all_form_events_tree and creates a person_form_event_tree for study
+    This function uses raw_data_tree and all_form_events_tree and creates
+    a person_form_event_tree for study
+
     :param raw_data_tree: This parameter holds raw data tree
     :param all_form_events_tree: This parameter holds all form events tree
     """
     logger.info('Creating all form events template for all subjects')
-    from lxml import etree
-    root = etree.Element("person_form_event")
+
+    pfe_element = etree.Element("person_form_event")
     raw_data_root = raw_data_tree.getroot()
     all_form_events_root = all_form_events_tree.getroot()
     if raw_data_root is None:
@@ -1414,31 +1279,33 @@ def create_empty_event_tree_for_study(raw_data_tree, all_form_events_tree):
     if all_form_events_root is None:
         raise Exception('All form Events tree is empty')
 
-    subjects_list = set()
+    subjects_dict = {}
 
+    # Collect the `study_id => lab_id` mappings
     for subject in raw_data_root.iter('subject'):
-        subjects_list.add(subject.find('STUDY_ID').text)
+        study_id = subject.findtext('STUDY_ID')
+        subjects_dict[study_id] = subject.attrib['lab_id']
 
-    if not subjects_list:
-        raise Exception('There is no subjects in the raw data')
+    if not subjects_dict:
+        raise Exception("There are no subjects in the raw data. " \
+                "This can be caused by an incorrect input file or "\
+                "by lack of enrollment data in the REDCap database." )
 
-    for subject_id in subjects_list:
+    for subject_id in subjects_dict.iterkeys():
         person = etree.Element("person")
+        # Copy `lab_id` attribute from `subject` to `person` element
+        person.set('lab_id', subjects_dict.get(subject_id))
         study_id = etree.SubElement(person, "study_id")
         study_id.text = subject_id
-        person.insert(
-            person.index(
-                person.find('study_id')) + 1,
-            etree.XML(
-                etree.tostring(
-                    all_form_events_root,
-                    method='html',
-                    pretty_print=True)))
-        root.append(person)
+        person_index = person.index(person.find('study_id')) + 1
 
-    tree = etree.ElementTree(root)
-    return tree
+        # insert the pretty-fied form events
+        pretty_form_events = etree.XML(
+            etree.tostring(all_form_events_root, method='html', pretty_print=True))
+        person.insert(person_index, pretty_form_events)
+        pfe_element.append(person)
 
+    return etree.ElementTree(pfe_element)
 
 def setStat(
         event,
@@ -2008,6 +1875,52 @@ class PersonFormEventsRepository(object):
                        xml_declaration=True,
                        method="xml",
                        pretty_print=True)
+
+
+class SentEvents(object):
+    """
+    List of form events that have been sent to REDCap
+
+    :param filename: file location
+    :param writer: delegate called after an event has been marked sent
+    :param reader: function to read previously sent events from disk
+    """
+    def __init__(self, filename, writer=None, reader=None):
+        self.filename = filename
+        self._persist = writer or self._append
+        loader = reader or self._readall
+        self.sent_events = loader(filename)
+
+    def __len__(self):
+        return len(self.sent_events)
+
+    def mark_sent(self, study_id_key, form_name, event_name):
+        form_event_key = study_id_key, form_name, event_name
+        self.sent_events.append(form_event_key)
+        self._persist(self.sent_events, self.filename)
+
+    def was_sent(self, study_id_key, form_name, event_name):
+        form_event_key = study_id_key, form_name, event_name
+        return form_event_key in self.sent_events
+
+    @staticmethod
+    def _readall(filename):
+        # Reads events as a list of tuples (default reader delegate)
+        try:
+            with open(filename, 'r') as fp:
+                return [ast.literal_eval(line) for line in fp]
+        except IOError:
+            return []
+
+    @staticmethod
+    def _append(values, filename):
+        # Appends the last value to the file (default handler of on_marked_sent)
+        if not values:
+            return
+
+        with open(filename, 'a') as fp:
+            fp.write(str(values[-1]))
+            fp.write(os.linesep)
 
 
 if __name__ == "__main__":

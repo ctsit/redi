@@ -3,10 +3,10 @@ import tempfile
 import os
 from lxml import etree
 from mock import patch
-import redi
-from utils import redi_email
-from utils.redcapClient import RedcapClient
-import utils.SimpleConfigParser as SimpleConfigParser
+from redi import redi
+from redi.utils import redi_email
+from redi.utils.redcapClient import RedcapClient
+from redi.utils import SimpleConfigParser
 from requests import RequestException
 
 file_dir = os.path.dirname(os.path.realpath(__file__))
@@ -19,7 +19,7 @@ class TestResearchIdToRedcapId(unittest.TestCase):
 
     def setUp(self):
         self.sortedData = """
-    <study>
+<study>
     <subject>
         <NAME>HEMOGLOBIN</NAME>
         <loinc_code>1534435</loinc_code>
@@ -28,8 +28,9 @@ class TestResearchIdToRedcapId(unittest.TestCase):
         <REFERENCE_HIGH>16.0</REFERENCE_HIGH>
         <REFERENCE_UNIT>g/dL</REFERENCE_UNIT>
         <DATE_TIME_STAMP/>
-        <STUDY_ID>999-0059</STUDY_ID>
-    <timestamp/><redcapFormName>cbc</redcapFormName><eventName/><formDateField>cbc_lbdtc</formDateField><formCompletedFieldName>cbc_complete</formCompletedFieldName><formImportedFieldName>cbc_nximport</formImportedFieldName><redcapFieldNameValue>hemo_lborres</redcapFieldNameValue><redcapFieldNameUnits>hemo_lborresu</redcapFieldNameUnits><redcapFieldNameStatus>hemo_lbstat</redcapFieldNameStatus></subject>
+        <STUDY_ID>999-0001</STUDY_ID>
+    <timestamp/><redcapFormName>cbc</redcapFormName><eventName/><formDateField>cbc_lbdtc</formDateField><formCompletedFieldName>cbc_complete</formCompletedFieldName><formImportedFieldName>cbc_nximport</formImportedFieldName><redcapFieldNameValue>hemo_lborres</redcapFieldNameValue><redcapFieldNameUnits>hemo_lborresu</redcapFieldNameUnits><redcapFieldNameStatus>hemo_lbstat</redcapFieldNameStatus>
+    </subject>
     <subject>
         <NAME>WBC</NAME>
         <loinc_code>999</loinc_code>
@@ -38,39 +39,19 @@ class TestResearchIdToRedcapId(unittest.TestCase):
         <REFERENCE_HIGH/>
         <REFERENCE_UNIT/>
         <DATE_TIME_STAMP/>
-        <STUDY_ID>999-0059</STUDY_ID>
-    <timestamp/><redcapFormName>cbc</redcapFormName><eventName/><formDateField>cbc_lbdtc</formDateField><formCompletedFieldName>cbc_complete</formCompletedFieldName><formImportedFieldName>cbc_nximport</formImportedFieldName><redcapFieldNameValue>wbc_lborres</redcapFieldNameValue><redcapFieldNameUnits>wbc_lborresu</redcapFieldNameUnits><redcapFieldNameStatus>wbc_lbstat</redcapFieldNameStatus></subject>
-    <subject>
-        <NAME>PLATELET COUNT</NAME>
-        <loinc_code>1009</loinc_code>
-        <RESULT>92</RESULT>
-        <REFERENCE_LOW/>
-        <REFERENCE_HIGH/>
-        <REFERENCE_UNIT/>
-        <DATE_TIME_STAMP/>
-        <STUDY_ID>999-0059</STUDY_ID>
-    <timestamp/><redcapFormName>cbc</redcapFormName><eventName/><formDateField>cbc_lbdtc</formDateField><formCompletedFieldName>cbc_complete</formCompletedFieldName><formImportedFieldName>cbc_nximport</formImportedFieldName><redcapFieldNameValue>plat_lborres</redcapFieldNameValue><redcapFieldNameUnits>plat_lborresu</redcapFieldNameUnits><redcapFieldNameStatus>plat_lbstat</redcapFieldNameStatus></subject>
-    <subject>
-        <NAME>HEMOGLOBIN</NAME>
-        <loinc_code>1534435</loinc_code>
-        <RESULT>9.5</RESULT>
-        <REFERENCE_LOW>12.0</REFERENCE_LOW>
-        <REFERENCE_HIGH>16.0</REFERENCE_HIGH>
-        <REFERENCE_UNIT>g/dL</REFERENCE_UNIT>
-        <DATE_TIME_STAMP/>
-        <STUDY_ID>999-0059</STUDY_ID>
-    <timestamp/><redcapFormName>cbc</redcapFormName><eventName/><formDateField>cbc_lbdtc</formDateField><formCompletedFieldName>cbc_complete</formCompletedFieldName><formImportedFieldName>cbc_nximport</formImportedFieldName><redcapFieldNameValue>hemo_lborres</redcapFieldNameValue><redcapFieldNameUnits>hemo_lborresu</redcapFieldNameUnits><redcapFieldNameStatus>hemo_lbstat</redcapFieldNameStatus></subject>
-    </study>"""
+        <STUDY_ID>999-0002</STUDY_ID>
+    <timestamp/><redcapFormName>cbc</redcapFormName><eventName/><formDateField>cbc_lbdtc</formDateField><formCompletedFieldName>cbc_complete</formCompletedFieldName><formImportedFieldName>cbc_nximport</formImportedFieldName><redcapFieldNameValue>wbc_lborres</redcapFieldNameValue><redcapFieldNameUnits>wbc_lborresu</redcapFieldNameUnits><redcapFieldNameStatus>wbc_lbstat</redcapFieldNameStatus>
+    </subject>
+</study>"""
 
         self.data = etree.ElementTree(etree.fromstring(self.sortedData))
-        self.serverResponse = """<records>
-    <item><dm_subjid><![CDATA[3]]></dm_subjid><redcap_event_name><![CDATA[1_arm_1]]></redcap_event_name><dm_usubjid><![CDATA[999-0001]]></dm_usubjid></item>
+        self.serverResponse = """
+<records>
 <item><dm_subjid><![CDATA[76]]></dm_subjid><redcap_event_name><![CDATA[1_arm_1]]></redcap_event_name><dm_usubjid><![CDATA[999-0059]]></dm_usubjid></item>
-<item><dm_subjid><![CDATA[5]]></dm_subjid><redcap_event_name><![CDATA[1_arm_1]]></redcap_event_name><dm_usubjid><![CDATA[001-0005]]></dm_usubjid></item></records>"""
-
+</records>"""
 
         self.output = """<study>
-    <subject>
+    <subject lab_id="999-0001">
         <NAME>HEMOGLOBIN</NAME>
         <loinc_code>1534435</loinc_code>
         <RESULT>10.5</RESULT>
@@ -79,8 +60,9 @@ class TestResearchIdToRedcapId(unittest.TestCase):
         <REFERENCE_UNIT>g/dL</REFERENCE_UNIT>
         <DATE_TIME_STAMP/>
         <STUDY_ID>1</STUDY_ID>
-    <timestamp/><redcapFormName>cbc</redcapFormName><eventName/><formDateField>cbc_lbdtc</formDateField><formCompletedFieldName>cbc_complete</formCompletedFieldName><formImportedFieldName>cbc_nximport</formImportedFieldName><redcapFieldNameValue>hemo_lborres</redcapFieldNameValue><redcapFieldNameUnits>hemo_lborresu</redcapFieldNameUnits><redcapFieldNameStatus>hemo_lbstat</redcapFieldNameStatus></subject>
-    <subject>
+    <timestamp/><redcapFormName>cbc</redcapFormName><eventName/><formDateField>cbc_lbdtc</formDateField><formCompletedFieldName>cbc_complete</formCompletedFieldName><formImportedFieldName>cbc_nximport</formImportedFieldName><redcapFieldNameValue>hemo_lborres</redcapFieldNameValue><redcapFieldNameUnits>hemo_lborresu</redcapFieldNameUnits><redcapFieldNameStatus>hemo_lbstat</redcapFieldNameStatus>
+    </subject>
+    <subject lab_id="999-0002">
         <NAME>WBC</NAME>
         <loinc_code>999</loinc_code>
         <RESULT>5.4</RESULT>
@@ -88,38 +70,20 @@ class TestResearchIdToRedcapId(unittest.TestCase):
         <REFERENCE_HIGH/>
         <REFERENCE_UNIT/>
         <DATE_TIME_STAMP/>
-        <STUDY_ID>1</STUDY_ID>
-    <timestamp/><redcapFormName>cbc</redcapFormName><eventName/><formDateField>cbc_lbdtc</formDateField><formCompletedFieldName>cbc_complete</formCompletedFieldName><formImportedFieldName>cbc_nximport</formImportedFieldName><redcapFieldNameValue>wbc_lborres</redcapFieldNameValue><redcapFieldNameUnits>wbc_lborresu</redcapFieldNameUnits><redcapFieldNameStatus>wbc_lbstat</redcapFieldNameStatus></subject>
-    <subject>
-        <NAME>PLATELET COUNT</NAME>
-        <loinc_code>1009</loinc_code>
-        <RESULT>92</RESULT>
-        <REFERENCE_LOW/>
-        <REFERENCE_HIGH/>
-        <REFERENCE_UNIT/>
-        <DATE_TIME_STAMP/>
-        <STUDY_ID>1</STUDY_ID>
-    <timestamp/><redcapFormName>cbc</redcapFormName><eventName/><formDateField>cbc_lbdtc</formDateField><formCompletedFieldName>cbc_complete</formCompletedFieldName><formImportedFieldName>cbc_nximport</formImportedFieldName><redcapFieldNameValue>plat_lborres</redcapFieldNameValue><redcapFieldNameUnits>plat_lborresu</redcapFieldNameUnits><redcapFieldNameStatus>plat_lbstat</redcapFieldNameStatus></subject>
-    <subject>
-        <NAME>HEMOGLOBIN</NAME>
-        <loinc_code>1534435</loinc_code>
-        <RESULT>9.5</RESULT>
-        <REFERENCE_LOW>12.0</REFERENCE_LOW>
-        <REFERENCE_HIGH>16.0</REFERENCE_HIGH>
-        <REFERENCE_UNIT>g/dL</REFERENCE_UNIT>
-        <DATE_TIME_STAMP/>
-        <STUDY_ID>1</STUDY_ID>
-    <timestamp/><redcapFormName>cbc</redcapFormName><eventName/><formDateField>cbc_lbdtc</formDateField><formCompletedFieldName>cbc_complete</formCompletedFieldName><formImportedFieldName>cbc_nximport</formImportedFieldName><redcapFieldNameValue>hemo_lborres</redcapFieldNameValue><redcapFieldNameUnits>hemo_lborresu</redcapFieldNameUnits><redcapFieldNameStatus>hemo_lbstat</redcapFieldNameStatus></subject>
-    </study>"""
+        <STUDY_ID>2</STUDY_ID>
+    <timestamp/><redcapFormName>cbc</redcapFormName><eventName/><formDateField>cbc_lbdtc</formDateField><formCompletedFieldName>cbc_complete</formCompletedFieldName><formImportedFieldName>cbc_nximport</formImportedFieldName><redcapFieldNameValue>wbc_lborres</redcapFieldNameValue><redcapFieldNameUnits>wbc_lborresu</redcapFieldNameUnits><redcapFieldNameStatus>wbc_lbstat</redcapFieldNameStatus>
+    </subject>
+</study>"""
 
         self.expect = etree.tostring(etree.fromstring(self.output))
         self.configuration_directory = tempfile.mkdtemp('/')
         self.research_id_to_redcap_id = "research_id_to_redcap_id_map.xml"
         try:
             f = open(os.path.join(self.configuration_directory, self.research_id_to_redcap_id), "w+")
-            f.write("""<subject_id_field_mapping>
-  <redcap_id_field_name>dm_subjid</redcap_id_field_name>
-  <research_id_field_name>dm_usubjid</research_id_field_name>
+            f.write("""
+<subject_id_field_mapping>
+    <redcap_id_field_name>dm_subjid</redcap_id_field_name>
+    <research_id_field_name>dm_usubjid</research_id_field_name>
 </subject_id_field_mapping>""")
             f.close()
         except:
@@ -131,7 +95,16 @@ class TestResearchIdToRedcapId(unittest.TestCase):
     def dummy_get_data_from_redcap(self,records_to_fecth=[],events_to_fetch=[], fields_to_fetch=[], forms_to_fetch=[], return_format='xml'):
         dummy_output = """<?xml version="1.0" encoding="UTF-8" ?>
 <records>
-<item><dm_subjid><![CDATA[1]]></dm_subjid><redcap_event_name><![CDATA[1]]></redcap_event_name><dm_usubjid><![CDATA[999-0059]]></dm_usubjid></item>
+    <item>
+        <dm_subjid><![CDATA[1]]></dm_subjid>
+        <redcap_event_name><![CDATA[1]]></redcap_event_name>
+        <dm_usubjid><![CDATA[999-0001]]></dm_usubjid>
+    </item>
+    <item>
+        <dm_subjid><![CDATA[2]]></dm_subjid>
+        <redcap_event_name><![CDATA[1]]></redcap_event_name>
+        <dm_usubjid><![CDATA[999-0002]]></dm_usubjid>
+    </item>
 </records>"""
         return dummy_output
 

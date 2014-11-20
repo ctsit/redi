@@ -1,6 +1,6 @@
 import unittest
 from lxml import etree
-import redi
+from redi import redi
 
 class TestAddElementsToTree(unittest.TestCase):
 

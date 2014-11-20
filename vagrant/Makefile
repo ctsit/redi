@@ -19,7 +19,7 @@ ifneq ("$(wildcard $(MAKE_CONFIG_FILE))", "")
    REDCAP_API_URI := $(shell cat ${CONFIG_FILE} | sed -e 's/ //g' | grep -v '^\#' | grep 'redcap_uri=' | cut -d '=' -f2)
    REDCAP_VM_URI := $(subst api/,,$(REDCAP_API_URI))
    REDCAP_VM_TOKEN := $(shell cat ${CONFIG_FILE} | sed -e 's/ //g' | grep -v '^\#' | grep 'token=' | cut -d '=' -f2)
-   REDCAP_RECORDS_CMD:=../bin/utils/redcap_records.py --token=$(REDCAP_VM_TOKEN) --url=$(REDCAP_API_URI)
+   REDCAP_RECORDS_CMD:=../redi/utils/redcap_records.py --token=$(REDCAP_VM_TOKEN) --url=$(REDCAP_API_URI)
    REDCAP_PROJECT_ID := $(shell cat ${MAKE_CONFIG_FILE} | sed -e 's/ //g' | grep -v '^\#' | grep 'redcap_project_id=' | cut -d '=' -f2)
    REDCAP_PROJECT_FORMS := $(shell cat ${MAKE_CONFIG_FILE} | sed -e 's/ //g' | grep -v '^\#' | grep 'redcap_project_forms=' | cut -d '=' -f2)
    REDCAP_PROJECT_ENROLLMENT_FORM := $(shell cat ${MAKE_CONFIG_FILE} | sed -e 's/ //g' | grep -v '^\#' | grep 'redcap_project_enrollment_form=' | cut -d '=' -f2)
@@ -114,7 +114,7 @@ rc_enrollment: check_config
 	$(REDCAP_RECORDS_CMD) -i $(ENROLLMENT_CSV_FILE)
 
 rc_post:
-	python ../bin/redi.py -c $(CONFIG_FOLDER)
+	python ../redi/redi.py -c $(CONFIG_FOLDER)
 
 rc_get: check_config
 	$(REDCAP_RECORDS_CMD) -f "$(REDCAP_PROJECT_FORMS)"
@@ -124,6 +124,9 @@ rc_get_json: check_config
 
 rc_get_enrollment: check_config
 	$(REDCAP_RECORDS_CMD) -f "$(REDCAP_PROJECT_ENROLLMENT_FORM)" -t csv
+
+rc_get_enrollment_meta:
+	@curl -X POST http://localhost:8998/redcap/api/ -d token=$(REDCAP_VM_TOKEN) -d content=metadata -d format=csv -d forms[]=enrollment
 
 rc_fresh:
 	make copy_project_data

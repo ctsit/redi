@@ -24,5 +24,5 @@ Erik Schmidt, and Chris Barnes provided direction to the development effort.
 
 Radha Kandula, Mohan Das Katragadda, Ruchi Desai, Yang Li, Kumar Sadhu,
 Alex Loiacono, Erik Schmidt, Nicholas Rejack, Philip Chase, Roy Keyes,
-and Andrei Sura provided code to make this project awesome.
+Andrei Sura, and Taeber Rapczak provided code to make this project awesome.
 We are nothing without our developers.

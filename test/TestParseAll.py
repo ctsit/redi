@@ -17,33 +17,18 @@ import unittest
 from lxml import etree
 import logging
 import os
-import redi
-
-file_dir = os.path.dirname(os.path.realpath(__file__))
-goal_dir = os.path.join(file_dir, "../")
-proj_root = os.path.abspath(goal_dir)+'/'
+from redi import redi
 
 DEFAULT_DATA_DIRECTORY = os.getcwd()
 
 class TestParseAll(unittest.TestCase):
 
     def setUp(self):
-        global logger
-        logger = logging.getLogger('redi')
-        logging.basicConfig(filename=DEFAULT_DATA_DIRECTORY,
-                        format='%(asctime)s - %(levelname)s - \
-                        %(name)s - %(message)s',
-                        datefmt='%m/%d/%Y %H:%M:%S',
-                        filemode='w',
-                        level=logging.DEBUG)
-        return()
+        redi.configure_logging(DEFAULT_DATA_DIRECTORY)
 
     ############################
     # == TEST_1 - config/formEvents.xml
     def test_parse_form_events(self):
-        redi.configure_logging(DEFAULT_DATA_DIRECTORY)
-        logger.info("Running " + __name__ 
-            + "#test_person_form_event() using xml: " )
         string_1_xml = """<?xml version="1.0" encoding="UTF-8"?>
 <redcapProject>
 	<name>Project</name>

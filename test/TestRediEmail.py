@@ -1,15 +1,16 @@
 import unittest
 import smtplib
 from mock import patch, call
-import redi
-from utils import redi_email
+from redi import redi
+from redi.utils.rawxml import RawXml
+from redi.utils import redi_email
 
 
 class TestRediEmail(unittest.TestCase):
     """
     Check functions in the `utils/redi_email` module
     To run individually:
-        $ PYTHONPATH=bin python test/TestRediEmail.py
+        $ PYTHONPATH=redi python test/TestRediEmail.py
     """
 
     def setUp(self):
@@ -26,6 +27,8 @@ class TestRediEmail(unittest.TestCase):
             }
         self.settings = type("", (), settings)()
         self.email_settings = redi.get_email_settings(self.settings)
+        self.raw_xml = RawXml('', __file__)
+
 
     def test_get_email_settings(self):
         """Check if we picked proper values from the global settings"""
@@ -57,14 +60,14 @@ class TestRediEmail(unittest.TestCase):
         """ Verify return true when email is sent"""
         ese = self.email_settings
         self.assertTrue(redi_email.send_email_redcap_connection_error(ese))
-        self.assertTrue(redi_email.send_email_input_data_unchanged(ese))
+        self.assertTrue(redi_email.send_email_input_data_unchanged(ese, self.raw_xml))
 
     @patch.multiple(redi_email, send_email=dummy_send_failed)
     def test_failed(self):
         """ Verify return false when email is not sent"""
         ese = self.email_settings
         self.assertFalse(redi_email.send_email_redcap_connection_error(ese))
-        self.assertFalse(redi_email.send_email_input_data_unchanged(ese))
+        self.assertFalse(redi_email.send_email_input_data_unchanged(ese, self.raw_xml))
 
     @patch("smtplib.SMTP")
     def test_mime_email(self, mock_smtp):
@@ -82,7 +85,8 @@ class TestRediEmail(unittest.TestCase):
         ese = self.email_settings
         instance = mock_smtp.return_value
         instance.sendmail.side_effect = smtplib.SMTPRecipientsRefused({})
-        self.assertRaises(smtplib.SMTPRecipientsRefused, redi_email.send_email_data_import_completed, ese)
+        self.assertRaises(smtplib.SMTPRecipientsRefused,\
+                redi_email.send_email_data_import_completed, ese)
         self.assertEqual(instance.sendmail.call_count, 1)
 
     def tearDown(self):

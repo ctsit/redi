@@ -16,9 +16,9 @@ __status__      = "Development"
 import unittest
 import os
 from lxml import etree
-import redi
-import redi_lib
-from utils.redcapClient import RedcapClient
+from redi import redi
+from redi import upload
+from redi.utils.redcapClient import RedcapClient
 
 
 DEFAULT_DATA_DIRECTORY = os.getcwd()
@@ -33,11 +33,9 @@ class TestGenerateOutput(unittest.TestCase):
         def_field = 'test'
 
     def test_person_form_event(self):
-        redi.logger.info("Running " + __name__ 
-            + "#test_person_form_event() using xml: " )
         string_1_xml = """
 <person_form_event>
-    <person>
+    <person lab_id="999-0100">
         <study_id>100</study_id>
         <all_form_events>
             <form>
@@ -63,7 +61,7 @@ class TestGenerateOutput(unittest.TestCase):
  
         </all_form_events>
     </person>
-    <person>
+    <person lab_id="999-0099">
         <study_id>99</study_id>
         <all_form_events>
             <form>
@@ -112,7 +110,7 @@ class TestGenerateOutput(unittest.TestCase):
             </form>
         </all_form_events>
     </person>
-    <person>
+    <person lab_id="999-0098">
         <study_id>98</study_id>
         <all_form_events>
             <form>
@@ -144,9 +142,9 @@ class TestGenerateOutput(unittest.TestCase):
 
         form_details    = {'Total_cbc_Forms': 2, 'Total_inr_Forms': 3}
         subject_details = {
-            '98'  : {'Total_cbc_Forms' : 0, 'Total_inr_Forms' : 1 },
-            '99'  : {'Total_cbc_Forms' : 1, 'Total_inr_Forms' : 1 },
-            '100' : {'Total_cbc_Forms' : 1, 'Total_inr_Forms' : 1 }
+                '98'  : {'Total_cbc_Forms' : 0, 'Total_inr_Forms' : 1, 'lab_id': "999-0098" },
+                '99'  : {'Total_cbc_Forms' : 1, 'Total_inr_Forms' : 1, "lab_id": "999-0099" },
+                '100' : {'Total_cbc_Forms' : 1, 'Total_inr_Forms' : 1, "lab_id": "999-0100" }
         } 
  
         report_data = {
@@ -156,9 +154,20 @@ class TestGenerateOutput(unittest.TestCase):
             'errors'                : []
         }
 
-        class MockDataRepository(object):
-            def store(self, data):
-                pass
+        class MockSentEventIndex(object):
+            def __init__(self):
+                self.sent_events = []
+
+            def __len__(self):
+                return len(self.sent_events)
+
+            def mark_sent(self, study_id_key, form_name, event_name):
+                form_event_key = study_id_key, form_name, event_name
+                self.sent_events.append(form_event_key)
+
+            def was_sent(self, study_id_key, form_name, event_name):
+                form_event_key = study_id_key, form_name, event_name
+                return form_event_key in self.sent_events
 
         class MockRedcapClient(RedcapClient):
             def __init__(self):
@@ -175,8 +184,8 @@ class TestGenerateOutput(unittest.TestCase):
                 return """Data sent"""
 
         etree_1 = etree.ElementTree(etree.fromstring(string_1_xml))
-        result = redi_lib.generate_output(etree_1, MockRedcapClient(), 500,
-                                          MockDataRepository())
+        result = upload.generate_output(etree_1, MockRedcapClient(), 500,
+                                        MockSentEventIndex())
         self.assertEqual(report_data['total_subjects'], result['total_subjects'])
         self.assertEqual(report_data['form_details'], result['form_details'])
         self.assertEqual(report_data['subject_details'], result['subject_details'])
