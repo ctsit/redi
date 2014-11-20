@@ -1,3 +1,79 @@
+2014-11-20 v0.13.0
+
+The focus of this release has been clean up. Related functions were moved into
+their own files for easier maintenance and comprehension. Reports were enhanced
+and bugs related to them were fixed. Throttling and uploading were both
+re-examined and new algorithms implemented which, during testing, run-times
+decreased anywhere between 12 and 57%.
+
+ * Add new REDCap Rate Limit throttling algorithm
+ * Improve speed of marking events as sent
+ * Add script that generates enrollment records
+ * Rename "bin" to "redi"
+ * Write report.html to data directory instead of current directory
+ * Write report.xml to data directory instead of configuration directory
+ * Added helper class `bin/utils/rawxml.py` to store information about the
+   input file (can add more info if needed)
+ * Extract report creation and sending from _run()
+ * Add more useful aliases for vagrant box
+ * Updated documentation
+ * Enhanced report
+ * Add the `report.html` as attachment
+
+2014-10-07 v0.12.0
+
+* Summary: Converted documentation to .rst format, enable key-based access to SFTP servers to fetch data, enable installation via fetching from the PyPI repository.
+
+ * remove parse_args() function (Radha Kandula)
+ * Add docopt to redi (Radha Kandula)
+ * Small fix for the README links (Andrei Sura)
+ * Use the `cts-it-red@ctsi.ufl.edu` email for consistency with `setup.py` (Andrei Sura)
+ * Document installation from binaries: `pip install redi-py` (Andrei Sura)
+ * Restore the short README.md because it is referenced by `setup.py` (Andrei Sura)
+ * Remove unused `doc` folder All `*.rst` files are in now in the `docs` folder (Andrei Sura)
+ * Move `doc/flowcharts` to `docs/flowcharts` (Andrei Sura)
+ * Fix links in `README.rst` (Andrei Sura)
+ * Replace `README.md` by a shorter `README.rst` because we have the full content in `docs/about.rst` (Andrei Sura)
+ * Add `help` tasks in the the main `Makefile` (Andrei Sura)
+ * Fix some misspellings of REDCap (Taeber Rapczak)
+ * Fix configuration files to allow uploadig to the pypi.python.org repo @see https://pypi.python.org/pypi/redi-py/0.11.3 (Andrei Sura)
+ * Fix broken documentation links during conversion to `*.rst` (Andrei Sura)
+ * Remove files `setup.rst and test.rst` from `docs/api` to avoid unnecessary document creation (Andrei Sura)
+ * added default emr password of None (Nicholas Rejack)
+ * removed emr sftp server password from required parameters (Nicholas Rejack)
+ * removed author name (Radha Kandula)
+ * Make `GetEmrData.py` immune to `string` passed as port number (Andrei Sura)
+ * Add `requirements.txt` file for RTD (Andrei Sura)
+ * Use default theme in `docs/conf.py` (Andrei Sura)
+ * Edit one method doc to verify if sphinx can pick it (Andrei Sura)
+ * Save important files for docs `sphix-ification` (Andrei Sura)
+ * Save converted files from `doc/*.md` to `docs/*.rst` (Andrei Sura)
+ * Copy images from `doc/images` to `docs/images` for the ReST migration (Andrei Sura)
+ * implemented review comments for pull request #84 (Radha Kandula)
+ * Add contact info to `README.md` (Andrei Sura)
+ * Update AUTHORS.md (Andrei Sura)
+ * Expand documentation about `Installation Steps Using Source Code` + Add short section `How to Use RED-I` (Andrei Sura)
+ * One line documentation fix for deprecated `--keep=yes` (Andrei Sura)
+ * Reformat `describing_a_redcap_form_to_red-i.md` for shorter lines + Moved `screenshot-field-name-lookup.png` to the `images` folder (Andrei Sura)
+ * add fields() function to Event class to get all the fields of it (Radha Kandula)
+ * Rules for clearing values using keyword 'cancel' (Radha Kandula)
+ * Fix anchors for document sections in README.md (Andrei Sura)
+ * Link to Philip's RED-I presentation from the main README.md (Andrei Sura)
+ * Link to our code review guidelines `doc/code-review-checklist.md` from the main README.md (Andrei Sura)
+ * Add the removed pieces from README.md as seprate files in the `doc/` folder (Andrei Sura)
+ * Add more links to existing files in the `doc/` folder from README.md (Andrei Sura)
+ * Add support for --record parameter in redcap_records.py (Philip Chase)
+ * Fix issue with download file name when connecting to sftp (Andrei Sura)
+ * Remove developer specific details from main README.md (Andrei Sura)
+ * Add dependency on `sftpserver` to `.travis.yml` (Andrei Sura)
+ * Add unit test for connecting to sftp with a private key (Andrei Sura)
+ * Use new `sfpt_server_*` params when connecting to sftp with a private key (Andrei Sura)
+ * Use `EmrFileAccessDetails` object for passing new sftp params: * sftp_server_port * sftp_server_private_key * sftp_server_private_key_pass (Andrei Sura)
+ * Correct names for two tasks in `vagrant/Makefile` (Andrei Sura)
+ * Improve documentation in `config-example/settings.ini` Closes issue #63 (Andrei Sura)
+ * Remove unused script: `exportForms.sh` (Andrei Sura)
+ * Use boolean args `keep` and `emrdata` Closes issue #53 with dedicated unit test class `TestArgs` (Andrei Sura)
+
 2014-09-23 v0.11.3
 
  * Summary: Update config-example to work with new sample project
