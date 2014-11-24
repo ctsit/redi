@@ -116,6 +116,9 @@ rc_enrollment: check_config
 rc_post:
 	python ../redi/redi.py -c $(CONFIG_FOLDER)
 
+rc_post_skip_blanks:
+	python ../bin/redi.py -c $(CONFIG_FOLDER) --skip-blanks
+
 rc_get: check_config
 	$(REDCAP_RECORDS_CMD) -f "$(REDCAP_PROJECT_FORMS)"
 

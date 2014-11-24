@@ -1,5 +1,5 @@
 
-DB_FILE=$(shell python -c 'from appdirs import AppDirs; dirs = AppDirs("redi"); print ("\"" + dirs.user_data_dir + "/0.10.0/redi.db\"")')
+DB_FILE=../redi.db
 
 .PHONY: help
 help:
@@ -31,8 +31,7 @@ add:
 
 fresh:
 	rm -f $(DB_FILE)
-	touch $(DB_FILE)
-	sqlite3 $(DB_FILE) 'CREATE TABLE RediBatch ( rbID INTEGER PRIMARY KEY AUTOINCREMENT, rbStartTime TEXT NOT NULL, rbEndTime TEXT, rbStatus TEXT, rbMd5Sum TEXT NOT NULL);'
+	sqlite3 $(DB_FILE) 'CREATE TABLE RediBatch ( rbID INTEGER PRIMARY KEY AUTOINCREMENT, rbCreateTime DATETIME DEFAULT CURRENT_TIMESTAMP, rbStartTime TEXT NOT NULL, rbEndTime TEXT, rbStatus TEXT, rbMd5Sum TEXT NOT NULL);'
 	@test -s $(DB_FILE) || echo 'File $(DB_FILE) was not created'
 
 clean:

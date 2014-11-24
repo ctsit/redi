@@ -2,6 +2,7 @@ import abc
 import time
 
 import pkg_resources
+from datetime import datetime, timedelta
 from lxml import etree
 
 from utils import redi_email
@@ -99,7 +100,7 @@ class ReportCreator(object):
         }
         self._writer = writer
 
-    def create_report(self, report_data, alert_summary, collection_date_summary_dict):
+    def create_report(self, report_data, alert_summary, collection_date_summary_dict, duration_dict):
         report_parameters = self._report_parameters
         write_element_tree_to_file = self._writer
 
@@ -121,6 +122,13 @@ class ReportCreator(object):
         sort_by_value = 'lab_id' if report_parameters['is_sort_by_lab_id'] else 'redcap_id'
         root.append(gen_ele("sort_details_by", sort_by_value))
 
+        start = duration_dict['all']['start']
+        end = duration_dict['all']['end']
+        diff = self.get_time_diff(end, start)
+        root.append(gen_ele('time_all_start', start[-8:]))
+        root.append(gen_ele('time_all_end', end[-8:]))
+        root.append(gen_ele('time_all_diff', self.format_seconds_as_string(diff)))
+
         tree = etree.ElementTree(root)
         write_element_tree_to_file(tree,report_parameters.get('report_file_path'))
 
@@ -132,6 +140,36 @@ class ReportCreator(object):
         html_str = etree.tostring(html_report, method='html', pretty_print=True)
 
         return html_str
+
+    def get_time_diff(self, end, start):
+        """
+        Get time difference in seconds from the two dates
+        Parameters
+        ----------
+        end : string
+            The end timestamp
+        start : string
+            The start timestamp
+        """
+        # sqlite: select strftime('%s', rbEndTime) - strftime('%s', rbStartTime) from RediBatch;
+        fmt = '%Y-%m-%d %H:%M:%S'
+        dt_end = datetime.strptime(end, fmt)
+        dt_start = datetime.strptime(start, fmt)
+        diff = (dt_end - dt_start).total_seconds()
+        return diff
+
+
+    def format_seconds_as_string(self,seconds):
+        """
+        Convert seconds to a friendly strings
+            3662  ==> '01:01:02'
+            89662 ==> '1 day, 0:54:22'
+        Parameters
+        ----------
+        seconds : integer
+            The number of seconds to be converted
+        """
+        return str(timedelta(seconds=seconds))
 
 
 def updateReportHeader(root, report_parameters):
