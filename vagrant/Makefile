@@ -142,6 +142,9 @@ rc_set_rate:
 	# echo $(filter-out $@,$(MAKECMDGOALS))
 	vagrant ssh -c 'mysql -uroot -ppassword -e "UPDATE redcap.redcap_config SET value = $(filter-out $@,$(MAKECMDGOALS)) WHERE field_name = \"page_hit_threshold_per_minute\" "'
 
+rc_remove_ban:
+	vagrant ssh -c 'mysql -uroot -ppassword -e "DELETE FROM redcap_ip_banned;" '
+
 rc_compare:
 	@# This task can be used to compare the current project data with the reference data
 	$(REDCAP_RECORDS_CMD) -f "$(REDCAP_PROJECT_FORMS)" > out.csv
