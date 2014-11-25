@@ -21,6 +21,9 @@ function run_environment_updates() {
 
    # configure MySQL to start every time
    update-rc.d mysql defaults
+
+   # Install mcrypt package for PHP
+   apt-get install -y php5-mcrypt
 }
 
 function extract_redcap() {
