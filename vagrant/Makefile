@@ -145,6 +145,13 @@ rc_set_rate:
 rc_remove_ban:
 	vagrant ssh -c 'mysql -uroot -ppassword -e "DELETE FROM redcap_ip_banned;" '
 
+rc_show_columns:
+	vagrant ssh -c 'mysql -uroot -ppassword  -e "SELECT TABLE_SCHEMA, TABLE_NAME, COLUMN_NAME, DATA_TYPE FROM information_schema.COLUMNS WHERE TABLE_SCHEMA = \"redcap\" " '
+
+rc_show_logs:
+	vagrant ssh -c 'mysql -uroot -ppassword -e "SELECT log_event_id, ip, object_type, event_id, data_values, description, sql_log FROM redcap_log_event ORDER BY log_event_id DESC LIMIT 10" '
+
+
 rc_compare:
 	@# This task can be used to compare the current project data with the reference data
 	$(REDCAP_RECORDS_CMD) -f "$(REDCAP_PROJECT_FORMS)" > out.csv
