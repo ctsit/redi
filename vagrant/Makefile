@@ -12,6 +12,7 @@ ifneq ("$(wildcard $(MAKE_CONFIG_FILE))", "")
 
    REDCAP_DB_SQL_FILE   := $(CONFIG_FOLDER_VAGRANT)/$(shell cat ${MAKE_CONFIG_FILE} | sed -e 's/ //g' | grep -v '^\#' | grep 'redcap_db_sql_file=' | cut -d '=' -f2)
    REDCAP_CODE_ZIP_FILE := $(CONFIG_FOLDER_VAGRANT)/redcap.zip
+   REDCAP_CODE_PLUGIN_FOLDER := $(CONFIG_FOLDER_VAGRANT)/redcap_plugins/
    REDCAP_SQL_PATCHES_FOLDER := $(CONFIG_FOLDER_VAGRANT)/sqlPatches
    ENROLLMENT_CSV_FILE  := $(CONFIG_FOLDER_VAGRANT)/enrollment_test_data.csv
    REFERENCE_OUTPUT_FILE:= $(CONFIG_FOLDER_VAGRANT)/redi_out_reference.csv
@@ -77,6 +78,7 @@ check_config:
 	@test -f $(CONFIG_FILE) || (echo 'Please obtain the config file "$(CONFIG_FILE)"' && exit 1)
 	@test -f $(REDCAP_DB_SQL_FILE) || (echo 'Please obtain the project sql dump file "$(REDCAP_DB_SQL_FILE)"' && exit 1)
 	@test -f $(REDCAP_CODE_ZIP_FILE) || (echo 'Please obtain the redcap software zip file "$(REDCAP_CODE_ZIP_FILE)"' && exit 1)
+	@test -d $(REDCAP_CODE_PLUGIN_FOLDER) || (echo 'Please obtain the redcap plugins folder "$(REDCAP_CODE_PLUGIN_FOLDER)"' && exit 1)
 	@test -f $(ENROLLMENT_CSV_FILE) || (echo 'Config error: missing file "$(ENROLLMENT_CSV_FILE)"' && exit 1)
 
 show_config: check_config
@@ -91,6 +93,8 @@ show_config: check_config
 
 copy_redcap_code: check_config
 	cp $(REDCAP_CODE_ZIP_FILE) .
+	@test -d redcap_plugins/ || (mkdir -p redcap_plugins/)
+	cp -r $(REDCAP_CODE_PLUGIN_FOLDER) redcap_plugins/
 
 copy_project_data: check_config
 	@# Bring in the REDCap database file with a name expected by bootstrap.sh
