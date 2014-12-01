@@ -78,7 +78,7 @@ def create_redcap_records(import_data):
     same record.
 
     :param import_data: iterable of 4-tuples: (study_id_key, form_name,
-    event_name, json_data_dict)
+        event_name, json_data_dict)
     :return: iterable of REDCap records ready for upload
     """
     records_by_subject_and_event = collections.defaultdict(dict)
