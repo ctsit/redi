@@ -33,7 +33,7 @@ class Throttle(object):
     def __call__(self, *args, **kwargs):
         """ Conditionally delays before calling the function """
         self._wait()
-        self._actual(*args, **kwargs)
+        return self._actual(*args, **kwargs)
 
     def _limit_reached(self):
         """ Returns True if the maximum number of calls has been reached """

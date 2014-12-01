@@ -7,6 +7,7 @@ __copyright__ = "Copyright 2014, University of Florida"
 __license__ = "BSD 3-Clause"
 
 import ast
+import collections
 import datetime
 import logging
 import os
@@ -102,6 +103,8 @@ def generate_output(person_tree, redcap_client, rate_limit, sent_events,
     upload_data = throttle.Throttle(redcap_client.send_data_to_redcap,
                                     int(rate_limit))
 
+    blanks = []
+
     # main loop for each person
     for person in persons:
         time_begin = datetime.datetime.now()
@@ -153,6 +156,7 @@ def generate_output(person_tree, redcap_client, rate_limit, sent_events,
                         event)
                     json_data_dict = import_dict['json_data']
                     contains_data = import_dict['contains_data']
+                    is_blank = not contains_data
 
                     if sent_events.was_sent(study_id_key, form_name, event_name):
                         logger.debug("Skipping previously sent " + event_name)
@@ -161,14 +165,13 @@ def generate_output(person_tree, redcap_client, rate_limit, sent_events,
                             subject_details[study_id_key][form_key] += 1
                             form_details[form_key] += 1
                         continue
+
+                    if skip_blanks and is_blank:
+                        blanks.append((study_id_key, form_name, event_name,
+                                       json_data_dict))
+                        continue
+
                     event_count += 1
-
-                    # If we're skipping blanks and this event is blank, we
-                    # assume all following events are blank; therefore, break
-                    # out of this for-loop and move on to the next form.
-                    if skip_blanks and not contains_data:
-                        break
-
                     if (0 == event_count % 50):
                         logger.info('Requests sent: %s' % (event_count))
 
@@ -196,6 +199,21 @@ def generate_output(person_tree, redcap_client, rate_limit, sent_events,
         time_end = datetime.datetime.now()
         logger.info("Total execution time for study_id %s was %s" % (study_id_key, (time_end - time_begin)))
         logger.info("Total REDCap requests sent: %s \n" % (event_count))
+
+    if skip_blanks and blanks:
+        logger.info("Sending blank forms in bulk")
+        combined = collections.defaultdict(dict)
+        for subject_id_key, _, event_name, record in blanks:
+            combined[subject_id_key, event_name].update(record)
+
+        try:
+            response = upload_data(combined.values(), overwrite=True)
+            for study_id_key, form_name, event_name, record in blanks:
+                sent_events.mark_sent(study_id_key, form_name, event_name)
+            logger.info("Sent %s blank form-events" % response['count'])
+        except RedcapError as error:
+            handle_errors_in_redcap_xml_response(error.message, report_data)
+
 
     report_data.update({
         'total_subjects': person_count,
