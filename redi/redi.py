@@ -4,7 +4,7 @@ redi.py - Converter from raw clinical data in XML format to REDCap API data
 
 Usage:
         redi.py -h | --help
-        redi.py [-v] [-k] [-e] [-d] [-r] [-c=<path>] [-D=<datadir>] [-s]
+        redi.py [-v] [-k] [-e] [-d] [-r] [-c=<path>] [-D=<datadir>] [-s] [-b]
 
 Options:
         -h --help                   show this help message and exit
@@ -26,6 +26,7 @@ Options:
                                     running multiple simultaneous instances of redi for
                                     different projects
         -s --skip-blanks            skip blank events when sending event data to REDCap [default:False]
+        -b --bulk-send-blanks       send blank events in bulk instead of individually [default:False]
 """
 
 __author__ = "Nicholas Rejack"
@@ -176,7 +177,7 @@ def main():
     _run(config_file, configuration_directory, do_keep_gen_files, dry_run,
          get_emr_data, settings, output_files, db_path, redcap_client,
          report_courier, report_creator, args['--resume'],
-         args['--skip-blanks'])
+         args['--skip-blanks'], args['--bulk-send-blanks'])
 
 
 def get_db_path(batch_info_database, database_path):
@@ -260,7 +261,8 @@ def connect_to_redcap(email_settings, redcap_settings, dry_run=False):
 
 def _run(config_file, configuration_directory, do_keep_gen_files, dry_run,
          get_emr_data, settings, data_folder, database_path, redcap_client,
-         report_courier, report_creator, resume=False, skip_blanks=False):
+         report_courier, report_creator, resume=False, skip_blanks=False,
+         bulk_send_blanks=False):
     global translational_table_tree
 
     assert _person_form_events_service is not None
@@ -319,7 +321,8 @@ def _run(config_file, configuration_directory, do_keep_gen_files, dry_run,
         # Use the new method to communicate with REDCap
         report_data = upload.generate_output(
             person_form_event_tree_with_data, redcap_client,
-            settings.rate_limiter_value_in_redcap, sent_events, skip_blanks)
+            settings.rate_limiter_value_in_redcap, sent_events, skip_blanks,
+            bulk_send_blanks)
 
         # Save the time it took to send data to REDCap
         done_time = batch.get_db_friendly_date_time()
