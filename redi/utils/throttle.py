@@ -38,7 +38,7 @@ class Throttle(object):
     def __call__(self, *args, **kwargs):
         """ Conditionally delays before calling the function """
         self._wait()
-        self._actual(*args, **kwargs)
+        return self._actual(*args, **kwargs)
 
     @staticmethod
     def _now():
