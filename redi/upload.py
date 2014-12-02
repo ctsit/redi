@@ -7,6 +7,7 @@ __copyright__ = "Copyright 2014, University of Florida"
 __license__ = "BSD 3-Clause"
 
 import ast
+import collections
 import datetime
 import logging
 import os
@@ -62,8 +63,32 @@ def create_import_data_json(import_data_dict, event_tree):
     return {'json_data': import_data_dict, 'contains_data': contains_data}
 
 
+def create_redcap_records(import_data):
+    """
+    Creates REDCap records from RED-I's form data, AKA import data.
+
+    REDCap API only accepts records for importing. Records are differentiated by
+    their unique record ID, unless the REDCap Project is a Longitudinal study.
+    In that case, they are differentiated by a combination of record ID and an
+    event.
+
+    Since RED-I views the world in terms of forms, we have to project our
+    form-centric view into REDCap's record-centric world. This is done by
+    combining all form data with the same Subject ID and Event Name into the
+    same record.
+
+    :param import_data: iterable of 4-tuples: (study_id_key, form_name,
+        event_name, json_data_dict)
+    :return: iterable of REDCap records ready for upload
+    """
+    records_by_subject_and_event = collections.defaultdict(dict)
+    for subject_id_key, _, event_name, record in import_data:
+        records_by_subject_and_event[subject_id_key, event_name].update(record)
+    return records_by_subject_and_event.itervalues()
+
+
 def generate_output(person_tree, redcap_client, rate_limit, sent_events,
-                    skip_blanks=False):
+                    skip_blanks=False, bulk_send_blanks=False):
     """
     Note: This function communicates with the redcap application.
     Steps:
@@ -101,6 +126,8 @@ def generate_output(person_tree, redcap_client, rate_limit, sent_events,
 
     upload_data = throttle.Throttle(redcap_client.send_data_to_redcap,
                                     int(rate_limit))
+
+    blanks = []
 
     # main loop for each person
     for person in persons:
@@ -161,14 +188,21 @@ def generate_output(person_tree, redcap_client, rate_limit, sent_events,
                             subject_details[study_id_key][form_key] += 1
                             form_details[form_key] += 1
                         continue
+
+                    is_blank = not contains_data
+                    if is_blank:
+                        if skip_blanks:
+                            # assume subsequent events for this form and subject
+                            # are blank and simply move on to the next form by
+                            # breaking out of the events-loop
+                            break
+
+                        if bulk_send_blanks:
+                            blanks.append((study_id_key, form_name, event_name,
+                                           json_data_dict))
+                            continue
+
                     event_count += 1
-
-                    # If we're skipping blanks and this event is blank, we
-                    # assume all following events are blank; therefore, break
-                    # out of this for-loop and move on to the next form.
-                    if skip_blanks and not contains_data:
-                        break
-
                     if (0 == event_count % 50):
                         logger.info('Requests sent: %s' % (event_count))
 
@@ -196,6 +230,19 @@ def generate_output(person_tree, redcap_client, rate_limit, sent_events,
         time_end = datetime.datetime.now()
         logger.info("Total execution time for study_id %s was %s" % (study_id_key, (time_end - time_begin)))
         logger.info("Total REDCap requests sent: %s \n" % (event_count))
+
+    if blanks:
+        logger.info("Sending blank forms in bulk...")
+        records = list(create_redcap_records(blanks))
+
+        try:
+            response = upload_data(records, overwrite=True)
+            for study_id_key, form_name, event_name, record in blanks:
+                sent_events.mark_sent(study_id_key, form_name, event_name)
+            logger.info("Sent {} blank form-events.".format(response['count']))
+        except RedcapError as error:
+            logger.error("Failed to send blank form-events.")
+            handle_errors_in_redcap_xml_response(error.message, report_data)
 
     report_data.update({
         'total_subjects': person_count,

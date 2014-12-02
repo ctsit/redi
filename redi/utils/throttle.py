@@ -40,6 +40,10 @@ class Throttle(object):
         self._wait()
         return self._actual(*args, **kwargs)
 
+    def _limit_reached(self):
+        """ Returns True if the maximum number of calls has been reached """
+        return len(self._timestamps) == self._max_requests
+
     @staticmethod
     def _now():
         # Used during unit testing
@@ -58,8 +62,7 @@ class Throttle(object):
 
     def _wait(self):
         """ Sleeps for the remaining interval if the limit has been reached """
-        limit_reached = len(self._timestamps) == self._max_requests
-        if limit_reached:
+        if self._limit_reached():
             logger.debug('Throttling limit reached.')
             lapsed = self._now() - self._timestamps[0]
 
