@@ -176,4 +176,4 @@ clean:
 	rm -f out.csv
 
 profile:
-	python -m cProfile -o redi.pstats ../redi/redi.py --skip-blanks -c -c $(CONFIG_FOLDER) -k && gprof2dot -f pstats redi.pstats | dot -Tsvg -o callgraph.svg && open -a "Google Chrome.app" callgraph.svg
+	python -m cProfile -o redi.pstats ../redi/redi.py --skip-blanks -c $(CONFIG_FOLDER) -k && gprof2dot -f pstats redi.pstats | dot -Tsvg -o callgraph.svg && open -a "Google Chrome.app" callgraph.svg
