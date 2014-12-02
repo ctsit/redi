@@ -93,8 +93,8 @@ show_config: check_config
 
 copy_redcap_code: check_config
 	cp $(REDCAP_CODE_ZIP_FILE) .
-	@test -d redcap_plugins/ || (mkdir -p redcap_plugins/)
-	cp -r $(REDCAP_CODE_PLUGIN_FOLDER) redcap_plugins/
+	@test -d plugins/ || (mkdir -p plugins/)
+	cp -R $(REDCAP_CODE_PLUGIN_FOLDER)/* plugins/
 
 copy_project_data: check_config
 	@# Bring in the REDCap database file with a name expected by bootstrap.sh
