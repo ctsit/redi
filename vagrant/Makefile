@@ -143,7 +143,7 @@ rc_set_rate:
 	vagrant ssh -c 'mysql -uroot -ppassword -e "UPDATE redcap.redcap_config SET value = $(filter-out $@,$(MAKECMDGOALS)) WHERE field_name = \"page_hit_threshold_per_minute\" "'
 
 rc_remove_ban:
-	vagrant ssh -c 'mysql -uroot -ppassword -e "DELETE FROM redcap_ip_banned;" '
+	vagrant ssh -c 'mysql -uroot -ppassword -e "DELETE FROM redcap.redcap_ip_banned; DELETE FROM redcap.redcap_ip_cache;" '
 
 rc_show_columns:
 	vagrant ssh -c 'mysql -uroot -ppassword  -e "SELECT TABLE_SCHEMA, TABLE_NAME, COLUMN_NAME, DATA_TYPE FROM information_schema.COLUMNS WHERE TABLE_SCHEMA = \"redcap\" " '
