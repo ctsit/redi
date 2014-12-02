@@ -35,6 +35,11 @@ function extract_redcap() {
 
    REDCAP_VERSION_DETECTED=`ls /var/www/redcap | grep redcap_v | cut -d 'v' -f2 | sort -n | tail -n 1`
    echo "$REDCAP_ZIP_FILE content indicates Redcap version: $REDCAP_VERSION_DETECTED"
+  
+   # copy the plugin files to the redcap version detected
+   DESTINATION_FOLDER="/var/www/redcap/plugins/"
+   echo "Copying redcap Plugins to $DESTINATION_FOLDER"
+   cp $SHARED_FOLDER/redcap_plugins/* $DESTINATION_FOLDER
 
    # adjust ownership so apache can write to the temp folders
    chown -R www-data.root /var/www/redcap/edocs/
