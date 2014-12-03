@@ -10,6 +10,7 @@
 function run_environment_updates() {
    # environment utils
    cp $SHARED_FOLDER/aliases /home/vagrant/.bash_aliases
+   cp $SHARED_FOLDER/vimrc /home/vagrant/.vimrc
 
    # Install libraries used by python
    apt-get update

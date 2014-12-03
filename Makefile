@@ -60,6 +60,7 @@ clean:
 	rm -rf vagrant/data/
 	rm -f vagrant/redi.db
 	rm -f config-example/report.xml
+	rm -f redi.pstats
 
 pypi:
 	#https://pythonhosted.org/Distutils2/distutils/packageindex.html

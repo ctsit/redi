@@ -52,3 +52,5 @@ vagrant/redi.db
 data/
 redi.db
 report.html
+redi.pstats
+callgraph.svg
