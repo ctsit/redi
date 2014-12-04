@@ -10,6 +10,7 @@
 function run_environment_updates() {
    # environment utils
    cp $SHARED_FOLDER/aliases /home/vagrant/.bash_aliases
+   cp $SHARED_FOLDER/vimrc /home/vagrant/.vimrc
 
    # Install libraries used by python
    apt-get update
@@ -21,6 +22,9 @@ function run_environment_updates() {
 
    # configure MySQL to start every time
    update-rc.d mysql defaults
+
+   # Install mcrypt package for PHP
+   apt-get install -y php5-mcrypt
 }
 
 function extract_redcap() {
@@ -32,6 +36,12 @@ function extract_redcap() {
 
    REDCAP_VERSION_DETECTED=`ls /var/www/redcap | grep redcap_v | cut -d 'v' -f2 | sort -n | tail -n 1`
    echo "$REDCAP_ZIP_FILE content indicates Redcap version: $REDCAP_VERSION_DETECTED"
+  
+   # copy the plugin files to the redcap version detected
+   PLUGINS_DESTINATION_FOLDER="/var/www/redcap/plugins/redi"
+   mkdir -p $PLUGINS_DESTINATION_FOLDER
+   echo "Copying RED-I REDCap plugins to $PLUGINS_DESTINATION_FOLDER"
+   cp $SHARED_FOLDER/plugins/* $PLUGINS_DESTINATION_FOLDER
 
    # adjust ownership so apache can write to the temp folders
    chown -R www-data.root /var/www/redcap/edocs/

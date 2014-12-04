@@ -12,6 +12,7 @@ ifneq ("$(wildcard $(MAKE_CONFIG_FILE))", "")
 
    REDCAP_DB_SQL_FILE   := $(CONFIG_FOLDER_VAGRANT)/$(shell cat ${MAKE_CONFIG_FILE} | sed -e 's/ //g' | grep -v '^\#' | grep 'redcap_db_sql_file=' | cut -d '=' -f2)
    REDCAP_CODE_ZIP_FILE := $(CONFIG_FOLDER_VAGRANT)/redcap.zip
+   REDCAP_CODE_PLUGIN_FOLDER := $(CONFIG_FOLDER_VAGRANT)/redcap_plugins
    REDCAP_SQL_PATCHES_FOLDER := $(CONFIG_FOLDER_VAGRANT)/sqlPatches
    ENROLLMENT_CSV_FILE  := $(CONFIG_FOLDER_VAGRANT)/enrollment_test_data.csv
    REFERENCE_OUTPUT_FILE:= $(CONFIG_FOLDER_VAGRANT)/redi_out_reference.csv
@@ -54,7 +55,7 @@ help:
 show_steps:
 	@echo "\n Steps for importing data into the sample project:"
 	@echo "\t make clean"
-	@echo "\t make copy_config_example"
+	@echo "\t make copy_config_example or make copy_config_develop"
 	@echo "\t make copy_redcap_code"
 	@echo "\t make copy_project_data"
 	@echo "\t make show_config"
@@ -62,6 +63,12 @@ show_steps:
 	@echo "\t make rc_enrollment"
 	@echo "\t make rc_post"
 	@echo "\t make rc_get"
+
+fresh_vm_example:
+	vagrant destroy && make clean && make copy_config_example && make copy_redcap_code && make copy_project_data && vagrant up && make rc_enrollment && make rc_get
+
+fresh_vm_develop:
+	vagrant destroy && make clean && make copy_config_develop && make copy_redcap_code && make copy_project_data && vagrant up && make rc_enrollment && make rc_get
 
 copy_config_example:
 	@# Copy the config file for running make tasks
@@ -77,6 +84,7 @@ check_config:
 	@test -f $(CONFIG_FILE) || (echo 'Please obtain the config file "$(CONFIG_FILE)"' && exit 1)
 	@test -f $(REDCAP_DB_SQL_FILE) || (echo 'Please obtain the project sql dump file "$(REDCAP_DB_SQL_FILE)"' && exit 1)
 	@test -f $(REDCAP_CODE_ZIP_FILE) || (echo 'Please obtain the redcap software zip file "$(REDCAP_CODE_ZIP_FILE)"' && exit 1)
+	@test -d $(REDCAP_CODE_PLUGIN_FOLDER) || (echo 'WARNING: did not find a REDCap plugins folder "$(REDCAP_CODE_PLUGIN_FOLDER)"')
 	@test -f $(ENROLLMENT_CSV_FILE) || (echo 'Config error: missing file "$(ENROLLMENT_CSV_FILE)"' && exit 1)
 
 show_config: check_config
@@ -91,6 +99,8 @@ show_config: check_config
 
 copy_redcap_code: check_config
 	cp $(REDCAP_CODE_ZIP_FILE) .
+	@test -d plugins/ || (mkdir -p plugins/)
+	test ! -d $(REDCAP_CODE_PLUGIN_FOLDER) || (cp -R $(REDCAP_CODE_PLUGIN_FOLDER)/* plugins/)
 
 copy_project_data: check_config
 	@# Bring in the REDCap database file with a name expected by bootstrap.sh
@@ -116,6 +126,9 @@ rc_enrollment: check_config
 rc_post:
 	python ../redi/redi.py -c $(CONFIG_FOLDER)
 
+rc_post_skip_blanks:
+	python ../bin/redi.py -c $(CONFIG_FOLDER) --skip-blanks
+
 rc_get: check_config
 	$(REDCAP_RECORDS_CMD) -f "$(REDCAP_PROJECT_FORMS)"
 
@@ -129,7 +142,6 @@ rc_get_enrollment_meta:
 	@curl -X POST http://localhost:8998/redcap/api/ -d token=$(REDCAP_VM_TOKEN) -d content=metadata -d format=csv -d forms[]=enrollment
 
 rc_fresh:
-	make copy_project_data
 	make rc_clean
 	make rc_enrollment
 	make rc_post
@@ -141,6 +153,31 @@ rc_get_rate:
 rc_set_rate:
 	# echo $(filter-out $@,$(MAKECMDGOALS))
 	vagrant ssh -c 'mysql -uroot -ppassword -e "UPDATE redcap.redcap_config SET value = $(filter-out $@,$(MAKECMDGOALS)) WHERE field_name = \"page_hit_threshold_per_minute\" "'
+
+rc_remove_ban:
+	vagrant ssh -c 'mysql -uroot -ppassword -e "DELETE FROM redcap.redcap_ip_banned; DELETE FROM redcap.redcap_ip_cache;" '
+
+rc_show_columns:
+	vagrant ssh -c 'mysql -uroot -ppassword  -e "SELECT TABLE_SCHEMA, TABLE_NAME, COLUMN_NAME, DATA_TYPE FROM information_schema.COLUMNS WHERE TABLE_SCHEMA = \"redcap\" " '
+
+rc_show_logs:
+	vagrant ssh -c 'mysql -uroot -ppassword -e "SELECT log_event_id, ip, object_type, event_id, data_values, description, sql_log FROM redcap_log_event ORDER BY log_event_id DESC LIMIT 10" '
+
+rc_disable_auth:
+	@# Use this task to remove login requirement for REDCap
+	vagrant ssh -c 'mysql -uroot -ppassword -e "UPDATE redcap.redcap_config SET value = \"none\" WHERE field_name = \"auth_meth_global\" "'
+rc_enable_auth:
+	vagrant ssh -c 'mysql -uroot -ppassword -e "UPDATE redcap.redcap_config SET value = \"table\" WHERE field_name = \"auth_meth_global\" "'
+
+rc_enable_listing_nonauth_projects:
+	vagrant ssh -c 'mysql -uroot -ppassword -e "UPDATE redcap.redcap_config SET value = 1 WHERE field_name = \"display_nonauth_projects\" "'
+
+rc_test_plugin:
+	make rc_disable_auth
+	@# Note: To test the "show url" plugin you have to have records in the "demographics" form
+	@# http://localhost:8998/redcap/plugins/redi/show_url.php?project_name=HCV-TARGET+2.0+DEVELOPMENT&study_id=1&page_name=demographics&event_name=1
+	curl -s -X POST http://localhost:8998/redcap/plugins/redi/show_url.php -d project_name=HCV-TARGET+2.0+DEVELOPMENT -d study_id=1 -d page_name=demographics -d event_name=1 | grep URL
+	make rc_enable_auth
 
 rc_compare:
 	@# This task can be used to compare the current project data with the reference data
@@ -161,6 +198,10 @@ egg_test: check_config
 clean:
 	@# This task removes all copied/generated files
 	rm -f redcap.zip
+	rm -rf plugins
 	rm -f Makefile.ini
 	rm -f projectDataBootstrap.sql
 	rm -f out.csv
+
+profile:
+	python -m cProfile -o redi.pstats ../redi/redi.py --skip-blanks -c $(CONFIG_FOLDER) -k && gprof2dot -f pstats redi.pstats | dot -Tsvg -o callgraph.svg && open -a "Google Chrome.app" callgraph.svg

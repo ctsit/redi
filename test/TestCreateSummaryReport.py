@@ -1,6 +1,3 @@
-'''
-Unit test for `redi.create_summary_report()`
-'''
 import unittest
 import os
 import sys
@@ -13,8 +10,14 @@ from redi import report
 DEFAULT_DATA_DIRECTORY = os.getcwd()
 
 class TestCreateSummaryReport(unittest.TestCase):
+    """
+    Unit test for `redi.create_summary_report()`
+    """
 
     def setUp(self):
+        """
+        Prepare data structures
+        """
         redi.configure_logging(DEFAULT_DATA_DIRECTORY)
         self.test_report_params = {
             'project': 'hcvtarget-uf',
@@ -37,7 +40,7 @@ class TestCreateSummaryReport(unittest.TestCase):
             },
             'errors' : [],
         }
-        self.specimen_taken_time_summary = {'total': 15, 'blank': 3}
+
         self.test_alert_summary = {
             'multiple_values_alert': [
                 'This is multiple values alert 1',
@@ -48,6 +51,15 @@ class TestCreateSummaryReport(unittest.TestCase):
                 'This is max event alert 2',
                 'This is max event alert 3']
         }
+
+        self.specimen_taken_time_summary = {'total': 15, 'blank': 3}
+        self.duration_dict = {
+            'all' : {
+                'start': "2014-01-01 00:00:00",
+                'end': "2014-01-01 00:00:01",
+            }
+        }
+
         self.expected_xml = '''
 <report>
     <header>
@@ -154,6 +166,9 @@ class TestCreateSummaryReport(unittest.TestCase):
         <percent>20.0</percent>
     </summaryOfSpecimenTakenTimes>
     <sort_details_by>lab_id</sort_details_by>
+    <time_all_start>00:00:00</time_all_start>
+    <time_all_end>00:00:01</time_all_end>
+    <time_all_diff>0:00:01</time_all_diff>
 </report>'''
 
         self.schema_str = StringIO('''\
@@ -265,6 +280,9 @@ class TestCreateSummaryReport(unittest.TestCase):
           </xs:complexType>
         </xs:element>
         <xs:element name="sort_details_by"></xs:element>
+        <xs:element name="time_all_start"></xs:element>
+        <xs:element name="time_all_end"></xs:element>
+        <xs:element name="time_all_diff"></xs:element>
       </xs:sequence>
     </xs:complexType>
   </xs:element>
@@ -292,10 +310,9 @@ class TestCreateSummaryReport(unittest.TestCase):
             writer)
 
         creator.create_report(self.test_report_data, self.test_alert_summary,
-                              self.specimen_taken_time_summary)
+                              self.specimen_taken_time_summary, self.duration_dict)
 
         result = writer.result
-
         result_string = etree.tostring(result)
         #print result_string
         xmlschema_doc = etree.parse(self.schema_str)

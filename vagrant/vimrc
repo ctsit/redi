@@ -1,0 +1,56 @@
+set ls=2
+set bs=2
+set background=dark
+
+set nu
+set nocompatible
+set ruler
+filetype on
+syntax on
+filetype indent on
+
+set autoindent
+set smartindent
+set splitbelow
+set splitright
+set showmatch
+
+set expandtab
+set tabstop=4 " Set Tab size
+set expandtab " Expand Tabs (pressing Tab inserts spaces)
+set shiftwidth=4 " Number of spaces to use for each step of (auto)indent
+set softtabstop=4 " makes the spaces feel like real tabs; one backspace goes back X spaces :)
+set backspace=indent,eol,start
+retab
+
+
+set nowrapscan
+set ignorecase " Ignore case in search
+set smartcase " Consider case only when typing Uppercase
+set incsearch " Show search results when typing
+set hlsearch " highlight search pattern
+set vb t_vb= " don't notify (no audio/visual bell)
+set showmode " display mode INSERT/REPLACE/...
+set scrolloff=3 " do not let the curser get too close to the edge
+set laststatus=2 " laststatus: show status line? Yes, always!
+
+map! <F1> <ESC> " F1 != Help; remove acces to help :)
+map <F1> <ESC>
+" switch lines
+map <F5> ddkkp<CR>
+map <F6> :set number! <CR>
+
+nnoremap 2 <c-w>wl
+
+" restore position
+function! ResCur()
+  if line("'\"") <= line("$")
+    normal! g`"
+    return 1
+  endif
+endfunction
+
+augroup resCur
+  autocmd!
+  autocmd BufWinEnter * call ResCur()
+augroup END

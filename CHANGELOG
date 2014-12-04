@@ -1,3 +1,14 @@
+2014-12-04 v0.13.1
+
+ * Fixed major flaw in the Throttle class introduced in v0.13.0
+ * Added --bulk-send-blanks, which will send all blank form-events together
+ * Added support for redcap_plugins to our vagrant testing and sample project
+ * Added new Makefile targets for various helper tasks like profiling and clearing the IP ban list
+ * Installed mcrypt package for PHP to enable plugins in vagrant
+ * Added a REDCap plugin to generate URLs for enhanced error reporting
+ * Fixed #34: Data Import Report totals only reflect most recent run
+ * Added execution time to the report
+
 2014-11-20 v0.13.0
 
 The focus of this release has been clean up. Related functions were moved into

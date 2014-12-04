@@ -15,13 +15,15 @@ class TestResume(unittest.TestCase):
             pass
 
         import redi.redi
-        redi = reload(redi.redi)
+        redi_ref = reload(redi.redi)
+        redi_ref._person_form_events_service = MockPersonFormEvents()
 
-        redi._person_form_events_service = MockPersonFormEvents()
-        redi._check_input_file = lambda *args: None
+        import redi.batch
+        batch = reload(redi.batch)
+        batch.check_input_file = lambda *args: None
 
         with self.assertRaises(FileDeleted):
-            redi._run(config_file=None, configuration_directory='',
+            redi_ref._run(config_file=None, configuration_directory='',
                       do_keep_gen_files=None, dry_run=True, get_emr_data=False,
                       settings=MockSettings(), data_folder=None,
                       database_path=None, redcap_client=None,
@@ -39,18 +41,21 @@ class TestResume(unittest.TestCase):
             pass
 
         import redi.redi
-        redi = reload(redi.redi)
+        redi_ref = reload(redi.redi)
 
-        redi._person_form_events_service = MockPersonFormEvents()
-        redi._check_input_file = lambda *args: None
-        redi._create_person_form_event_tree_with_data = lambda *args: (None, None, None, None)
-        redi._delete_last_runs_data = lambda *args: None
-        redi._removedirs = lambda *args: None
-        redi._mkdir = lambda *args: None
-        redi.connect_to_redcap = lambda *args: None
+        redi_ref._person_form_events_service = MockPersonFormEvents()
+        redi_ref._create_person_form_event_tree_with_data = lambda *args: (None, None, None, None)
+        redi_ref._delete_last_runs_data = lambda *args: None
+        redi_ref._removedirs = lambda *args: None
+        redi_ref._mkdir = lambda *args: None
+        redi_ref.connect_to_redcap = lambda *args: None
+
+        import redi.batch
+        batch = reload(redi.batch)
+        batch.check_input_file = lambda *args: None
 
         with self.assertRaises(FileStored):
-            redi._run(config_file=None, configuration_directory='',
+            redi_ref._run(config_file=None, configuration_directory='',
                       do_keep_gen_files=None, dry_run=True, get_emr_data=False,
                       settings=MockSettings(), data_folder=None,
                       database_path=None, redcap_client=None,
@@ -65,13 +70,15 @@ class TestResume(unittest.TestCase):
             pass
 
         import redi.redi
-        redi = reload(redi.redi)
+        redi_ref = reload(redi.redi)
+        redi_ref._person_form_events_service = MockPersonFormEvents()
 
-        redi._person_form_events_service = MockPersonFormEvents()
-        redi._check_input_file = lambda *args: None
+        import redi.batch
+        batch = reload(redi.batch)
+        batch.check_input_file = lambda *args: None
 
         with self.assertRaises(DataFetched):
-            redi._run(config_file=None, configuration_directory='',
+            redi_ref._run(config_file=None, configuration_directory='',
                       do_keep_gen_files=None, dry_run=True, get_emr_data=False,
                       settings=MockSettings(), data_folder=None,
                       database_path=None, resume=True, redcap_client=None,
@@ -81,3 +88,6 @@ class TestResume(unittest.TestCase):
 class MockSettings(object):
     def __getattr__(self, item):
         return '' if ('file' in item) else None
+
+if __name__ == '__main__':
+    unittest.main()

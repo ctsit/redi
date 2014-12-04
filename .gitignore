@@ -41,6 +41,7 @@ vagrant/redcap-backup-*.sql
 vagrant/REDI-*.egg
 
 vagrant/redcap.zip
+vagrant/plugins/
 vagrant/redcap_database.sql
 vagrant/sqlPatches
 vagrant/data/
@@ -51,3 +52,5 @@ vagrant/redi.db
 data/
 redi.db
 report.html
+redi.pstats
+callgraph.svg
