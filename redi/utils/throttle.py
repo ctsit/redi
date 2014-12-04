@@ -4,11 +4,16 @@ Utility module for throttling calls to a function
 
 import collections
 import datetime
+import logging
 import time
 
 __author__ = "University of Florida CTS-IT Team"
 __copyright__ = "Copyright 2014, University of Florida"
 __license__ = "BSD 3-Clause"
+
+
+logger = logging.getLogger(__name__)
+logger.addHandler(logging.NullHandler())
 
 
 class Throttle(object):
@@ -33,7 +38,7 @@ class Throttle(object):
     def __call__(self, *args, **kwargs):
         """ Conditionally delays before calling the function """
         self._wait()
-        self._actual(*args, **kwargs)
+        return self._actual(*args, **kwargs)
 
     def _limit_reached(self):
         """ Returns True if the maximum number of calls has been reached """
@@ -44,6 +49,12 @@ class Throttle(object):
         # Used during unit testing
         return datetime.datetime.now()
 
+    def _remove_old_entries(self):
+        """ Removes old timestamp entries """
+        while (len(self._timestamps) > 0 and
+               self._now() - self._timestamps[0] >= self._interval):
+            self._timestamps.popleft()
+
     @staticmethod
     def _sleep(seconds):
         # Used during unit testing
@@ -51,13 +62,16 @@ class Throttle(object):
 
     def _wait(self):
         """ Sleeps for the remaining interval if the limit has been reached """
-        now = self._now()
+        if self._limit_reached():
+            logger.debug('Throttling limit reached.')
+            lapsed = self._now() - self._timestamps[0]
 
-        limit_reached = len(self._timestamps) == self._max_requests
-        if limit_reached:
-            lapsed = now - self._timestamps[0]
-            if lapsed <= self._interval:
-                self._sleep((self._interval - lapsed).total_seconds())
-                self._timestamps.clear()
+            if lapsed < self._interval:
+                sleep_time = (self._interval - lapsed).total_seconds()
+                logger.debug("Sleeping for {} seconds to prevent too many calls"
+                             .format(sleep_time))
+                self._sleep(sleep_time)
 
-        self._timestamps.append(now)
+            self._remove_old_entries()
+
+        self._timestamps.append(self._now())

@@ -68,6 +68,17 @@ $(document).ready(function() {
                             <xsl:value-of select="report/header/redcapServerAddress" />
                         </td>
                     </tr>
+                    <tr>
+                        <td> Start/End Times </td>
+                        <td>
+                            From <xsl:value-of select="report/time_all_start" /> to
+                            <xsl:value-of select="report/time_all_end" />
+                        </td>
+                    </tr>
+                    <tr>
+                        <td> Duration </td>
+                        <td> <xsl:value-of select="report/time_all_diff" /> </td>
+                    </tr>
                 </table>
                 <br />
                 <h3>Summary</h3>
@@ -96,7 +107,9 @@ $(document).ready(function() {
                     </tbody>
                 </table>
                 <br />
-                <!-- Alerts start here -->
+
+            <!-- Alerts start here -->
+            <xsl:if test="count(report/alerts/tooManyForms/eventAlert) > 0 or count(report/alerts/tooManyValues/valuesAlert) > 0">
                 <h3>Import Alerts</h3>
                 <!-- check for not null -->
                 <!-- Commented out as the output is not fully de-identified-->
@@ -139,6 +152,7 @@ $(document).ready(function() {
                         </tbody>
                     </table>
                 </xsl:if>
+            </xsl:if>
                 <br />
                 <h3>Subject Details</h3>
                 <table id="subject_details" class="tablesorter">

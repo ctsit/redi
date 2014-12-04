@@ -4,7 +4,7 @@ redi.py - Converter from raw clinical data in XML format to REDCap API data
 
 Usage:
         redi.py -h | --help
-        redi.py [-v] [-k] [-e] [-d] [-r] [-c=<path>] [-D=<datadir>] [-s]
+        redi.py [-v] [-k] [-e] [-d] [-r] [-c=<path>] [-D=<datadir>] [-s] [-b]
 
 Options:
         -h --help                   show this help message and exit
@@ -26,12 +26,13 @@ Options:
                                     running multiple simultaneous instances of redi for
                                     different projects
         -s --skip-blanks            skip blank events when sending event data to REDCap [default:False]
+        -b --bulk-send-blanks       send blank events in bulk instead of individually [default:False]
 """
 
 __author__ = "Nicholas Rejack"
 __copyright__ = "Copyright 2013, University of Florida"
 __license__ = "BSD 2-Clause"
-__version__ = "0.13.0"
+__version__ = "0.13.1"
 __email__ = "nrejack@ufl.edu"
 __status__ = "Development"
 
@@ -176,7 +177,7 @@ def main():
     _run(config_file, configuration_directory, do_keep_gen_files, dry_run,
          get_emr_data, settings, output_files, db_path, redcap_client,
          report_courier, report_creator, args['--resume'],
-         args['--skip-blanks'])
+         args['--skip-blanks'], args['--bulk-send-blanks'])
 
 
 def get_db_path(batch_info_database, database_path):
@@ -260,7 +261,8 @@ def connect_to_redcap(email_settings, redcap_settings, dry_run=False):
 
 def _run(config_file, configuration_directory, do_keep_gen_files, dry_run,
          get_emr_data, settings, data_folder, database_path, redcap_client,
-         report_courier, report_creator, resume=False, skip_blanks=False):
+         report_courier, report_creator, resume=False, skip_blanks=False,
+         bulk_send_blanks=False):
     global translational_table_tree
 
     assert _person_form_events_service is not None
@@ -281,15 +283,13 @@ def _run(config_file, configuration_directory, do_keep_gen_files, dry_run,
     # load custom post-processing rules
     rules = load_rules(settings.rules, configuration_directory)
 
-    # read in 3 main data files / translation tables
-
     raw_xml_file = os.path.join(configuration_directory, settings.raw_xml_file)
-    # we need the batch information to set the
-    # status to `completed` an ste the `rbEndTime`
     email_settings = get_email_settings(settings)
     db_path = database_path
+    # Insert/load batch row so we can set the `completed` status
+    start_time = batch.get_db_friendly_date_time()
     current_batch = _check_input_file(db_path, email_settings, raw_xml_file,
-                                  settings)
+                                  settings,start_time)
 
     form_events_file = os.path.join(configuration_directory,\
      settings.form_events_file)
@@ -321,7 +321,23 @@ def _run(config_file, configuration_directory, do_keep_gen_files, dry_run,
         # Use the new method to communicate with REDCap
         report_data = upload.generate_output(
             person_form_event_tree_with_data, redcap_client,
-            settings.rate_limiter_value_in_redcap, sent_events, skip_blanks)
+            settings.rate_limiter_value_in_redcap, sent_events, skip_blanks,
+            bulk_send_blanks)
+
+        # Save the time it took to send data to REDCap
+        done_time = batch.get_db_friendly_date_time()
+        # Update the batch row
+        batch.update_batch_entry(database_path,
+                                    current_batch['rbID'],
+                                    batch.BATCH_STATUS_COMPLETED,
+                                    start_time,
+                                    done_time)
+        duration_dict = {
+            'all' : {
+                'start': start_time,
+                'end': done_time,
+            },
+        }
 
         # write person_form_event_tree to file
         write_element_tree_to_file(person_form_event_tree_with_data,\
@@ -330,7 +346,6 @@ def _run(config_file, configuration_directory, do_keep_gen_files, dry_run,
             logger.warning(
                 'Some of the events were not sent to the REDCap server. Please '
                 "check the log file or {0}/sent_events.idx".format(data_folder))
-
         # Add any errors from running the rules to the report
         map(logger.warning, rule_errors)
 
@@ -339,15 +354,12 @@ def _run(config_file, configuration_directory, do_keep_gen_files, dry_run,
 
         # create summary report
         html_str = report_creator.create_report(
-            report_data, alert_summary, collection_date_summary_dict)
+            report_data,
+            alert_summary,
+            collection_date_summary_dict,
+            duration_dict)
 
         report_courier.deliver(html_str)
-
-    if current_batch:
-        # Update the batch row
-        done_timestamp = batch.get_db_friendly_date_time()
-        batch.update_batch_entry(db_path, current_batch['rbID'], 'Completed',
-                                 done_timestamp)
 
     if dry_run:
         logger.info("End of dry run. All output files are ready for review"\
@@ -507,16 +519,16 @@ def _create_person_form_event_tree_with_data(
     collection_date_summary_dict
 
 
-def _check_input_file(db_path, email_settings, raw_xml_file, settings):
+def _check_input_file(db_path, email_settings, raw_xml_file, settings,start_time):
     return batch.check_input_file(settings.batch_warning_days, db_path,
                                   email_settings, raw_xml_file,
-                                  settings.project)
+                                  settings.project,start_time)
+
 
 
 def read_config(config_file, configuration_directory, file_list):
-    """function to check if files mentioned in configuration files exist
-        Philip
-
+    """
+    Check if files mentioned in configuration files exist
     """
     for item in file_list:
         if not os.path.exists(os.path.join(configuration_directory, item)):
