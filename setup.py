@@ -20,7 +20,7 @@ setup(
     name='redi-py',
     version='0.13.1',
     author='https://www.ctsi.ufl.edu/research/study-development/informatics-consulting/',
-    author_email='cts-it-red@ctsi.ufl.edu',
+    author_email='ctsit@ctsi.ufl.edu',
     packages=find_packages(exclude=['test']),
     include_package_data=True,
     package_data={
