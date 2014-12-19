@@ -1405,14 +1405,19 @@ def updateStatusFieldValueInPersonFormEventTree(
                         "redcapStatusFieldValue",
                         "")
 
-                    # For every redcap_field other than redcapStatusFieldName
+                    # For every redcap_field other than redcapStatusFieldName,
+                    # redcapFieldNameUnits, redcapFieldNameUnitsDescriptiveText,
                     # and redcapStatusFieldValue in this clinical_component add
                     # an entry, {redcap_field.text: [redcapStatusFieldName,
                     # redcapStatusFieldValue]} to translation_table_dict
                     for redcap_field in clinical_component:
                         if (redcap_field is None):
                             continue
-                        elif (redcap_field.tag == "redcapFormName" or redcap_field.tag == "redcapStatusFieldName" or redcap_field.tag == "redcapStatusFieldValue"):
+                        elif (redcap_field.tag == "redcapFormName"
+                                or redcap_field.tag == "redcapStatusFieldName"
+                                or redcap_field.tag == "redcapStatusFieldValue"
+                                or redcap_field.tag == "redcapFieldNameUnits"
+                                or redcap_field.tag == "redcapFieldNameUnitsDescriptiveText"):
                             continue
                         elif (redcap_field.text in translation_table_dict):
                             continue
