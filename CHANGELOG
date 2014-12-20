@@ -1,3 +1,7 @@
+2014-12-19 v0.13.2
+ * hotfix to change behavior in updateStatusFieldValueInPersonFormEventree. Status field no longer
+   marked "NOT_DONE" if units for that field are missing. 
+
 2014-12-04 v0.13.1
 
  * Fixed major flaw in the Throttle class introduced in v0.13.0
