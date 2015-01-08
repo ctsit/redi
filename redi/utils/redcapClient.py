@@ -1,4 +1,5 @@
 import logging
+import time
 
 from redcap import Project, RedcapError
 from requests import RequestException
@@ -73,7 +74,7 @@ class RedcapClient(object):
             logger.debug(e.message)
         return response
 
-    def send_data_to_redcap(self, data, overwrite=False):
+    def send_data_to_redcap(self, data, overwrite=False, retry_count=0):
         """ Sends records to REDCap.
 
         :param list of dict objects data: records to send.
@@ -83,12 +84,23 @@ class RedcapClient(object):
         :return: response
         :raises RedcapError: if failed to send records for any reason.
         """
+        print "Attempt " + str(retry_count)
         overwrite_value = 'overwrite' if overwrite else 'normal'
+        # local_retry_count = retry_count
 
         try:
+            # remember to remove when done !!!
+            if(retry_count < 5):
+                raise RedcapError('Max retries exceeded with url: /api/')
             response = self.project.import_records(data,
-                                                   overwrite=overwrite_value)
+                overwrite=overwrite_value)
             return response
         except RedcapError as e:
             logger.debug(e.message)
-            raise
+            if (retry_count > 10):
+                import sys
+                sys.exit("exceeded ...")
+            time.sleep(retry_count*6)
+
+            self.send_data_to_redcap(data, 'overwrite', retry_count+1)
+            # raise
