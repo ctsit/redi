@@ -43,6 +43,7 @@ from TestPersonFormEventsRepository import TestPersonFormEventsRepository
 from TestVerifyAndCorrectCollectionDate import TestVerifyAndCorrectCollectionDate
 from TestRediEmail import TestRediEmail
 from TestSentEventIndex import TestSentEventIndex
+from TestSendDatatoRedcap import TestSendDatatoRedcap
 
 class redi_suite(unittest.TestSuite):
 
@@ -86,6 +87,7 @@ class redi_suite(unittest.TestSuite):
         redi_test_suite.addTest(TestPersonFormEventsRepository)
         redi_test_suite.addTest(TestRediEmail)
         redi_test_suite.addTest(TestDaysSinceToday)
+        redi_test_suite.addTest(TestSendDatatoRedcap)
 
         # return the suite
         return unittest.TestSuite([redi_test_suite])
