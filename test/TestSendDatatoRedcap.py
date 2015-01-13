@@ -15,29 +15,39 @@ class TestSendDatatoRedcap(unittest.TestCase):
     def setUp(self):
         self.test_data = ''
 
+    def dummy_init(*args, **kwargs):
+        return None
+
     def dummy_send_data_to_redcap(*args, **kwargs):
-        """No time out occurred or retrying"""
+        """No time out has occurred or function retries to send the data on 
+        network connection timeout"""
         return True
 
     def dummy_send_data_to_redcap_timeout(*args, **kwargs):
-        """Time out occurred and exiting"""
+        """retry_count has reached 10 so the function stops resending data 
+        and exits gracefully"""
         return True
 
-    @patch.multiple(redcapClient,send_data_to_redcap=dummy_send_data_to_redcap)
-    def testSendDatatoRedcapNoTimeOut(self):
-        self.assertTrue(redcapClient.RedcapClient.send_data_to_redcap(data,
-            False, 0)        
+    @patch.multiple(redcapClient.RedcapClient, __init__=dummy_init)
+    @patch.multiple(redcapClient.RedcapClient,
+        send_data_to_redcap=dummy_send_data_to_redcap)
+    def test_send_data_to_redcap(self):
+        self.assertTrue(redcapClient.RedcapClient().send_data_to_redcap(
+            self.test_data, False, 0))
 
-    @patch.multiple(redcapClient,send_data_to_redcap=dummy_send_data_to_redcap_timeout)
-    def testSendDatatoRedcapNoTimeOut10(self, retry_count):        
-        self.assertTrue(redcapClient.RedcapClient.send_data_to_redcap(data,
-            'overwrite', 10)
+    @patch.multiple(redcapClient.RedcapClient, __init__=dummy_init)
+    @patch.multiple(redcapClient.RedcapClient,
+        send_data_to_redcap=dummy_send_data_to_redcap)
+    def test_send_data_to_redcap_retry_3(self):       
+        self.assertTrue(redcapClient.RedcapClient().send_data_to_redcap(
+            self.test_data, 'overwrite', 3))
 
-    # @patch.multiple(redcapClient,
-    #     send_data_to_redcap=dummy_send_data_to_redcap_timeout)
-    # def testSendDatatoRedcapNoTimeOut11(self, retry_count):        
-    #     self.assertTrue(redcapClient.RedcapClient.send_data_to_redcap(data,
-    #         'overwrite', 11)
+    @patch.multiple(redcapClient.RedcapClient, __init__=dummy_init)
+    @patch.multiple(redcapClient.RedcapClient,
+        send_data_to_redcap=dummy_send_data_to_redcap_timeout)
+    def test_send_data_to_redcap_retry_11(self):
+        self.assertTrue(redcapClient.RedcapClient().send_data_to_redcap(
+            self.test_data, 'overwrite', 10))
 
     def tearDown(self):
         return()
