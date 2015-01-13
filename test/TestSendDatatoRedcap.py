@@ -16,6 +16,7 @@ class TestSendDatatoRedcap(unittest.TestCase):
         self.test_data = ''
 
     def dummy_init(*args, **kwargs):
+        """This function is called in place of RedcapClient's constructor"""
         return None
 
     def dummy_send_data_to_redcap(*args, **kwargs):
