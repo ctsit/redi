@@ -3,6 +3,10 @@ import time
 
 from redcap import Project, RedcapError
 from requests import RequestException
+from requests.packages.urllib3.exceptions import MaxRetryError
+
+# set maximum retry limit
+MAX_RETRY = 3
 
 # Configure module's logger
 logger = logging.getLogger(__name__)
@@ -83,27 +87,29 @@ class RedcapClient(object):
             default REDCap will not overwrite any existing value with a blank.
         :return: response
         :raises RedcapError: if failed to send records for any reason.
+        :If MaxRetryError is caught, the function will try resending the same
+         data for a maximum of MAX_RETRY times before exitting. For each
+         attempt the wait time before sending is (the_attempt_no * 6)
         """
-        # print "Attempt " + str(retry_count)
         overwrite_value = 'overwrite' if overwrite else 'normal'
-        # local_retry_count = retry_count
 
         try:
-            # remember to remove when done !!!
-            if(retry_count < 5):
-                raise RedcapError('Max retries exceeded with url: /api/')
+            # The following line simulates github issue #108:
+            # raise MaxRetryError('', 'localhost:8998', None)
             response = self.project.import_records(data,
                 overwrite=overwrite_value)
-            print data
-            print "-------------------------------------------"
-            print response
             return response
+        except MaxRetryError as e:
+            logger.debug(e.message + ", Attempt no.: " + retry_count)
+            if (retry_count == MAX_RETRY):
+                message = "Exitting since network connection timed out after"\
+                " reaching the maximum retry limit for resending data."
+                logger.debug(message)
+                import sys
+                sys.exit(message)
+            # wait for some time before resending data
+            time.sleep(retry_count*6)
+            self.send_data_to_redcap(data, 'overwrite', retry_count+1)
         except RedcapError as e:
             logger.debug(e.message)
-            if (retry_count >= 10):
-                import sys
-                sys.exit("exceeded ...")
-            time.sleep(retry_count*1)
-
-            self.send_data_to_redcap(data, 'overwrite', retry_count+1)
-            # raise
+            raise
