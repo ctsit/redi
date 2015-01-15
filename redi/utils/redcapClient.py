@@ -6,9 +6,6 @@ from redcap import Project, RedcapError
 from requests import RequestException
 from requests.packages.urllib3.exceptions import MaxRetryError
 
-# set maximum retry limit
-MAX_RETRY = 10
-
 # Configure module's logger
 logger = logging.getLogger(__name__)
 logger.addHandler(logging.NullHandler())
@@ -79,7 +76,8 @@ class RedcapClient(object):
             logger.debug(e.message)
         return response
 
-    def send_data_to_redcap(self, data, overwrite=False, retry_count=0):
+    def send_data_to_redcap(self, data, max_retry_count, overwrite=False,
+        retry_count=0):
         """ Sends records to REDCap.
 
         :param list of dict objects data: records to send.
@@ -89,7 +87,7 @@ class RedcapClient(object):
         :return: response
         :raises RedcapError: if failed to send records for any reason.
         :If MaxRetryError is caught, the function will try resending the same
-         data for a maximum of MAX_RETRY times before exitting. For each
+         data for a maximum of max_retry_count times before exitting. For each
          attempt the wait time before sending is (the_attempt_no * 6)
         """
         overwrite_value = 'overwrite' if overwrite else 'normal'
@@ -102,14 +100,15 @@ class RedcapClient(object):
             return response
         except MaxRetryError as e:
             logger.debug(e.message + ", Attempt no.: " + str(retry_count))
-            if (retry_count == MAX_RETRY):
+            if (retry_count == max_retry_count):
                 message = "Exiting since network connection timed out after"\
                 " reaching the maximum retry limit for resending data."
                 logger.debug(message)
                 sys.exit(message)
             # wait for some time before resending data
             time.sleep(retry_count*1)
-            self.send_data_to_redcap(data, 'overwrite', retry_count+1)
+            self.send_data_to_redcap(data, max_retry_count, 'overwrite',
+                retry_count+1)
         except RedcapError as e:
             logger.debug(e.message)
             raise

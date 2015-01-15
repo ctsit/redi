@@ -88,7 +88,7 @@ def create_redcap_records(import_data):
 
 
 def generate_output(person_tree, redcap_client, rate_limit, sent_events,
-                    skip_blanks=False, bulk_send_blanks=False):
+    max_retry_count, skip_blanks=False, bulk_send_blanks=False):
     """
     Note: This function communicates with the redcap application.
     Steps:
@@ -211,7 +211,8 @@ def generate_output(person_tree, redcap_client, rate_limit, sent_events,
 
                     try:
                         found_error = False
-                        upload_data([json_data_dict], overwrite=True)
+                        upload_data([json_data_dict], max_retry_count,
+                            overwrite=True)
                         sent_events.mark_sent(study_id_key, form_name, event_name)
                         logger.debug("Sent " + event_name)
                         if contains_data:
