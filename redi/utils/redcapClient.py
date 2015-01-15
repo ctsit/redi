@@ -1,5 +1,6 @@
 import logging
 import time
+import sys
 
 from redcap import Project, RedcapError
 from requests import RequestException
@@ -105,7 +106,6 @@ class RedcapClient(object):
                 message = "Exiting since network connection timed out after"\
                 " reaching the maximum retry limit for resending data."
                 logger.debug(message)
-                import sys
                 sys.exit(message)
             # wait for some time before resending data
             time.sleep(retry_count*1)
