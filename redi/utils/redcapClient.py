@@ -6,7 +6,7 @@ from requests import RequestException
 from requests.packages.urllib3.exceptions import MaxRetryError
 
 # set maximum retry limit
-MAX_RETRY = 3
+MAX_RETRY = 10
 
 # Configure module's logger
 logger = logging.getLogger(__name__)
@@ -95,20 +95,20 @@ class RedcapClient(object):
 
         try:
             # The following line simulates github issue #108:
-            # raise MaxRetryError('', 'localhost:8998', None)
+            raise MaxRetryError('', 'localhost:8998', None)
             response = self.project.import_records(data,
                 overwrite=overwrite_value)
             return response
         except MaxRetryError as e:
-            logger.debug(e.message + ", Attempt no.: " + retry_count)
+            logger.debug(e.message + ", Attempt no.: " + str(retry_count))
             if (retry_count == MAX_RETRY):
-                message = "Exitting since network connection timed out after"\
+                message = "Exiting since network connection timed out after"\
                 " reaching the maximum retry limit for resending data."
                 logger.debug(message)
                 import sys
                 sys.exit(message)
             # wait for some time before resending data
-            time.sleep(retry_count*6)
+            time.sleep(retry_count*1)
             self.send_data_to_redcap(data, 'overwrite', retry_count+1)
         except RedcapError as e:
             logger.debug(e.message)
