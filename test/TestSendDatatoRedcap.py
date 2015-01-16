@@ -46,7 +46,7 @@ class TestSendDatatoRedcap(unittest.TestCase):
     @patch.multiple(redcapClient.RedcapClient, __init__=dummy_init)
     @patch.multiple(redcapClient.RedcapClient,
         send_data_to_redcap=dummy_send_data_to_redcap_timeout)
-    def test_send_data_to_redcap_retry_11(self):
+    def test_send_data_to_redcap_retry_10(self):
         self.assertTrue(redcapClient.RedcapClient().send_data_to_redcap(
             self.test_data, 'overwrite', 10))
 
