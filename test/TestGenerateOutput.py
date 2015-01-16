@@ -180,12 +180,13 @@ class TestGenerateOutput(unittest.TestCase):
                                      return_format='xml'):
                 raise NotImplementedError()
 
-            def send_data_to_redcap(self, data, overwrite=False):
+            def send_data_to_redcap(self, data, max_retry_count,
+                overwrite=False):
                 return """Data sent"""
 
         etree_1 = etree.ElementTree(etree.fromstring(string_1_xml))
         result = upload.generate_output(etree_1, MockRedcapClient(), 500,
-                                        MockSentEventIndex())
+                                        MockSentEventIndex(), 10)
         self.assertEqual(report_data['total_subjects'], result['total_subjects'])
         self.assertEqual(report_data['form_details'], result['form_details'])
         self.assertEqual(report_data['subject_details'], result['subject_details'])
