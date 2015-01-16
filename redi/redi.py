@@ -321,8 +321,8 @@ def _run(config_file, configuration_directory, do_keep_gen_files, dry_run,
         # Use the new method to communicate with REDCap
         report_data = upload.generate_output(
             person_form_event_tree_with_data, redcap_client,
-            settings.rate_limiter_value_in_redcap, sent_events, skip_blanks,
-            bulk_send_blanks)
+            settings.rate_limiter_value_in_redcap, sent_events,
+            int(settings.max_retry_count), skip_blanks, bulk_send_blanks)
 
         # Save the time it took to send data to REDCap
         done_time = batch.get_db_friendly_date_time()

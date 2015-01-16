@@ -121,6 +121,7 @@ optional_parameters_dict = {
     "emr_sftp_server_private_key": None,
     "emr_sftp_server_private_key_pass": None,
     "is_sort_by_lab_id": True,
+    "max_retry_count": 10,
 }
 
 class ConfigurationError(Exception):
