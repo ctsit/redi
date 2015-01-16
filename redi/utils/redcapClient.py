@@ -94,7 +94,7 @@ class RedcapClient(object):
 
         try:
             # The following line simulates github issue #108:
-            raise MaxRetryError('', 'localhost:8998', None)
+            # raise MaxRetryError('', 'localhost:8998', None)
             response = self.project.import_records(data,
                 overwrite=overwrite_value)
             return response
@@ -106,7 +106,7 @@ class RedcapClient(object):
                 logger.debug(message)
                 sys.exit(message)
             # wait for some time before resending data
-            time.sleep(retry_count*1)
+            time.sleep(retry_count*6)
             self.send_data_to_redcap(data, max_retry_count, 'overwrite',
                 retry_count+1)
         except RedcapError as e:
