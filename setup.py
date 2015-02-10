@@ -24,8 +24,7 @@ setup(
     packages=find_packages(exclude=['test']),
     include_package_data=True,
     package_data={
-        'redi': ['utils/*.xsl', 'utils/*.xsd'],
-        'redi': ['README.md'],
+        'redi': ['utils/*.xsl', 'utils/*.xsd']
     },
     url='https://github.com/ctsit/redi',
     download_url = 'https://github.com/ctsit/redi/releases/tag/0.13.1',
