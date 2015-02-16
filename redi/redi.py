@@ -681,8 +681,11 @@ def write_element_tree_to_file(element_tree, file_name):
 
 def update_time_stamp(data, input_date_format, output_date_format):
     """
-    Update timestamp using input and output data formats reads from raw
-    ElementTree and writes to it
+    Update timestamp using input and output data formats.
+    Warnings:
+      - we modify the data ElementTree
+      - we affect the sorting order of data elements @see #sort_element_tree()
+    
     """
     logger.debug('Updating timestamp to ElementTree')
     for subject in data.iter('subject'):
@@ -730,30 +733,60 @@ def update_redcap_form(data, lookup_data, undefined):
 
 
 def sort_element_tree(data):
-    """Sort element tree based on three given indices.
+    """
+    
+    Sort element tree based on three given indices.
+    @see #update_time_stamp()
 
     Keyword argument: data
     sorting is based on study_id, form name, then timestamp, ascending order
-
     """
 
     # this element holds the subjects that are being sorted
     container = data.getroot()
-    container[:] = sorted(container, key=getkey)
 
+    logger.debug("before sorting...")
+    #batch.printxml(container)
+    container[:] = sorted(container, key=getkey, reverse=False)
 
+    print "after sorting..."
+    compress_data_using_study_form_date(data)
+
+    batch.printxml(container)
+    #print type(container)
+
+def compress_data_using_study_form_date(data):
+    data_root = data.getroot()
+
+    filt = dict()
+
+    for subj in data_root.iter('subject'):
+        study_id = subj.find('STUDY_ID').text
+        form_name = subj.find('redcapFormName').text
+        timestamp = subj.findtext("DATE_TIME_STAMP")
+
+        # extract the date portion "2015-01-01" from "2015-01-01 00:00:00"
+        date = timestamp.split(" ")[0]
+        key = (study_id, form_name, date)
+        key_long = (study_id, form_name, timestamp)
+
+        if key in filt:
+            print "skip key {} ".format(key_long)
+            continue
+        else:
+            filt[key] = True
+    
 def getkey(elem):
-    """Helper function for sorting. Returns keys to sort on.
+    """
+    Helper function for #sort_element_tree()
 
     Keyword argument: elem
     returns the corresponding tuple study_id, form_name, timestamp
-
-    Nicholas
-
     """
     study_id = elem.findtext("STUDY_ID")
     form_name = elem.findtext("redcapFormName")
-    timestamp = elem.findtext("timestamp")
+    #timestamp = elem.findtext("timestamp")
+    timestamp = elem.findtext("DATE_TIME_STAMP")
     return (study_id, form_name, timestamp)
 
 
