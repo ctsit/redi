@@ -685,7 +685,6 @@ def update_time_stamp(data, input_date_format, output_date_format):
     Warnings:
       - we modify the data ElementTree
       - we affect the sorting order of data elements @see #sort_element_tree()
-    
     """
     logger.debug('Updating timestamp to ElementTree')
     for subject in data.iter('subject'):
@@ -734,30 +733,37 @@ def update_redcap_form(data, lookup_data, undefined):
 
 def sort_element_tree(data):
     """
-    
     Sort element tree based on three given indices.
     @see #update_time_stamp()
 
     Keyword argument: data
     sorting is based on study_id, form name, then timestamp, ascending order
     """
-
     # this element holds the subjects that are being sorted
     container = data.getroot()
-
-    logger.debug("before sorting...")
     #batch.printxml(container)
     container[:] = sorted(container, key=getkey, reverse=False)
-
-    print "after sorting..."
     compress_data_using_study_form_date(data)
+    #batch.printxml(container)
 
-    batch.printxml(container)
-    #print type(container)
 
 def compress_data_using_study_form_date(data):
-    data_root = data.getroot()
+    """
+    This function is removing duplicate results
+    which were recorded on same date but different times.
+    Warning:
+        - we assume that the passed ElementTree is sorted
+        - the passed object is altered
 
+    @see #getkey()
+    @see #sort_element_tree()
+
+    Parameters:
+    -----------
+    data: the ElementTree object that needs to be `compressed`
+    return: none
+    """
+    data_root = data.getroot()
     filt = dict()
 
     for subj in data_root.iter('subject'):
@@ -765,17 +771,23 @@ def compress_data_using_study_form_date(data):
         form_name = subj.find('redcapFormName').text
         timestamp = subj.findtext("DATE_TIME_STAMP")
 
+        if not timestamp:
+            # we can only compress if there is a valid timestamp
+            continue
+
         # extract the date portion "2015-01-01" from "2015-01-01 00:00:00"
         date = timestamp.split(" ")[0]
         key = (study_id, form_name, date)
         key_long = (study_id, form_name, timestamp)
 
         if key in filt:
-            print "skip key {} ".format(key_long)
+            logger.debug("Remove duplicate result for the date: {} with key: {}".format(date, key_long))
+            subj.getparent().remove(subj)
             continue
         else:
             filt[key] = True
-    
+
+
 def getkey(elem):
     """
     Helper function for #sort_element_tree()
