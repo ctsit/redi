@@ -1851,6 +1851,9 @@ def verify_and_correct_collection_date(data, input_date_format):
         collection_date_summary_dict['total'] += 1
         collection_date_element = subject.find('DATE_TIME_STAMP')
         result_date_element = subject.find('RESULT_DATE')
+        # If DATE_TIME_STAMP tag is present but it has no text (ie blank tag)
+        # and if RESULT_DATE is present, then subtract 4 from RESULT_DATE and
+        # assign that value to DATE_TIME_STAMP
         if collection_date_element is not None and \
         result_date_element is not None:
             if not collection_date_element.text:
@@ -1861,6 +1864,11 @@ def verify_and_correct_collection_date(data, input_date_format):
                 timedelta(days=4)
                 collection_date_element.text = str(result_date_object)
                 collection_date_summary_dict['blank'] += 1
+            # else do nothing as DATE_TIME_STAMP does have a value
+
+        # else if DATE_TIME_STAMP tag is not present, create a new tag by the
+        # name DATE_TIME_STAMP and add this to the data ElementTree and assign
+        # to it the value RESULT_DATE - 4
         elif collection_date_element is None and \
         result_date_element is not None:
             new_collection_date_element = etree.Element('DATE_TIME_STAMP')
