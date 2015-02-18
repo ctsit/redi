@@ -24,6 +24,7 @@ class TestRediEmail(unittest.TestCase):
             'batch_warning_days': 13,
             'sender_email': 'report_sender@example.com',
             'receiver_email': 'rep_a@example.com rep_b@example.com',
+            'project': 'TEST SITE',
             }
         self.settings = type("", (), settings)()
         self.email_settings = redi.get_email_settings(self.settings)
@@ -46,6 +47,7 @@ class TestRediEmail(unittest.TestCase):
                 "report_sender@example.com")
         self.assertEqual(ese['batch_report_receiving_list'], \
                 ["rep_a@example.com", "rep_b@example.com"])
+        self.assertEqual(ese['site_name'], "TEST SITE")
 
     def dummy_send_success(*args, **kwargs):
         """Skip sending email"""
