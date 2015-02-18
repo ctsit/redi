@@ -1853,6 +1853,7 @@ def get_email_settings(settings):
     email_settings['batch_report_sender_email'] = settings.sender_email
     email_settings['batch_report_receiving_list'] = \
             settings.receiver_email.split() if settings.receiver_email else []
+    email_settings['site_name'] = settings.project
     return email_settings
 
 def get_redcap_settings(settings):
