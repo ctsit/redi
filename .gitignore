@@ -54,3 +54,4 @@ redi.db
 report.html
 redi.pstats
 callgraph.svg
+private/
