@@ -26,6 +26,17 @@ ifneq ("$(wildcard $(MAKE_CONFIG_FILE))", "")
    REDCAP_PROJECT_ENROLLMENT_FORM := $(shell cat ${MAKE_CONFIG_FILE} | sed -e 's/ //g' | grep -v '^\#' | grep 'redcap_project_enrollment_form=' | cut -d '=' -f2)
 endif
 
+
+CSV2XML := python ../redi/utils/csv2xml.py MY_CSV \
+      --xml-declaration \
+      --output-encoding='utf8' \
+      --root-element='study' \
+      --record-element='subject' \
+      --header \
+      --skipinitialspace \
+      --output-file=MY_XML
+
+
 .PHONY: help
 help:
 	@echo "\n Available tasks:"
@@ -133,7 +144,11 @@ rc_get: check_config
 	$(REDCAP_RECORDS_CMD) -f "$(REDCAP_PROJECT_FORMS)"
 
 rc_get_json: check_config
-	$(REDCAP_RECORDS_CMD) -f "$(REDCAP_PROJECT_FORMS)" -t json
+	@$(REDCAP_RECORDS_CMD) -f "$(REDCAP_PROJECT_FORMS)" -t json | python -m json.tool
+
+rc_get_xml: check_config
+	@$(REDCAP_RECORDS_CMD) -f "$(REDCAP_PROJECT_FORMS)" -t xml | xmlstarlet fo
+
 
 rc_get_enrollment: check_config
 	$(REDCAP_RECORDS_CMD) -f "$(REDCAP_PROJECT_ENROLLMENT_FORM)" -t csv
@@ -203,5 +218,29 @@ clean:
 	rm -f projectDataBootstrap.sql
 	rm -f out.csv
 
+
+large:
+	make xmlfrom ../config/raw-large-sample-dataset.txt
+
+xmlfrom:
+	@$(eval CSV := $(filter-out $@,$(MAKECMDGOALS)))
+	@ test -f $(CSV) || ( echo "There is no such file: $(CSV)" && exit 1)
+
+	@# Use same file name but different extension (xml)
+	@$(eval XML := $(CSV))
+	@$(eval XML := $(subst txt,xml,$(XML)))
+	@test ! -f $(XML) || ( echo "The destination file already exists: $(XML). Please remove it first." && exit 1)
+
+	@# replace file names in the actual command
+	$(eval CMD := $(subst MY_CSV,$(CSV),$(CSV2XML)))
+	$(eval CMD := $(subst MY_XML,$(XML),$(CMD)))
+	@$(CMD)
+	@less $(XML)
+
+
+
 profile:
 	python -m cProfile -o redi.pstats ../redi/redi.py --skip-blanks -c $(CONFIG_FOLDER) -k && gprof2dot -f pstats redi.pstats | dot -Tsvg -o callgraph.svg && open -a "Google Chrome.app" callgraph.svg
+
+profilev:
+	python -m cProfile -o redi.pstats ../redi/redi.py --skip-blanks -c $(CONFIG_FOLDER) -k && cprofilev redi.pstats && open -a "Google Chrome.app" http://localhost:4000
