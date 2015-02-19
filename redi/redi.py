@@ -221,9 +221,8 @@ def _fetch_run_data(data_folder):
     collection_date_summary_dict = _load(
         os.path.join(data_folder, 'collection_date_summary_dict.obj'))
     sent_events = SentEvents(os.path.join(data_folder, 'sent_events.idx'))
-
-    return (alert_summary, person_form_event_tree_with_data, rule_errors,
-            collection_date_summary_dict, sent_events)
+    bad_ids = _load(os.path.join(data_folder, 'bad_ids.obj'))
+    return (alert_summary, person_form_event_tree_with_data, rule_errors, collection_date_summary_dict, sent_events, bad_ids)
 
 
 def _load(path):
@@ -233,12 +232,14 @@ def _load(path):
 
 def _store_run_data(data_folder, alert_summary,
                     person_form_event_tree_with_data, rule_errors,
-                    collection_date_summary_dict):
+                    collection_date_summary_dict,
+                    bad_ids):
     _person_form_events_service.store(person_form_event_tree_with_data)
     _save(alert_summary, os.path.join(data_folder, 'alert_summary.obj'))
     _save(rule_errors, os.path.join(data_folder, 'rule_errors.obj'))
     _save(collection_date_summary_dict,
           os.path.join(data_folder, 'collection_date_summary_dict.obj'))
+    _save(bad_ids, os.path.join(data_folder, 'bad_ids.obj'))
 
 
 def _save(obj, path):
@@ -301,24 +302,18 @@ def _run(config_file, configuration_directory, do_keep_gen_files, dry_run,
         _delete_last_runs_data(data_folder)
 
         alert_summary, person_form_event_tree_with_data, rule_errors, \
-        collection_date_summary_dict, bad_ids = _create_person_form_event_tree_with_data(
+        collection_date_summary_dict, bad_ids =\
+        _create_person_form_event_tree_with_data(
             config_file, configuration_directory, redcap_client,
             form_events_file, raw_xml_file, rules, settings, data_folder,
             translation_table_file)
 
-        print "##########################"
-        print collection_date_summary_dict
-        for bad_id in bad_ids.iteritems():
-            print bad_id[0]
-            print bad_id[1]
-        print "##########################"
-
         _store_run_data(data_folder, alert_summary,
                         person_form_event_tree_with_data, rule_errors,
-                        collection_date_summary_dict)
+                        collection_date_summary_dict, bad_ids)
 
     (alert_summary, person_form_event_tree_with_data, rule_errors,
-     collection_date_summary_dict, sent_events) = _fetch_run_data(data_folder)
+     collection_date_summary_dict, sent_events, bad_ids) = _fetch_run_data(data_folder)
 
     # Data will be sent to REDCap server and email will be sent only if
     # redi.py is not executing in dry run state.
@@ -359,11 +354,11 @@ def _run(config_file, configuration_directory, do_keep_gen_files, dry_run,
         if settings.include_rule_errors_in_report:
             report_data['errors'].extend(rule_errors)
 
-        report_data['errors'].append(bad_ids)
-
-        print "$$$$$$$$$$$$$$$$$$$$$$$$"
-        print report_data['errors']
-        print "$$$$$$$$$$$$$$$$$$$$$$$$"
+        # Add bad research ids to the report
+        for bad_id in bad_ids.iteritems():
+            bad_id_msg = "Research ID {} present in source data but not in "\
+            "target REDCap".format(bad_id[0])
+            report_data['errors'].append(bad_id_msg)
 
         # create summary report
         html_str = report_creator.create_report(
