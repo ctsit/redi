@@ -9,6 +9,8 @@ from xml.sax import saxutils
 import logging
 import pysftp
 from csv2xml import openio, Writer
+from paramiko.ssh_exception import SSHException, BadAuthenticationType
+import sys
 
 logger = logging.getLogger(__name__)
 logger.setLevel(logging.INFO)
@@ -53,10 +55,23 @@ def download_file(destination, access_details):
     # delete unnecessary element form the dictionary
     del connection_info['download_file']
 
-    with pysftp.Connection(**connection_info) as sftp:
-        logger.info("User %s connected to sftp server %s" % \
-            (connection_info['username'], connection_info['host']))
-        sftp.get(access_details.download_file, destination)
+    try:
+        with pysftp.Connection(**connection_info) as sftp:
+            logger.info("User %s connected to sftp server %s" % \
+                (connection_info['username'], connection_info['host']))
+            sftp.get(access_details.download_file, destination)
+    except BadAuthenticationType as e:
+        logger.error("Authentication failed. Please verify that the port no."\
+            " and password provided in settings.ini for connecting to the "\
+            "EMR server are correct.")
+        logger.exception(e)
+        sys.exit()
+    except SSHException as e:
+        logger.error("Private key file may be invalid")
+        logger.exception(e)
+        sys.exit()
+
+
 
 def data_preprocessing(input_filename, output_filename):
     # replace &, >, < with &amp;, &>;, &<;
@@ -140,3 +155,4 @@ def get_emr_data(conf_dir, connection_details):
 
     # delete rawEscaped.txt
     cleanup(escaped_file)
+

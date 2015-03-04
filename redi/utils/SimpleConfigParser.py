@@ -221,6 +221,16 @@ class SimpleConfigParser(ConfigParser.RawConfigParser):
                 logger.error(message)
                 sys.exit()
 
+        # if emr_sftp_server_private_key has a value then check that the file
+        # is present
+        if self.hasoption('emr_sftp_server_private_key'):
+            private_key_file = self.getoption('emr_sftp_server_private_key')
+            if private_key_file:
+                if not os.path.exists(private_key_file):
+                    logger.error("Could not find the private key file {} for"\
+                    " connecting to EMR server".format(private_key_file))
+                    sys.exit()
+
         # set optional parameters with default values if missing
         for option in optional_parameters_dict:
             if not self.hasoption(option) or self.getoption(option) == "":
