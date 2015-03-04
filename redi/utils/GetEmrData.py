@@ -55,9 +55,6 @@ def download_file(destination, access_details):
     # delete unnecessary element form the dictionary
     del connection_info['download_file']
 
-    key_file = connection_info['private_key']
-    check_existence_of_private_key(key_file)
-
     try:
         with pysftp.Connection(**connection_info) as sftp:
             logger.info("User %s connected to sftp server %s" % \
@@ -159,12 +156,3 @@ def get_emr_data(conf_dir, connection_details):
     # delete rawEscaped.txt
     cleanup(escaped_file)
 
-def check_existence_of_private_key(private_key_path):
-    if private_key_path is None:
-        logger.error("Please specify in settings.ini the name of the private"\
-        " key file for connecting to EMR server")
-        sys.exit()
-    if os.path.exists(private_key_path) is not True:
-        logger.error("Could not find the private key file {} for connecting"\
-        " to EMR server".format(private_key_path))
-        sys.exit()
