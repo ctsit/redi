@@ -55,6 +55,25 @@ def download_file(destination, access_details):
     # delete unnecessary element form the dictionary
     del connection_info['download_file']
 
+    # Check if private key file name has been provided in settings.ini.
+    # If yes, then we need to ensure that such a file exists
+    # private_key_file_name = connection_info['private_key']
+    # if connection_info['password'] is None:
+    #     if private_key_file_name is not None:
+    #         if not os.path.exists(private_key_file_name):
+    #             logger.error("Could not find the private key file {} for "
+    #                 "connecting to EMR server".format(private_key_file_name))
+    #             sys.exit()
+    #         else:
+    #             pass
+    #     else:
+    #         logger.error("Private key file name and password missing from "
+    #             "settings.ini file. Please provide at least one to connect "
+    #             "to EMR server")
+    # else:
+    #     pass
+
+    # check for errors during authentication with EMR server
     try:
         with pysftp.Connection(**connection_info) as sftp:
             logger.info("User %s connected to sftp server %s" % \

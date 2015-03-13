@@ -221,6 +221,7 @@ class SimpleConfigParser(ConfigParser.RawConfigParser):
                 logger.error(message)
                 sys.exit()
 
+        # This block is to be removed
         # if emr_sftp_server_private_key has a value then check that the file
         # is present
         if self.hasoption('emr_sftp_server_private_key'):
