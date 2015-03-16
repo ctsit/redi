@@ -1,4 +1,19 @@
 #!/usr/bin/env python
+
+# Contributors:
+# Christopher P. Barnes <senrabc@gmail.com>
+# Andrei Sura: github.com/indera
+# Mohan Das Katragadda <mohan.das142@gmail.com>
+# Philip Chase <philipbchase@gmail.com>
+# Ruchi Vivek Desai <ruchivdesai@gmail.com>
+# Taeber Rapczak <taeber@ufl.edu>
+# Josh Hanna <josh@hanna.io>
+# Copyright (c) 2015, University of Florida
+# All rights reserved.
+#
+# Distributed under the BSD 3-Clause License
+# For full text of the BSD 3-Clause License see http://opensource.org/licenses/BSD-3-Clause
+
 """
 redi.py - Converter from raw clinical data in XML format to REDCap API data
 
