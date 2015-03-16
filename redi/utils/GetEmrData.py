@@ -55,38 +55,25 @@ def download_file(destination, access_details):
     # delete unnecessary element form the dictionary
     del connection_info['download_file']
 
-    # Check if private key file name has been provided in settings.ini.
-    # If yes, then we need to ensure that such a file exists
-    # private_key_file_name = connection_info['private_key']
-    # if connection_info['password'] is None:
-    #     if private_key_file_name is not None:
-    #         if not os.path.exists(private_key_file_name):
-    #             logger.error("Could not find the private key file {} for "
-    #                 "connecting to EMR server".format(private_key_file_name))
-    #             sys.exit()
-    #         else:
-    #             pass
-    #     else:
-    #         logger.error("Private key file name and password missing from "
-    #             "settings.ini file. Please provide at least one to connect "
-    #             "to EMR server")
-    # else:
-    #     pass
-
     # check for errors during authentication with EMR server
     try:
         with pysftp.Connection(**connection_info) as sftp:
             logger.info("User %s connected to sftp server %s" % \
                 (connection_info['username'], connection_info['host']))
             sftp.get(access_details.download_file, destination)
+    except IOError as e:
+        logger.error("Please verify that the private key file mentioned in "\
+            "settings.ini exists.")
+        logger.exception(e)
+        sys.exit()
     except BadAuthenticationType as e:
-        logger.error("Authentication failed. Please verify that the port no."\
-            " and password provided in settings.ini for connecting to the "\
-            "EMR server are correct.")
+        logger.error("Please verify that the EMR server connection details "\
+            "under section emr_data in settings.ini are correct")
         logger.exception(e)
         sys.exit()
     except SSHException as e:
-        logger.error("Private key file may be invalid")
+        logger.error("Please verify that the EMR server connection details "\
+            "under section emr_data in settings.ini are correct")
         logger.exception(e)
         sys.exit()
 
