@@ -1,3 +1,5 @@
+#!/usr/bin/env python
+
 # Contributors:
 # Christopher P. Barnes <senrabc@gmail.com>
 # Andrei Sura: github.com/indera
@@ -5,6 +7,7 @@
 # Philip Chase <philipbchase@gmail.com>
 # Ruchi Vivek Desai <ruchivdesai@gmail.com>
 # Taeber Rapczak <taeber@ufl.edu>
+# Nicholas Rejack <nrejack@ufl.edu>
 # Josh Hanna <josh@hanna.io>
 # Copyright (c) 2015, University of Florida
 # All rights reserved.
