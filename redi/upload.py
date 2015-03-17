@@ -20,7 +20,7 @@ Functions related to uploading data to REDCap
 """
 
 __author__ = "University of Florida CTS-IT Team"
-__copyright__ = "Copyright 2014, University of Florida"
+__copyright__ = "Copyright 2015, University of Florida"
 __license__ = "BSD 3-Clause"
 
 import ast

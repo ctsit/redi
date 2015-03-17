@@ -14,8 +14,9 @@
 #
 # Distributed under the BSD 3-Clause License
 # For full text of the BSD 3-Clause License see http://opensource.org/licenses/BSD-3-Clause
+
 __author__ = "Taeber Rapczak <taeber@ufl.edu>"
-__copyright__ = "Copyright 2014, University of Florida"
+__copyright__ = "Copyright 2015, University of Florida"
 __license__ = "BSD 3-Clause"
 
 

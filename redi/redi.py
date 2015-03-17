@@ -46,8 +46,8 @@ Options:
 """
 
 __author__ = "Nicholas Rejack"
-__copyright__ = "Copyright 2013, University of Florida"
-__license__ = "BSD 2-Clause"
+__copyright__ = "Copyright 2015, University of Florida"
+__license__ = "BSD 3-Clause"
 __version__ = "0.13.2"
 __email__ = "nrejack@ufl.edu"
 __status__ = "Development"
