@@ -773,7 +773,7 @@ def compress_data_using_study_form_date(data):
     filt = dict()
 
     for subj in data_root.iter('subject'):
-        subj_name = subj.find('NAME').text
+        lab_name = subj.find('NAME').text
         study_id = subj.find('STUDY_ID').text
         form_name = subj.find('redcapFormName').text
         timestamp = subj.findtext("DATE_TIME_STAMP")
@@ -784,12 +784,12 @@ def compress_data_using_study_form_date(data):
 
         # extract the date portion "2015-01-01" from "2015-01-01 00:00:00"
         date = timestamp.split(" ")[0]
-        key = (subj_name, study_id, form_name, date)
-        key_long = (subj_name, study_id, form_name, timestamp)
+        key = (lab_name, study_id, form_name, date)
+        key_long = (lab_name, study_id, form_name, timestamp)
 
         if key in filt:
             logger.debug("Remove duplicate result for {} for the date: {} "\
-                "with key: {}".format(subj_name, date, key_long))
+                "with key: {}".format(lab_name, date, key_long))
             subj.getparent().remove(subj)
             continue
         else:
