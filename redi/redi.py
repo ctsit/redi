@@ -477,10 +477,10 @@ def _create_person_form_event_tree_with_data(
     write_element_tree_to_file(
         data,
         os.path.join(data_folder, 'rawDataWithDatumAndUnitsFieldNames.xml'))
-    # sort the data tree
-    sort_element_tree(data)
+    # sort the data tree and compress
+    sort_element_tree(data, data_folder)
     write_element_tree_to_file(data, os.path.join(data_folder, \
-        'rawDataSorted.xml'))
+        'rawDataSortedAfterCompression.xml'))
     # update eventName element
     alert_summary = update_event_name(data, form_events_tree, 'undefined')
     # write back the changed global Element Tree
@@ -731,7 +731,7 @@ def update_redcap_form(data, lookup_data, undefined):
         undefined)
 
 
-def sort_element_tree(data):
+def sort_element_tree(data, data_folder):
     """
     Sort element tree based on three given indices.
     @see #update_time_stamp()
@@ -743,7 +743,13 @@ def sort_element_tree(data):
     container = data.getroot()
     #batch.printxml(container)
     container[:] = sorted(container, key=getkey, reverse=False)
+
+    # print sorted data before compression for reference
+    write_element_tree_to_file(data, os.path.join(data_folder,
+        "rawDataSortedBeforeCompression.xml"))
+
     compress_data_using_study_form_date(data)
+
     #batch.printxml(container)
 
 
