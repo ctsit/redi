@@ -1,4 +1,6 @@
 import unittest
+import tempfile
+import os
 from lxml import etree
 from redi import redi
 
@@ -60,15 +62,31 @@ class TestSortElementTree(unittest.TestCase):
     </subject>
 </study>"""
 
+        self.dirpath = tempfile.mkdtemp()
+
 
     def test_sort_elementtree(self):
         tree_to_sort = etree.ElementTree(etree.fromstring(self.unsorted))
-        redi.sort_element_tree(tree_to_sort)
+        redi.sort_element_tree(tree_to_sort, self.dirpath)
 
         par = etree.XMLParser(remove_blank_text = True)
         clean_expect = etree.XML(self.sorted_tree, parser=par)
         clean_result = etree.XML(etree.tostring(tree_to_sort), parser=par)
         self.assertEqual(etree.tostring(clean_expect), etree.tostring(clean_result))
+
+    def tearDown(self):
+        try:
+            os.unlink(os.path.join(self.dirpath,
+                "rawDataSortedBeforeCompression.xml"))
+        except:
+            print("setUp failed to unlink "\
+                "file \'rawDataSortedBeforeCompression\'.xml")
+        try:
+            os.rmdir(self.dirpath)
+        except OSError:
+            raise LogException("Folder \'{}\' is not empty, hence cannot "\
+                "be deleted.".format(self.dirpath))
+        return()
 
 if __name__ == '__main__':
     unittest.main()
