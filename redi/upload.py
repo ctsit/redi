@@ -1,5 +1,3 @@
-#!/usr/bin/env python
-
 # Contributors:
 # Christopher P. Barnes <senrabc@gmail.com>
 # Andrei Sura: github.com/indera
@@ -19,10 +17,6 @@
 Functions related to uploading data to REDCap
 """
 
-__author__ = "University of Florida CTS-IT Team"
-__copyright__ = "Copyright 2015, University of Florida"
-__license__ = "BSD 3-Clause"
-
 import ast
 import collections
 import datetime
@@ -36,8 +30,6 @@ from utils import throttle
 
 logger = logging.getLogger(__name__)
 logger.addHandler(logging.NullHandler())
-
-DEFAULT_DATA_DIRECTORY = os.getcwd()
 
 
 def create_import_data_json(import_data_dict, event_tree):

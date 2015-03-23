@@ -45,11 +45,9 @@ Options:
         -b --bulk-send-blanks       send blank events in bulk instead of individually [default:False]
 """
 
-__author__ = "Nicholas Rejack"
-__copyright__ = "Copyright 2015, University of Florida"
-__license__ = "BSD 3-Clause"
+__author__ = "University of Florida CTS-IT Team"
 __version__ = "0.13.2"
-__email__ = "nrejack@ufl.edu"
+__email__ = "cts-it-all@ctsi.ufl.edu"
 __status__ = "Development"
 
 import ast

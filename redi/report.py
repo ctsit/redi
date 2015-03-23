@@ -1,5 +1,3 @@
-#!/usr/bin/env python
-
 # Contributors:
 # Christopher P. Barnes <senrabc@gmail.com>
 # Andrei Sura: github.com/indera

@@ -1,5 +1,3 @@
-#!/usr/bin/env python
-
 # Contributors:
 # Christopher P. Barnes <senrabc@gmail.com>
 # Andrei Sura: github.com/indera
@@ -106,7 +104,7 @@ def data_preprocessing(input_filename, output_filename):
 def generate_xml(input_filename, output_filename):
 
     # generate_xml now replicates the functionality from the
-    # "__name__ == '__main__'" code block of csv2xml.py. This allows us to use
+    # "main" code block of csv2xml.py. This allows us to use
     # it like another module in our project without having to call os.system().
     class Arguments:
         pass

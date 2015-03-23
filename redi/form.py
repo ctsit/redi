@@ -1,5 +1,3 @@
-#!/usr/bin/env python
-
 # Contributors:
 # Christopher P. Barnes <senrabc@gmail.com>
 # Andrei Sura: github.com/indera
@@ -16,8 +14,6 @@
 # For full text of the BSD 3-Clause License see http://opensource.org/licenses/BSD-3-Clause
 
 __author__ = "Taeber Rapczak <taeber@ufl.edu>"
-__copyright__ = "Copyright 2015, University of Florida"
-__license__ = "BSD 3-Clause"
 
 
 class Form(object):
