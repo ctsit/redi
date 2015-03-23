@@ -21,12 +21,6 @@ TestParseAll.py:
    Verifies the correct functionality 
    of all functions with prefix `parse_`
 """
-__author__      = "Andrei Sura"
-__copyright__   = "Copyright 2015, University of Florida"
-__license__     = "BSD 3-Clause"
-__version__     = "0.1"
-__email__       = "asura@ufl.edu"
-__status__      = "Development"
 
 import unittest
 from lxml import etree
