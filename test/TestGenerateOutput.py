@@ -9,7 +9,7 @@
 # Taeber Rapczak <taeber@ufl.edu>
 # Nicholas Rejack <nrejack@ufl.edu>
 # Josh Hanna <josh@hanna.io>
-# Copyright (c) 2015, University of Florida
+# Copyright (c) 2014-2015, University of Florida
 # All rights reserved.
 #
 # Distributed under the BSD 3-Clause License
