@@ -43,6 +43,7 @@ help:
 	@echo "\t copy_config_example - copy the required Makefile.ini from 'config-example' folder"
 	@echo "\t copy_config_develop - copy the required Makefile.ini from developer's 'config' folder"
 	@echo "\t show_config         - display the parameters retrieved from $(CONFIG_FILE)"
+	@echo "\t show_steps          - display the steps for installation'
 	@echo "\t copy_redcap_code:   - copy the redcap.zip file from the 'config' folder if available"
 	@echo "\t copy_project_data:  - copy extra files from the 'config' folder if available"
 
@@ -58,6 +59,7 @@ help:
 	@echo "\t rc_fresh      - erase/insert/retrieve test data from REDCap"
 	@echo "\t rc_get_rate   - shows the config option value: 'page_hit_threshold_per_minute' "
 	@echo "\t rc_set_rate   - set the value for: 'page_hit_threshold_per_minute' "
+	@echo "\t rc_remove_ban       - remove REDCap ban due excessive testing'
 
 	@echo "\t egg_test      - deploy the redi egg file to the vagrant box and run redi"
 	@echo "\t clean         - remove files created by testing"
@@ -138,7 +140,7 @@ rc_post:
 	python ../redi/redi.py -c $(CONFIG_FOLDER)
 
 rc_post_skip_blanks:
-	python ../bin/redi.py -c $(CONFIG_FOLDER) --skip-blanks
+	python ../redi/redi.py -c $(CONFIG_FOLDER) --skip-blanks
 
 rc_get: check_config
 	$(REDCAP_RECORDS_CMD) -f "$(REDCAP_PROJECT_FORMS)"

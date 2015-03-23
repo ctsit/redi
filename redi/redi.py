@@ -1,4 +1,20 @@
 #!/usr/bin/env python
+
+# Contributors:
+# Christopher P. Barnes <senrabc@gmail.com>
+# Andrei Sura: github.com/indera
+# Mohan Das Katragadda <mohan.das142@gmail.com>
+# Philip Chase <philipbchase@gmail.com>
+# Ruchi Vivek Desai <ruchivdesai@gmail.com>
+# Taeber Rapczak <taeber@ufl.edu>
+# Nicholas Rejack <nrejack@ufl.edu>
+# Josh Hanna <josh@hanna.io>
+# Copyright (c) 2015, University of Florida
+# All rights reserved.
+#
+# Distributed under the BSD 3-Clause License
+# For full text of the BSD 3-Clause License see http://opensource.org/licenses/BSD-3-Clause
+
 """
 redi.py - Converter from raw clinical data in XML format to REDCap API data
 
@@ -30,8 +46,8 @@ Options:
 """
 
 __author__ = "Nicholas Rejack"
-__copyright__ = "Copyright 2013, University of Florida"
-__license__ = "BSD 2-Clause"
+__copyright__ = "Copyright 2015, University of Florida"
+__license__ = "BSD 3-Clause"
 __version__ = "0.13.2"
 __email__ = "nrejack@ufl.edu"
 __status__ = "Development"
@@ -221,9 +237,8 @@ def _fetch_run_data(data_folder):
     collection_date_summary_dict = _load(
         os.path.join(data_folder, 'collection_date_summary_dict.obj'))
     sent_events = SentEvents(os.path.join(data_folder, 'sent_events.idx'))
-
-    return (alert_summary, person_form_event_tree_with_data, rule_errors,
-            collection_date_summary_dict, sent_events)
+    bad_ids = _load(os.path.join(data_folder, 'bad_ids.obj'))
+    return (alert_summary, person_form_event_tree_with_data, rule_errors, collection_date_summary_dict, sent_events, bad_ids)
 
 
 def _load(path):
@@ -233,12 +248,14 @@ def _load(path):
 
 def _store_run_data(data_folder, alert_summary,
                     person_form_event_tree_with_data, rule_errors,
-                    collection_date_summary_dict):
+                    collection_date_summary_dict,
+                    bad_ids):
     _person_form_events_service.store(person_form_event_tree_with_data)
     _save(alert_summary, os.path.join(data_folder, 'alert_summary.obj'))
     _save(rule_errors, os.path.join(data_folder, 'rule_errors.obj'))
     _save(collection_date_summary_dict,
           os.path.join(data_folder, 'collection_date_summary_dict.obj'))
+    _save(bad_ids, os.path.join(data_folder, 'bad_ids.obj'))
 
 
 def _save(obj, path):
@@ -301,17 +318,18 @@ def _run(config_file, configuration_directory, do_keep_gen_files, dry_run,
         _delete_last_runs_data(data_folder)
 
         alert_summary, person_form_event_tree_with_data, rule_errors, \
-        collection_date_summary_dict = _create_person_form_event_tree_with_data(
+        collection_date_summary_dict, bad_ids =\
+        _create_person_form_event_tree_with_data(
             config_file, configuration_directory, redcap_client,
             form_events_file, raw_xml_file, rules, settings, data_folder,
             translation_table_file)
 
         _store_run_data(data_folder, alert_summary,
                         person_form_event_tree_with_data, rule_errors,
-                        collection_date_summary_dict)
+                        collection_date_summary_dict, bad_ids)
 
     (alert_summary, person_form_event_tree_with_data, rule_errors,
-     collection_date_summary_dict, sent_events) = _fetch_run_data(data_folder)
+     collection_date_summary_dict, sent_events, bad_ids) = _fetch_run_data(data_folder)
 
     # Data will be sent to REDCap server and email will be sent only if
     # redi.py is not executing in dry run state.
@@ -351,6 +369,12 @@ def _run(config_file, configuration_directory, do_keep_gen_files, dry_run,
 
         if settings.include_rule_errors_in_report:
             report_data['errors'].extend(rule_errors)
+
+        # Add bad research ids to the report
+        for bad_id in bad_ids.iteritems():
+            bad_id_msg = "Research ID {} present in source data but not in "\
+            "target REDCap".format(bad_id[0])
+            report_data['errors'].append(bad_id_msg)
 
         # create summary report
         html_str = report_creator.create_report(
@@ -488,7 +512,7 @@ def _create_person_form_event_tree_with_data(
         'rawDataWithAllUpdates.xml'))
 
     # Research ID - to - Redcap ID converter
-    research_id_to_redcap_id_converter(
+    bad_ids = research_id_to_redcap_id_converter(
         data,
         redcap_client,
         settings.research_id_to_redcap_id,
@@ -516,7 +540,7 @@ def _create_person_form_event_tree_with_data(
     person_form_event_tree_with_data, rule_errors = run_rules(
         rules, person_form_event_tree_with_data)
     return alert_summary, person_form_event_tree_with_data, rule_errors, \
-    collection_date_summary_dict
+    collection_date_summary_dict, bad_ids
 
 
 def _check_input_file(db_path, email_settings, raw_xml_file, settings,start_time):
@@ -1135,7 +1159,7 @@ def research_id_to_redcap_id_converter(
     for bad_id in bad_ids.iteritems():
         logger.warn('Bad research id %s found %s times', bad_id[0], bad_id[1])
 
-    pass
+    return bad_ids
 
 
 def configure_logging(data_folder, verbose=False):
@@ -1853,6 +1877,7 @@ def get_email_settings(settings):
     email_settings['batch_report_sender_email'] = settings.sender_email
     email_settings['batch_report_receiving_list'] = \
             settings.receiver_email.split() if settings.receiver_email else []
+    email_settings['site_name'] = settings.project
     return email_settings
 
 def get_redcap_settings(settings):

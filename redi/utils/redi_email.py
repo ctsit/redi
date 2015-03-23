@@ -1,3 +1,20 @@
+#!/usr/bin/env python
+
+# Contributors:
+# Christopher P. Barnes <senrabc@gmail.com>
+# Andrei Sura: github.com/indera
+# Mohan Das Katragadda <mohan.das142@gmail.com>
+# Philip Chase <philipbchase@gmail.com>
+# Ruchi Vivek Desai <ruchivdesai@gmail.com>
+# Taeber Rapczak <taeber@ufl.edu>
+# Nicholas Rejack <nrejack@ufl.edu>
+# Josh Hanna <josh@hanna.io>
+# Copyright (c) 2015, University of Florida
+# All rights reserved.
+#
+# Distributed under the BSD 3-Clause License
+# For full text of the BSD 3-Clause License see http://opensource.org/licenses/BSD-3-Clause
+
 import smtplib
 from smtplib import SMTPException
 from email.mime.text import MIMEText
@@ -107,7 +124,8 @@ def send_email_data_import_completed(email_settings, body=''):
     to_addr_list = email_settings['batch_report_receiving_list']
     host = email_settings['smtp_host_for_outbound_mail']
     port = email_settings['smtp_port_for_outbound_mail']
-    subject = 'Data Import Report'
+    site_name = email_settings['site_name']
+    subject = 'Data Import Report For {}'.format(site_name)
     msg = MIMEMultipart()
     msg['From'] = sender
     msg['To'] = ",".join(to_addr_list)

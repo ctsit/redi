@@ -1,3 +1,20 @@
+#!/usr/bin/env python
+
+# Contributors:
+# Christopher P. Barnes <senrabc@gmail.com>
+# Andrei Sura: github.com/indera
+# Mohan Das Katragadda <mohan.das142@gmail.com>
+# Philip Chase <philipbchase@gmail.com>
+# Ruchi Vivek Desai <ruchivdesai@gmail.com>
+# Taeber Rapczak <taeber@ufl.edu>
+# Nicholas Rejack <nrejack@ufl.edu>
+# Josh Hanna <josh@hanna.io>
+# Copyright (c) 2015, University of Florida
+# All rights reserved.
+#
+# Distributed under the BSD 3-Clause License
+# For full text of the BSD 3-Clause License see http://opensource.org/licenses/BSD-3-Clause
+
 import unittest
 # DO NOT IMPORT redi here!
 # Each test needs it's own redi module so we can manipulate the
@@ -44,7 +61,8 @@ class TestResume(unittest.TestCase):
         redi_ref = reload(redi.redi)
 
         redi_ref._person_form_events_service = MockPersonFormEvents()
-        redi_ref._create_person_form_event_tree_with_data = lambda *args: (None, None, None, None)
+        redi_ref._create_person_form_event_tree_with_data = lambda *args: (
+            None, None, None, None, None)
         redi_ref._delete_last_runs_data = lambda *args: None
         redi_ref._removedirs = lambda *args: None
         redi_ref._mkdir = lambda *args: None
