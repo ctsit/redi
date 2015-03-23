@@ -88,7 +88,7 @@ Installation Using Binary Distribution
 .. raw:: html
 
    <pre>
-      $ pip install redi-py
+      $ pip install redi
    </pre>
 
 To uninstall the application:
@@ -96,7 +96,7 @@ To uninstall the application:
 .. raw:: html
 
    <pre>
-      $ pip uninstall redi-py
+      $ pip uninstall redi
    </pre>
 
 .. seealso:: http://pip.readthedocs.org/en/latest/reference/pip.html

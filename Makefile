@@ -16,9 +16,9 @@ help:
 	@echo "\t coverage         - run code coverage analysis"
 	@echo "\t lint             - check code for sytax error"
 	@echo "\t clean            - remove generated files"
-	@echo "\t pypi             - upload files to https://pypi.python.org/pypi/redi-py"
+	@echo "\t pypi             - upload files to https://pypi.python.org/pypi/redi"
 	@echo "\t show_pips        - show python packages installed globally"
-	@echo "\t venv_help        - show commands for installing 'redi-py' package in the 'venv' virtual environment"
+	@echo "\t venv_help        - show commands for installing 'redi' package in the 'venv' virtual environment"
 	@echo "\t venv_show_pips   - show python packages installed in the 'venv' virtual environment"
 
 test: tests
@@ -70,7 +70,7 @@ show_pips:
 	find /Library/Python/2.7/site-packages/ -maxdepth 2 -name __init__.py | cut -d '/' -f 6
 
 venv_help:
-	@echo "\n To install 'redi' in the virtual environment please execute: \n\n\t virtualenv venv && source venv/bin/activate && pip install redi-py"
+	@echo "\n To install 'redi' in the virtual environment please execute: \n\n\t virtualenv venv && source venv/bin/activate && pip install redi"
 	@echo "\n To destroy the virtual environment please execute: \n\n\t deactivate && rm -rf ./venv"
 
 venv_show_pips:

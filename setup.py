@@ -17,7 +17,7 @@ Prerequisites on Debian Wheezy:
 from setuptools import setup, find_packages
 
 setup(
-    name='redi-py',
+    name='redi',
     version='0.13.2',
     author='https://www.ctsi.ufl.edu/research/study-development/informatics-consulting/',
     author_email='ctsit@ctsi.ufl.edu',
