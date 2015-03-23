@@ -3,7 +3,8 @@
 #
 # Note: Some tasks depend on variables set in the config file
 # therefore the proper path must be set for `CONFIG_FOLDER`
-MAKE_CONFIG_FILE     := Makefile.ini
+MAKE_CONFIG_FILE := Makefile.ini
+CONFIG_FILE:=
 
 ifneq ("$(wildcard $(MAKE_CONFIG_FILE))", "")
    CONFIG_FOLDER        := $(shell cat ${MAKE_CONFIG_FILE} | sed -e 's/ //g' | grep -v '^\#' | grep 'config_folder=' | cut -d '=' -f2)
@@ -40,30 +41,28 @@ CSV2XML := python ../redi/utils/csv2xml.py MY_CSV \
 .PHONY: help
 help:
 	@echo "\n Available tasks:"
-	@echo "\t copy_config_example - copy the required Makefile.ini from 'config-example' folder"
-	@echo "\t copy_config_develop - copy the required Makefile.ini from developer's 'config' folder"
-	@echo "\t show_config         - display the parameters retrieved from $(CONFIG_FILE)"
-	@echo "\t show_steps          - display the steps for installation'
-	@echo "\t copy_redcap_code:   - copy the redcap.zip file from the 'config' folder if available"
-	@echo "\t copy_project_data:  - copy extra files from the 'config' folder if available"
-
-	@echo "\t rc_check      - checks if REDCap is running"
-	@echo "\t rc_list       - list the id of all REDCap projects"
-	@echo "\t rc_save       - save a backup of REDCap database"
-	@echo "\t rc_clean      - remove data for default test project"
-	@echo "\t rc_enrollment - load csv enrollment test data for the default project"
-	@echo "\t rc_get_enrollment - retrieve csv enrollment test data for the default project"
-	@echo "\t rc_post       - send test data to REDCap"
-	@echo "\t rc_get        - get stored test data from REDCap"
-	@echo "\t rc_get_json   - get stored test data from REDCap in json format"
-	@echo "\t rc_fresh      - erase/insert/retrieve test data from REDCap"
-	@echo "\t rc_get_rate   - shows the config option value: 'page_hit_threshold_per_minute' "
-	@echo "\t rc_set_rate   - set the value for: 'page_hit_threshold_per_minute' "
-	@echo "\t rc_remove_ban       - remove REDCap ban due excessive testing'
-
-	@echo "\t egg_test      - deploy the redi egg file to the vagrant box and run redi"
-	@echo "\t clean         - remove files created by testing"
-	@echo "\t rc_compare    - compares the output data from REDCap to the reference dataset"
+	@echo "\t copy_config_example - copy the required Makefile.ini from [config-example] folder"
+	@echo "\t copy_config_develop - copy the required Makefile.ini from developer's [config] folder"
+	@echo "\t show_config         - display the parameters retrieved from [$(CONFIG_FILE)]"
+	@echo "\t show_steps          - display the steps for installation"
+	@echo "\t copy_redcap_code:   - copy the redcap.zip file from the [config] folder if available"
+	@echo "\t copy_project_data:  - copy extra files from the [config] folder if available"
+	@echo "\t rc_check            - checks if REDCap is running"
+	@echo "\t rc_list             - list the id of all REDCap projects"
+	@echo "\t rc_save             - save a backup of REDCap database"
+	@echo "\t rc_clean            - remove data for default test project"
+	@echo "\t rc_enrollment       - load csv enrollment test data for the default project"
+	@echo "\t rc_get_enrollment   - retrieve csv enrollment test data for the default project"
+	@echo "\t rc_post             - send test data to REDCap"
+	@echo "\t rc_get              - get stored test data from REDCap"
+	@echo "\t rc_get_json         - get stored test data from REDCap in json format"
+	@echo "\t rc_fresh            - erase/insert/retrieve test data from REDCap"
+	@echo "\t rc_get_rate         - shows the config option value: [page_hit_threshold_per_minute] "
+	@echo "\t rc_set_rate         - set the value for: [page_hit_threshold_per_minute] "
+	@echo "\t rc_remove_ban       - remove REDCap ban due excessive testing"
+	@echo "\t egg_test            - deploy the redi egg file to the vagrant box and run redi"
+	@echo "\t clean               - remove files created by testing"
+	@echo "\t rc_compare          - compares the output data from REDCap to the reference dataset"
 
 show_steps:
 	@echo "\n Steps for importing data into the sample project:"
