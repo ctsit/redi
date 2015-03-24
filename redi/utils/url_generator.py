@@ -1,5 +1,3 @@
-#!/usr/bin/env python
-
 # Contributors:
 # Christopher P. Barnes <senrabc@gmail.com>
 # Andrei Sura: github.com/indera
@@ -23,7 +21,7 @@ import urllib2
 Usage:
     Below is the sample code to use this utility.
 
-    from url_generator Import url_generator
+    from url_generator import url_generator
 
     url = "http://localhost:8998/redcap/plugins/show_url.php"
     values = {"project_name":"Classic Database",

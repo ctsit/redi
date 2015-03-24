@@ -1,5 +1,3 @@
-#!/usr/bin/env python
-
 # Contributors:
 # Christopher P. Barnes <senrabc@gmail.com>
 # Andrei Sura: github.com/indera
@@ -23,11 +21,6 @@ import collections
 import datetime
 import logging
 import time
-
-__author__ = "University of Florida CTS-IT Team"
-__copyright__ = "Copyright 2015, University of Florida"
-__license__ = "BSD 3-Clause"
-
 
 logger = logging.getLogger(__name__)
 logger.addHandler(logging.NullHandler())

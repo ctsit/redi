@@ -1,5 +1,3 @@
-#!/usr/bin/env python
-
 # Contributors:
 # Christopher P. Barnes <senrabc@gmail.com>
 # Andrei Sura: github.com/indera
@@ -9,7 +7,7 @@
 # Taeber Rapczak <taeber@ufl.edu>
 # Nicholas Rejack <nrejack@ufl.edu>
 # Josh Hanna <josh@hanna.io>
-# Copyright (c) 2015, University of Florida
+# Copyright (c) 2014-2015, University of Florida
 # All rights reserved.
 #
 # Distributed under the BSD 3-Clause License
@@ -18,10 +16,6 @@
 """
 Functions related to the RediBatch database
 """
-
-__author__ = "University of Florida CTS-IT Team"
-__copyright__ = "Copyright 2015, University of Florida"
-__license__ = "BSD 3-Clause"
 
 import datetime
 import hashlib
