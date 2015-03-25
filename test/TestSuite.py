@@ -35,6 +35,8 @@ from TestUpdateTimestamp import TestUpdateTimestamp
 from TestUpdateFormDateField import TestUpdateFormDateField
 from TestUpdateFormCompletedFieldName import TestUpdateFormCompletedFieldName
 from TestSortElementTree import TestSortElementTree
+from TestCompressDataUsingStudyFormDate import TestCompressDataUsingStudyFormDate
+
 from TestUpdateDataFromLookup import TestUpdateDataFromLookup
 from TestAddElementsToTree import TestAddElementsToTree
 from TestUpdateRedcapFieldNameValueAndUnits import TestUpdateRedcapFieldNameValueAndUnits
@@ -75,6 +77,7 @@ class redi_suite(unittest.TestSuite):
         redi_test_suite.addTest(TestUpdateTimestamp)
         redi_test_suite.addTest(TestUpdateFormDateField)
         redi_test_suite.addTest(TestSortElementTree)
+        redi_test_suite.addTest(TestCompressDataUsingStudyFormDate)
         redi_test_suite.addTest(TestUpdateDataFromLookup)
         redi_test_suite.addTest(TestAddElementsToTree)
         redi_test_suite.addTest(TestUpdateRedcapFieldNameValueAndUnits)

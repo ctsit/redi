@@ -37,11 +37,10 @@ lint:
 
 clean:
 	find . -type f -name "*.pyc" -print | xargs rm -f
-	rm -rf out
-	rm -rf dist
-	rm -rf build
+	rm -rf out dist build
 	rm -rf *.egg-info
 	rm -rf nosetests.xml cover .coverage coverage.xml
+	rm -f unittest_pysftp_rsa_key unittest_pysftp_rsa_key.pub destination_file source_file
 	rm -rf *.egg
 	rm -f pylint.out
 	rm -f formData.xml

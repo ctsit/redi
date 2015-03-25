@@ -38,6 +38,7 @@ setup(
         "PyCap >= 1.0",
         "pysftp >= 0.2.8",
         "docopt >= 0.6.2",
+        "pycrypto >= 2.6.1",
     ],
     entry_points={
         'console_scripts': [
@@ -46,7 +47,7 @@ setup(
     },
     test_suite='test.TestSuite',
     tests_require=[
-        "mock >= 1.0",
+        "mock >= 1.0.1",
         "sftpserver >= 0.2",
     ],
     setup_requires=[

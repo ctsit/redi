@@ -499,10 +499,10 @@ def _create_person_form_event_tree_with_data(
     write_element_tree_to_file(
         data,
         os.path.join(data_folder, 'rawDataWithDatumAndUnitsFieldNames.xml'))
-    # sort the data tree
-    sort_element_tree(data)
+    # sort the data tree and compress
+    sort_element_tree(data, data_folder)
     write_element_tree_to_file(data, os.path.join(data_folder, \
-        'rawDataSorted.xml'))
+        'rawDataSortedAfterCompression.xml'))
     # update eventName element
     alert_summary = update_event_name(data, form_events_tree, 'undefined')
     # write back the changed global Element Tree
@@ -703,8 +703,10 @@ def write_element_tree_to_file(element_tree, file_name):
 
 def update_time_stamp(data, input_date_format, output_date_format):
     """
-    Update timestamp using input and output data formats reads from raw
-    ElementTree and writes to it
+    Update timestamp using input and output data formats.
+    Warnings:
+      - we modify the data ElementTree
+      - we affect the sorting order of data elements @see #sort_element_tree()
     """
     logger.debug('Updating timestamp to ElementTree')
     for subject in data.iter('subject'):
@@ -751,31 +753,82 @@ def update_redcap_form(data, lookup_data, undefined):
         undefined)
 
 
-def sort_element_tree(data):
-    """Sort element tree based on three given indices.
+def sort_element_tree(data, data_folder):
+    """
+    Sort element tree based on three given indices.
+    @see #update_time_stamp()
 
     Keyword argument: data
     sorting is based on study_id, form name, then timestamp, ascending order
-
     """
-
     # this element holds the subjects that are being sorted
     container = data.getroot()
-    container[:] = sorted(container, key=getkey)
+    #batch.printxml(container)
+    container[:] = sorted(container, key=getkey, reverse=False)
+
+    # print sorted data before compression for reference
+    write_element_tree_to_file(data, os.path.join(data_folder,
+        "rawDataSortedBeforeCompression.xml"))
+
+    compress_data_using_study_form_date(data)
+
+    #batch.printxml(container)
+
+
+def compress_data_using_study_form_date(data):
+    """
+    This function is removing duplicate results
+    which were recorded on same date but different times.
+    Warning:
+        - we assume that the passed ElementTree is sorted
+        - the passed object is altered
+
+    @see #getkey()
+    @see #sort_element_tree()
+
+    Parameters:
+    -----------
+    data: the ElementTree object that needs to be `compressed`
+    return: none
+    """
+    data_root = data.getroot()
+    filt = dict()
+
+    for subj in data_root.iter('subject'):
+        lab_name = subj.find('NAME').text
+        study_id = subj.find('STUDY_ID').text
+        form_name = subj.find('redcapFormName').text
+        timestamp = subj.findtext("DATE_TIME_STAMP")
+
+        if not timestamp:
+            # we can only compress if there is a valid timestamp
+            continue
+
+        # extract the date portion "2015-01-01" from "2015-01-01 00:00:00"
+        date = timestamp.split(" ")[0]
+        key = (lab_name, study_id, form_name, date)
+        key_long = (lab_name, study_id, form_name, timestamp)
+
+        if key in filt:
+            logger.debug("Remove duplicate result for {} for the date: {} "\
+                "with key: {}".format(lab_name, date, key_long))
+            subj.getparent().remove(subj)
+            continue
+        else:
+            filt[key] = True
 
 
 def getkey(elem):
-    """Helper function for sorting. Returns keys to sort on.
+    """
+    Helper function for #sort_element_tree()
 
     Keyword argument: elem
     returns the corresponding tuple study_id, form_name, timestamp
-
-    Nicholas
-
     """
     study_id = elem.findtext("STUDY_ID")
     form_name = elem.findtext("redcapFormName")
-    timestamp = elem.findtext("timestamp")
+    #timestamp = elem.findtext("timestamp")
+    timestamp = elem.findtext("DATE_TIME_STAMP")
     return (study_id, form_name, timestamp)
 
 
@@ -1828,6 +1881,9 @@ def verify_and_correct_collection_date(data, input_date_format):
         collection_date_summary_dict['total'] += 1
         collection_date_element = subject.find('DATE_TIME_STAMP')
         result_date_element = subject.find('RESULT_DATE')
+        # If DATE_TIME_STAMP tag is present but it has no text (ie blank tag)
+        # and if RESULT_DATE is present, then subtract 4 from RESULT_DATE and
+        # assign that value to DATE_TIME_STAMP
         if collection_date_element is not None and \
         result_date_element is not None:
             if not collection_date_element.text:
@@ -1838,6 +1894,11 @@ def verify_and_correct_collection_date(data, input_date_format):
                 timedelta(days=4)
                 collection_date_element.text = str(result_date_object)
                 collection_date_summary_dict['blank'] += 1
+            # else do nothing as DATE_TIME_STAMP does have a value
+
+        # else if DATE_TIME_STAMP tag is not present, create a new tag by the
+        # name DATE_TIME_STAMP and add this to the data ElementTree and assign
+        # to it the value RESULT_DATE - 4
         elif collection_date_element is None and \
         result_date_element is not None:
             new_collection_date_element = etree.Element('DATE_TIME_STAMP')
