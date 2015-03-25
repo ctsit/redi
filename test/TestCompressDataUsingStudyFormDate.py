@@ -2,6 +2,7 @@ import unittest
 from lxml import etree
 from redi import redi
 import logging
+from redi import batch
 
 class TestCompressDataUsingStudyFormDate(unittest.TestCase):
 
@@ -15,6 +16,15 @@ class TestCompressDataUsingStudyFormDate(unittest.TestCase):
 <study>
 
     <comment> ========== Date A ============ </comment>
+    <subject>
+        <NAME>Name_A</NAME>
+        <ORD_VALUE>CANCEleD</ORD_VALUE>
+        <STUDY_ID>262</STUDY_ID>
+        <redcapFormName>form_a</redcapFormName>
+        <loinc_code>component_A</loinc_code>
+        <DATE_TIME_STAMP>2013-12-07 00:00:08</DATE_TIME_STAMP>
+    </subject>
+
     <subject>
         <NAME>Name_A</NAME>
         <ORD_VALUE>KEEP_ME_PLEASE</ORD_VALUE>
@@ -45,6 +55,23 @@ class TestCompressDataUsingStudyFormDate(unittest.TestCase):
     <comment> ========== Date B ============ </comment>
     <subject>
         <NAME>Name_A</NAME>
+        <ORD_VALUE> canceled</ORD_VALUE>
+        <STUDY_ID>999</STUDY_ID>
+        <redcapFormName>form_a</redcapFormName>
+        <loinc_code>component_A</loinc_code>
+        <DATE_TIME_STAMP>2013-13-07 09:00:00</DATE_TIME_STAMP>
+    </subject>
+    <subject>
+        <NAME>Name_A</NAME>
+        <ORD_VALUE> CANCELLED     </ORD_VALUE>
+        <STUDY_ID>999</STUDY_ID>
+        <redcapFormName>form_a</redcapFormName>
+        <loinc_code>component_A</loinc_code>
+        <DATE_TIME_STAMP>2013-13-07 09:00:00</DATE_TIME_STAMP>
+    </subject>
+
+    <subject>
+        <NAME>Name_A</NAME>
         <ORD_VALUE>KEEP_A</ORD_VALUE>
         <STUDY_ID>999</STUDY_ID>
         <redcapFormName>form_a</redcapFormName>
@@ -69,12 +96,10 @@ class TestCompressDataUsingStudyFormDate(unittest.TestCase):
         redi.compress_data_using_study_form_date(data)
         count = len(data.xpath('//subject'))
 
-        #from redi import batch
         #batch.printxml(data)
 
         # verify that three components are left
         self.assertTrue(count == 2)
-
 
         # verify that we got the lab results with the earliest time
         keep_ele = data.xpath('//subject/ORD_VALUE')[0]

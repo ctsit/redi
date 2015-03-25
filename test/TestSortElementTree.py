@@ -34,6 +34,7 @@ class TestSortElementTree(unittest.TestCase):
 <study>
    <subject>
         <NAME>PLATELET COUNT</NAME>
+        <ORD_VALUE></ORD_VALUE>
         <STUDY_ID>999-0262</STUDY_ID>
         <redcapFormName>cbc</redcapFormName>
         <loinc_code>component_A</loinc_code>
@@ -41,6 +42,7 @@ class TestSortElementTree(unittest.TestCase):
     </subject>
     <subject>
         <NAME>PLATELET COUNT</NAME>
+        <ORD_VALUE>123</ORD_VALUE>
         <STUDY_ID>999-0262</STUDY_ID>
         <redcapFormName>cbc</redcapFormName>
         <loinc_code>component_A</loinc_code>
@@ -48,6 +50,7 @@ class TestSortElementTree(unittest.TestCase):
     </subject>
     <subject>
         <NAME>PLATELET COUNT</NAME>
+        <ORD_VALUE> </ORD_VALUE>
         <STUDY_ID>999-0262</STUDY_ID>
         <redcapFormName>cbc</redcapFormName>
         <loinc_code>component_A</loinc_code>
@@ -61,6 +64,7 @@ class TestSortElementTree(unittest.TestCase):
 <study>
     <subject>
         <NAME>PLATELET COUNT</NAME>
+        <ORD_VALUE>123</ORD_VALUE>
         <STUDY_ID>999-0262</STUDY_ID>
         <redcapFormName>cbc</redcapFormName>
         <loinc_code>component_A</loinc_code>
@@ -68,6 +72,7 @@ class TestSortElementTree(unittest.TestCase):
     </subject>
     <subject>
         <NAME>PLATELET COUNT</NAME>
+        <ORD_VALUE> </ORD_VALUE>
         <STUDY_ID>999-0262</STUDY_ID>
         <redcapFormName>cbc</redcapFormName>
         <loinc_code>component_A</loinc_code>
@@ -75,6 +80,7 @@ class TestSortElementTree(unittest.TestCase):
     </subject>
     <subject>
         <NAME>PLATELET COUNT</NAME>
+        <ORD_VALUE></ORD_VALUE>
         <STUDY_ID>999-0262</STUDY_ID>
         <redcapFormName>cbc</redcapFormName>
         <loinc_code>component_A</loinc_code>

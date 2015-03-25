@@ -65,6 +65,7 @@ import imp
 import os
 import pkg_resources
 import shutil
+import pprint
 
 from requests import RequestException
 from lxml import etree
@@ -797,11 +798,43 @@ def compress_data_using_study_form_date(data):
     """
     data_root = data.getroot()
     #batch.printxml(data)
-    filt = dict()
 
+    buckets = dict()
+    
     for subj in data_root.iter('subject'):
         study_id = subj.findtext('STUDY_ID')
-        ord_value = subj.findtext('ORD_VALUE')
+        result = subj.findtext('ORD_VALUE')
+        timestamp = subj.findtext("DATE_TIME_STAMP")
+
+        # Because the data is sorted the first element
+        # added to the dictionary is the one we keep
+        key = get_key_date(subj)
+
+        if key not in buckets:
+            buckets[key] = {0: result}
+        else:
+            next_index = len(buckets[key])
+            buckets[key].update({next_index: result})
+
+    #pprint.pprint(buckets)
+
+    # extra loop to remove the 'CanceL(L)eD' results
+    for subj in data_root.iter('subject'):
+        result = subj.findtext('ORD_VALUE')
+        clean_result = result if result is None else result.strip().lower()
+        key = get_key_date(subj)
+        key_debug = get_key_timestamp(subj)
+
+        if len(buckets[key]) > 1 and clean_result.startswith('cancel'):
+            # when there is more than one value in the `bucket`
+            # we can skip invalid values
+            logger.debug("Remove duplicate result using key: {}".format(key_debug))
+            subj.getparent().remove(subj)
+
+    filt = dict()
+    for subj in data_root.iter('subject'):
+        study_id = subj.findtext('STUDY_ID')
+        result = subj.findtext('ORD_VALUE')
         timestamp = subj.findtext("DATE_TIME_STAMP")
 
         if not timestamp:
@@ -817,9 +850,11 @@ def compress_data_using_study_form_date(data):
             logger.debug("Remove duplicate result using key: {}".format(key_debug))
             #print("Remove duplicate result using key: {}".format(key_debug))
             subj.getparent().remove(subj)
-            continue
+            #continue
         else:
-            filt[key] = True
+           filt[key] = True
+
+    #pprint.pprint(filt)
 
 
 def get_key_timestamp(ele):
