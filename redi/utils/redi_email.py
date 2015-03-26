@@ -174,7 +174,7 @@ def send_email(
             str(to_addr_list))
     except SMTPException as smtpe:
         logger.error("Unable to send email with subject [{0}] to {1} due: {2}" \
-            .format(subject, str(to_addr_lista), str(smtpe)))
+            .format(subject, str(to_addr_list), str(smtpe)))
         logger.info("Please check if the recipient email is valid")
     except Exception as e:
         logger.error("Unable to send email with subject [{0}] to {1}\n due: {2}" \

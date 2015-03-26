@@ -45,6 +45,8 @@ help:
 	@echo "\t copy_config_develop - copy the required Makefile.ini from developer's [config] folder"
 	@echo "\t show_config         - display the parameters retrieved from [$(CONFIG_FILE)]"
 	@echo "\t show_steps          - display the steps for installation"
+	@echo "\t fresh_vm_example    - destroy and re-build the VM using data in the [config-example] folder"
+	@echo "\t fresh_vm_develop    - destroy and re-build the VM using data in the [config] folder"
 	@echo "\t copy_redcap_code:   - copy the redcap.zip file from the [config] folder if available"
 	@echo "\t copy_project_data:  - copy extra files from the [config] folder if available"
 	@echo "\t rc_check            - checks if REDCap is running"
@@ -62,6 +64,7 @@ help:
 	@echo "\t rc_remove_ban       - remove REDCap ban due excessive testing"
 	@echo "\t egg_test            - deploy the redi egg file to the vagrant box and run redi"
 	@echo "\t clean               - remove files created by testing"
+	@echo "\t profile             - profile the application"
 	@echo "\t rc_compare          - compares the output data from REDCap to the reference dataset"
 
 show_steps:
@@ -237,7 +240,6 @@ xmlfrom:
 	$(eval CMD := $(subst MY_XML,$(XML),$(CMD)))
 	@$(CMD)
 	@less $(XML)
-
 
 
 profile:
