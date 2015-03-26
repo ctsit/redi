@@ -61,6 +61,13 @@ class Throttle(object):
 
     def _remove_old_entries(self):
         """ Removes old timestamp entries """
+        # @TODO: investigate why the deque is not
+        # cleared after we reach the limit
+
+        #logger.debug("Clear the deque")
+        #self._timestamps.clear()
+        #return
+
         while (len(self._timestamps) > 0 and
                self._now() - self._timestamps[0] >= self._interval):
             self._timestamps.popleft()
@@ -73,7 +80,8 @@ class Throttle(object):
     def _wait(self):
         """ Sleeps for the remaining interval if the limit has been reached """
         if self._limit_reached():
-            logger.debug('Throttling limit reached.')
+            logger.warn('Throttling limit {} reached.' \
+                    .format(self._max_requests))
             lapsed = self._now() - self._timestamps[0]
 
             if lapsed < self._interval:
