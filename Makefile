@@ -43,7 +43,7 @@ clean:
 	@rm -f formData.xml rawData.xml translationalData.xml rawDataWithFormName.xml rawDataWithFormCompletedField.xml
 	@rm -f rawDataWithDatumAndUnitsFieldNames.xml rawDataSorted.xml rawDataWithAllUpdates.xml rawDataWithFormImported.xml rawDataWithFormStatus.xml
 	@rm -f all_form_events.xml person_form_event_tree.xml person_form_event_tree_with_data.xml
-	@rm -f vagrant/redi.db config-example/report.xml redi.pstats
+	@rm -f vagrant/redi.db config-example/report.xml redi.pstats mprofile_*.dat
 
 pypi:
 	#https://pythonhosted.org/Distutils2/distutils/packageindex.html
