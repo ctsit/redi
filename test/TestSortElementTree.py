@@ -18,67 +18,76 @@
 import unittest
 import tempfile
 import os
+import logging
 from lxml import etree
+
 from redi import redi
 
 class TestSortElementTree(unittest.TestCase):
 
     def setUp(self):
-        #redi.configure_logging('.')
+        redi.configure_logging('.')
+        #redi.logger.setLevel(logging.DEBUG)
 
         # un-sorted XML file
         self.unsorted = """<?xml version="1.0" encoding="UTF-8"?>
 <study>
    <subject>
         <NAME>PLATELET COUNT</NAME>
-        <DATE_TIME_STAMP>2013-12-02 00:00:00</DATE_TIME_STAMP>
+        <ORD_VALUE></ORD_VALUE>
         <STUDY_ID>999-0262</STUDY_ID>
-        <timestamp>2013-12-07</timestamp>
         <redcapFormName>cbc</redcapFormName>
-    </subject>
- 
-    <subject>
-        <NAME>PLATELET COUNT</NAME>
+        <loinc_code>component_A</loinc_code>
         <DATE_TIME_STAMP>2013-12-03 00:00:00</DATE_TIME_STAMP>
-        <STUDY_ID>999-0262</STUDY_ID>
-        <timestamp>2013-12-07</timestamp>
-        <redcapFormName>cbc</redcapFormName>
     </subject>
     <subject>
         <NAME>PLATELET COUNT</NAME>
-        <DATE_TIME_STAMP>2013-12-01 00:00:00</DATE_TIME_STAMP>
+        <ORD_VALUE>123</ORD_VALUE>
         <STUDY_ID>999-0262</STUDY_ID>
-        <timestamp>2013-12-07</timestamp>
         <redcapFormName>cbc</redcapFormName>
+        <loinc_code>component_A</loinc_code>
+        <DATE_TIME_STAMP>2013-12-01 00:00:00</DATE_TIME_STAMP>
     </subject>
-</study>"""
+    <subject>
+        <NAME>PLATELET COUNT</NAME>
+        <ORD_VALUE> </ORD_VALUE>
+        <STUDY_ID>999-0262</STUDY_ID>
+        <redcapFormName>cbc</redcapFormName>
+        <loinc_code>component_A</loinc_code>
+        <DATE_TIME_STAMP>2013-12-02 00:00:00</DATE_TIME_STAMP>
+    </subject>
+</study>
+        """
 
         # we expect the following sorted tree
         self.sorted_tree = """<?xml version="1.0" encoding="UTF-8"?>
 <study>
     <subject>
         <NAME>PLATELET COUNT</NAME>
+        <ORD_VALUE>123</ORD_VALUE>
+        <STUDY_ID>999-0262</STUDY_ID>
+        <redcapFormName>cbc</redcapFormName>
+        <loinc_code>component_A</loinc_code>
         <DATE_TIME_STAMP>2013-12-01 00:00:00</DATE_TIME_STAMP>
-        <STUDY_ID>999-0262</STUDY_ID>
-        <timestamp>2013-12-07</timestamp>
-        <redcapFormName>cbc</redcapFormName>
     </subject>
     <subject>
         <NAME>PLATELET COUNT</NAME>
+        <ORD_VALUE> </ORD_VALUE>
+        <STUDY_ID>999-0262</STUDY_ID>
+        <redcapFormName>cbc</redcapFormName>
+        <loinc_code>component_A</loinc_code>
         <DATE_TIME_STAMP>2013-12-02 00:00:00</DATE_TIME_STAMP>
-        <STUDY_ID>999-0262</STUDY_ID>
-        <timestamp>2013-12-07</timestamp>
-        <redcapFormName>cbc</redcapFormName>
     </subject>
     <subject>
         <NAME>PLATELET COUNT</NAME>
-        <DATE_TIME_STAMP>2013-12-03 00:00:00</DATE_TIME_STAMP>
+        <ORD_VALUE></ORD_VALUE>
         <STUDY_ID>999-0262</STUDY_ID>
-        <timestamp>2013-12-07</timestamp>
         <redcapFormName>cbc</redcapFormName>
+        <loinc_code>component_A</loinc_code>
+        <DATE_TIME_STAMP>2013-12-03 00:00:00</DATE_TIME_STAMP>
     </subject>
-</study>"""
-
+</study>
+        """
         self.dirpath = tempfile.mkdtemp()
 
 
@@ -103,7 +112,6 @@ class TestSortElementTree(unittest.TestCase):
         except OSError:
             raise LogException("Folder \'{}\' is not empty, hence cannot "\
                 "be deleted.".format(self.dirpath))
-        return()
 
 if __name__ == '__main__':
     unittest.main()
