@@ -47,12 +47,13 @@ Options:
 
 __author__ = "University of Florida CTS-IT Team"
 __version__ = "0.13.2"
-__email__ = "cts-it-all@ctsi.ufl.edu"
+__email__ = "ctsit@ctsi.ufl.edu"
 __status__ = "Development"
 
 import ast
 import errno
 import logging
+import math
 import pickle
 import time
 from datetime import date, datetime, timedelta
@@ -65,6 +66,7 @@ import imp
 import os
 import pkg_resources
 import shutil
+from pprint import pprint
 
 from requests import RequestException
 from lxml import etree
@@ -79,6 +81,7 @@ import utils.SimpleConfigParser as SimpleConfigParser
 import utils.GetEmrData as GetEmrData
 from utils.GetEmrData import EmrFileAccessDetails
 
+#from memory_profiler import profile
 
 # Command line default argument values
 _person_form_events_service = None
@@ -334,10 +337,16 @@ def _run(config_file, configuration_directory, do_keep_gen_files, dry_run,
     if not dry_run:
         all_form_events = person_form_event_tree_with_data.xpath("//event")
 
+        # Reduce the specified rate by 5% to account for the overhead
+        rate_limit_safe = max(1, \
+                math.floor(0.90*int(settings.rate_limiter_value_in_redcap)))
+        logger.info("Throttling requests at the rate of {} per minute" \
+                .format(rate_limit_safe))
+
         # Use the new method to communicate with REDCap
         report_data = upload.generate_output(
             person_form_event_tree_with_data, redcap_client,
-            settings.rate_limiter_value_in_redcap, sent_events,
+            rate_limit_safe, sent_events,
             int(settings.max_retry_count), skip_blanks, bulk_send_blanks)
 
         # Save the time it took to send data to REDCap
@@ -573,8 +582,8 @@ def parse_raw_xml(raw_xml_file):
              + raw_xml_file)
     else:
         raw = open(raw_xml_file, 'r')
-        logger.debug("Raw XML file read in. " + str(sum(1 for line in raw))
-                    + " total lines in file.")
+        logger.debug("Raw XML file contains {} lines." \
+                .format(str(sum(1 for line in raw))))
 
     parser = etree.XMLParser(remove_comments = True)
     data = etree.parse(raw_xml_file, parser = parser)
@@ -597,8 +606,9 @@ def parse_form_events(form_events_file):
                            + form_events_file)
     else:
         raw = open(form_events_file, 'r')
-        logger.info("Form events file read in. " + str(sum(1 for line in raw))
-                    + " total lines in file.")
+        logger.info("Form events file contains {} lines." \
+                .format(str(sum(1 for line in raw))))
+
     data = etree.parse(form_events_file)
     event_sum = len(data.findall(".//event"))
     logger.debug(str(event_sum) + " total events read into tree.")
@@ -619,8 +629,8 @@ def parse_translation_table(translation_table_file):
                            + translation_table_file)
     else:
         raw = open(translation_table_file, 'r')
-        logger.info("Translation table file read in. "
-                    + str(sum(1 for line in raw)) + " total lines in file.")
+        logger.info("Translation table file contains {} lines" \
+                .format(str(sum(1 for line in raw))))
     data = etree.parse(translation_table_file)
     event_sum = len(data.findall(".//clinicalComponent"))
     logger.info(str(event_sum) + " total clinicalComponents read into tree.")
@@ -763,8 +773,11 @@ def sort_element_tree(data, data_folder):
     """
     # this element holds the subjects that are being sorted
     container = data.getroot()
+    container[:] = sorted(container, key=get_key_timestamp, reverse=False)
+
+    #if logger.isEnabledFor(logging.DEBUG):
+    logger.debug("sort_element_tree container:")
     #batch.printxml(container)
-    container[:] = sorted(container, key=getkey, reverse=False)
 
     # print sorted data before compression for reference
     write_element_tree_to_file(data, os.path.join(data_folder,
@@ -774,16 +787,19 @@ def sort_element_tree(data, data_folder):
 
     #batch.printxml(container)
 
-
+#@profile
 def compress_data_using_study_form_date(data):
     """
     This function is removing duplicate results
     which were recorded on same date but different times.
-    Warning:
+    Warnings:
         - we assume that the passed ElementTree is sorted
+        - we skip all "Canceled" results but we want to keep at least one
+            so when all results are canceled we keep the first one
         - the passed object is altered
 
-    @see #getkey()
+    @see #get_key_date()
+    @see #get_key_timestamp()
     @see #sort_element_tree()
 
     Parameters:
@@ -792,52 +808,127 @@ def compress_data_using_study_form_date(data):
     return: none
     """
     data_root = data.getroot()
+    buckets = dict()
+
+    # first loop groups the results in buckets
+    for subj in data_root.iter('subject'):
+        study_id = subj.findtext('STUDY_ID')
+        result = subj.findtext('ORD_VALUE')
+        clean_result = '' if result is None else result.strip().lower()
+        is_canceled = clean_result.startswith('cancel')
+
+        # Because the data is sorted the first element
+        # added to the dictionary is the one we keep
+        key = get_key_date(subj)
+
+        if key not in buckets:
+            buckets[key] = {0: is_canceled}
+        else:
+            next_index = len(buckets[key])
+            update = { next_index: is_canceled }
+            buckets[key].update(update)
+
+    #pprint(buckets)
+
+    # second loop removes the 'CanceL(L)eD' results
+    for subj in data_root.iter('subject'):
+        result = subj.findtext('ORD_VALUE')
+        clean_result = '' if result is None else result.strip().lower()
+        is_canceled = clean_result.startswith('cancel')
+
+        key = get_key_date(subj)
+        key_debug = get_key_timestamp(subj)
+
+        results_count = len(buckets[key])
+        canceled_results_count = 0
+
+        for bucket_data in buckets[key]:
+            if buckets[key][bucket_data]:
+                canceled_results_count += 1
+
+        is_all_canceled = (results_count == canceled_results_count)
+        # xpath "//subject[STUDY_ID[text() = '999'] and redcapFormName[text() = 'cbc'] and ...]/@id"
+
+        if results_count > 1 and is_canceled and not is_all_canceled:
+            # when there is more than one value in the `bucket`
+            # we can skip invalid values
+            #print("Remove duplicate result using key: {}".format(key_debug))
+            logger.debug("Remove duplicate result using key: {}".format(key_debug))
+            subj.getparent().remove(subj)
+
     filt = dict()
 
+    # third loop filters out all results in a "bucket" except the first one
     for subj in data_root.iter('subject'):
-        lab_name = subj.find('NAME').text
-        study_id = subj.find('STUDY_ID').text
-        form_name = subj.find('redcapFormName').text
+        study_id = subj.findtext('STUDY_ID')
+        result = subj.findtext('ORD_VALUE')
         timestamp = subj.findtext("DATE_TIME_STAMP")
 
         if not timestamp:
             # we can only compress if there is a valid timestamp
             continue
 
-        # extract the date portion "2015-01-01" from "2015-01-01 00:00:00"
-        date = timestamp.split(" ")[0]
-        key = (lab_name, study_id, form_name, date)
-        key_long = (lab_name, study_id, form_name, timestamp)
+        # Because the data is sorted the first element
+        # added to the dictionary is the one we keep
+        key = get_key_date(subj)
+        key_debug = get_key_timestamp(subj)
 
         if key in filt:
-            logger.debug("Remove duplicate result for {} for the date: {} "\
-                "with key: {}".format(lab_name, date, key_long))
+            logger.debug("Remove duplicate result using key: {}".format(key_debug))
+            #print("Remove duplicate result using key: {}".format(key_debug))
             subj.getparent().remove(subj)
-            continue
+            #continue
         else:
-            filt[key] = True
+           filt[key] = True
+
+    #pprint(filt)
 
 
-def getkey(elem):
+def get_key_timestamp(ele):
     """
     Helper function for #sort_element_tree()
+    @see #compress_data_using_study_form_date()
 
-    Keyword argument: elem
-    returns the corresponding tuple study_id, form_name, timestamp
+    Parameters:
+    -----------
+    elem: lxml.etree._Element object for which we build a key
+    returns the corresponding quadruple (study_id, form_name, loinc_code, timestamp)
     """
-    study_id = elem.findtext("STUDY_ID")
-    form_name = elem.findtext("redcapFormName")
-    #timestamp = elem.findtext("timestamp")
-    timestamp = elem.findtext("DATE_TIME_STAMP")
-    return (study_id, form_name, timestamp)
+
+    #batch.printxml(ele)
+    study_id    = ele.findtext("STUDY_ID")
+    form_name   = ele.findtext('redcapFormName')
+    loinc_code  = ele.findtext('loinc_code')
+    timestamp   = ele.findtext("DATE_TIME_STAMP")
+    return (study_id, form_name, loinc_code, timestamp)
+
+
+def get_key_date(ele):
+    """
+    Helper function for #compress_data_using_study_form_date()
+
+    Parameters:
+    -----------
+    elem: lxml.etree._Element object for which we build a key
+    returns the corresponding quadruple (study_id, form_name, loinc_code, date)
+    """
+
+    #batch.printxml(ele)
+    study_id    = ele.findtext("STUDY_ID")
+    form_name   = ele.findtext('redcapFormName')
+    loinc_code  = ele.findtext('loinc_code')
+    timestamp   = ele.findtext("DATE_TIME_STAMP")
+    # extract the date portion "2015-01-01" from "2015-01-01 00:00:00"
+    date = timestamp.split(" ")[0]
+    return (study_id, form_name, loinc_code, date)
 
 
 def update_formdatefield(data, form_events_tree):
-    """function to write formDateField to data ElementTree via lookup of
-        formName in formEvents ElementTree
-        Radha
-
     """
+    Write formDateField to data ElementTree via lookup of
+    formName in form_events_tree ElementTree
+    """
+
     logger.debug('updating the formDateField')
     # make a dictionary of the relevant elements from the translationTable
     form_event_root = form_events_tree.getroot()
@@ -1627,35 +1718,28 @@ def copy_data_to_person_form_event_tree(
                     subject_id)
 
             logger.debug(
-                'Check passed. Copying data with subject_id:' +
-                subject_id +
-                ", formName:" +
-                formName +
-                ", eventName:" +
-                eventName +
-                ", dateValue:" +
-                dateValue +
-                ", redcapFieldName:" +
-                redcapFieldName +
-                ", redcapFieldUnitsName:" +
-                redcapFieldUnitsName)
+                'copy_data_to_person_form_event_tree: ({}, {}, {}, {}, {}, {})'.format(
+                    subject_id, formName, eventName, dateValue, redcapFieldName, redcapFieldUnitsName))
 
             # Copy the first three data fields into the PFE Tree
             path = "person/study_id[.='" + subject_id + "']/../all_form_events/form/name[.='" + \
                 formName + "']/../event/name[.='" + eventName + "']/../field"
             fields = person_form_event_tree_root.xpath(path)
             fieldValues = ""
+
             for node in fields:
                 if node.find("name").text == redcapFieldName:
                     node.find("value").text = redcapFieldValue
                     fieldValues = fieldValues + \
                         convert_none_type_object_to_empty_string(redcapFieldValue)
                     continue
+
                 if node.find("name").text == dateField:
                     node.find("value").text = dateValue
                     fieldValues = fieldValues + \
                         convert_none_type_object_to_empty_string(dateValue)
                     continue
+
                 if node.find("name").text == redcapFieldUnitsName:
                     node.find("value").text = redcapFieldUnitsValue
                     fieldValues = fieldValues + \
@@ -1768,10 +1852,9 @@ def validate_xml_file_and_extract_data(xmlfilename, xsdfilename):
                            + xmlfilename)
     else:
         xmlfilehandle = open(xmlfilename, 'r')
-        logger.info(xmlfilename +
-                    " XML file read in. " +
-                    str(sum(1 for line in xmlfilehandle)) +
-                    " total lines in file.")
+        logger.info(" {} file contains {} lines." \
+                .format(xmlfilename, str(sum(1 for line in xmlfilehandle))))
+
     xml = etree.parse(xmlfilename)
     if not xsd.validate(xml):
         raise Exception(
