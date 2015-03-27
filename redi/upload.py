@@ -34,14 +34,15 @@ logger.addHandler(logging.NullHandler())
 
 def create_import_data_json(import_data_dict, event_tree):
     """
-    Converts data in event tree into json format.
+    Convert data from event_tree to json format.
 
-    Parameters:
-    -----------
-    import_data_dict: This parameter holds the event tree data
-    event_tree: This parameter holds the event tree data
+    @TODO: evaluate performance
+    @see the caller {@link #redi.upload.generate_output()}
 
-    @see #generate_output()
+    :param: import_data_dict: holds the event tree data
+    :param: event_tree: holds the event tree data
+    :rtype: dict
+    :return the json version of the xml data
     """
 
     root = event_tree
@@ -106,8 +107,10 @@ def generate_output(person_tree, redcap_client, rate_limit, sent_events,
         - generate a csv fragment `using create_eav_output`
         - send csv fragment to REDCap using `send_eav_data_to_redcap`
 
+    @see the caller {@link #redi.redi._run()}
 
-    @return the report_data dictionary
+    :rtype:     dictionary
+    :return:    the report_data which is passed to the report rendering function
     """
 
     # the global dictionary to be returned

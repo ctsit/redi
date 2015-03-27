@@ -37,29 +37,13 @@ lint:
 
 clean:
 	find . -type f -name "*.pyc" -print | xargs rm -f
-	rm -rf out dist build
-	rm -rf *.egg-info
-	rm -rf nosetests.xml cover .coverage coverage.xml
-	rm -f unittest_pysftp_rsa_key unittest_pysftp_rsa_key.pub destination_file source_file
-	rm -rf *.egg
-	rm -f pylint.out
-	rm -f formData.xml
-	rm -f rawData.xml
-	rm -f translationalData.xml
-	rm -f rawDataWithFormName.xml
-	rm -f rawDataWithFormCompletedField.xml
-	rm -f rawDataWithDatumAndUnitsFieldNames.xml
-	rm -f rawDataSorted.xml
-	rm -f rawDataWithAllUpdates.xml
-	rm -f rawDataWithFormImported.xml
-	rm -f rawDataWithFormStatus.xml
-	rm -f all_form_events.xml
-	rm -f person_form_event_tree.xml
-	rm -f person_form_event_tree_with_data.xml
-	rm -rf vagrant/data/
-	rm -f vagrant/redi.db
-	rm -f config-example/report.xml
-	rm -f redi.pstats
+	@rm -rf out dist build *.egg-info *.egg
+	@rm -rf nosetests.xml cover .coverage coverage.xml
+	@rm -f pylint.out unittest_pysftp_rsa_key unittest_pysftp_rsa_key.pub destination_file source_file
+	@rm -f formData.xml rawData.xml translationalData.xml rawDataWithFormName.xml rawDataWithFormCompletedField.xml
+	@rm -f rawDataWithDatumAndUnitsFieldNames.xml rawDataSorted.xml rawDataWithAllUpdates.xml rawDataWithFormImported.xml rawDataWithFormStatus.xml
+	@rm -f all_form_events.xml person_form_event_tree.xml person_form_event_tree_with_data.xml
+	@rm -f vagrant/redi.db config-example/report.xml redi.pstats mprofile_*.dat
 
 pypi:
 	#https://pythonhosted.org/Distutils2/distutils/packageindex.html
