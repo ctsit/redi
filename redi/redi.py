@@ -898,9 +898,8 @@ def get_key_timestamp(ele):
     #batch.printxml(ele)
     study_id    = ele.findtext("STUDY_ID")
     form_name   = ele.findtext('redcapFormName')
-    loinc_code  = ele.findtext('loinc_code')
     timestamp   = ele.findtext("DATE_TIME_STAMP")
-    return (study_id, form_name, loinc_code, timestamp)
+    return (study_id, form_name, timestamp)
 
 
 def get_key_date(ele):
