@@ -892,15 +892,14 @@ def get_key_timestamp(ele):
     Parameters:
     -----------
     elem: lxml.etree._Element object for which we build a key
-    returns the corresponding quadruple (study_id, form_name, loinc_code, timestamp)
+    returns the corresponding quadruple (study_id, form_name, timestamp)
     """
 
     #batch.printxml(ele)
     study_id    = ele.findtext("STUDY_ID")
     form_name   = ele.findtext('redcapFormName')
-    loinc_code  = ele.findtext('loinc_code')
     timestamp   = ele.findtext("DATE_TIME_STAMP")
-    return (study_id, form_name, loinc_code, timestamp)
+    return (study_id, form_name, timestamp)
 
 
 def get_key_date(ele):
