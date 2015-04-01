@@ -1960,19 +1960,19 @@ def load_prerules(configuration_directory, root='./'):
     loaded_rules = {}
 
     path = os.path.join(configuration_directory, "preproc")
+    preproc_path = os.path.join(path, "preproc.py")
     module = None
-    if os.path.exists(path):
-        module = imp.load_source(rule, path)
-    elif os.path.exists(os.path.join(root, path)):
-        module = imp.load_source(rule, os.path.join(root, path))
-
-    assert module is not None
-    assert module.run_rules is not None
-
-    loaded_rules[rule] = module
-
+    if not os.path.exists(preproc_path):
+        logger.error("ERROR: required preprocessing runner file not present")
+        logger.error("ERROR: file required to be in {0}".format(preproc_path))
+    elif os.path.exists(preproc_path):
+        run_prerules(preproc_path)
+        loaded_rules=""
     logger.info("Loaded %s pre-processing rule(s)" % len(loaded_rules))
     return loaded_rules
+
+def run_prerules(preproc_path):
+    logger.info("Running preprocessing rules")
 
 def run_rules(rules, person_form_event_tree_with_data):
     errors = []
