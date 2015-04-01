@@ -1939,7 +1939,7 @@ def load_rules(rules, root='./'):
     return loaded_rules
 
 
-def load_prerules(rules, root='./'):
+def load_prerules(configuration_directory, root='./'):
     """
     Copied version of load_rules funciton.
 
@@ -1955,8 +1955,7 @@ def load_prerules(rules, root='./'):
       def run_rules(data):
         pass
     """
-    if not rules:
-        return {}
+ 
 
     loaded_rules = {}
 
