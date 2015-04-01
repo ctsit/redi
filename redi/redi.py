@@ -9,6 +9,7 @@
 # Taeber Rapczak <taeber@ufl.edu>
 # Nicholas Rejack <nrejack@ufl.edu>
 # Josh Hanna <josh@hanna.io>
+# Kevin Hanson <hansonks@gmail.com>
 # Copyright (c) 2014-2015, University of Florida
 # All rights reserved.
 #
@@ -297,7 +298,8 @@ def _run(config_file, configuration_directory, do_keep_gen_files, dry_run,
             settings.emr_sftp_server_private_key_pass,
             )
         GetEmrData.get_emr_data(configuration_directory, connection_details)
-
+    # load custom pre-processing filters
+    pre_filters = load_prerules(configuration_directory)
     # load custom post-processing rules
     rules = load_rules(settings.rules, configuration_directory)
 
@@ -1936,6 +1938,42 @@ def load_rules(rules, root='./'):
     logger.info("Loaded %s post-processing rule(s)" % len(loaded_rules))
     return loaded_rules
 
+
+def load_prerules(rules, root='./'):
+    """
+    Copied version of load_rules funciton.
+
+    Rules should be added to the configuration file under a property called
+    "rules", which has key-value pairs mapping a unique rule name to a Python
+    file. Each Python file intended to be used as a rules file should have a
+    run_rules() function which takes one argument.
+
+    Example config.json:
+      { "rules": { "my_rules": "rules/my_rules.py" } }
+
+    Example rules file:
+      def run_rules(data):
+        pass
+    """
+    if not rules:
+        return {}
+
+    loaded_rules = {}
+
+    path = os.path.join(configuration_directory, "preproc")
+    module = None
+    if os.path.exists(path):
+        module = imp.load_source(rule, path)
+    elif os.path.exists(os.path.join(root, path)):
+        module = imp.load_source(rule, os.path.join(root, path))
+
+    assert module is not None
+    assert module.run_rules is not None
+
+    loaded_rules[rule] = module
+
+    logger.info("Loaded %s pre-processing rule(s)" % len(loaded_rules))
+    return loaded_rules
 
 def run_rules(rules, person_form_event_tree_with_data):
     errors = []
