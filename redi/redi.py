@@ -126,6 +126,8 @@ def main():
 
     - write the Final ElementTree to EAV
     """
+
+    # TODO: UPDATE COMMENT HERE
     global _person_form_events_service
 
     # obtaining command line arguments for path to configuration directory
@@ -192,10 +194,17 @@ def main():
         report_courier = report.ReportFileWriter(os.path.join(output_files,
             settings.report_file_path2), logger)
 
+# TODO: preprocessing will go here
+    print "hello world"
+
+    # This is the run that loads the data
     _run(config_file, configuration_directory, do_keep_gen_files, dry_run,
          get_emr_data, settings, output_files, db_path, redcap_client,
          report_courier, report_creator, args['--resume'],
          args['--skip-blanks'], args['--bulk-send-blanks'])
+
+# TODO: post processing will go here
+    print "goodbye world"
 
 
 def get_db_path(batch_info_database, database_path):
@@ -299,7 +308,7 @@ def _run(config_file, configuration_directory, do_keep_gen_files, dry_run,
             )
         GetEmrData.get_emr_data(configuration_directory, connection_details)
     # load custom pre-processing filters
-    pre_filters = load_prerules(configuration_directory)
+    pre_filters = load_preproc(configuration_directory)
     # load custom post-processing rules
     rules = load_rules(settings.rules, configuration_directory)
 
@@ -1939,7 +1948,7 @@ def load_rules(rules, root='./'):
     return loaded_rules
 
 
-def load_prerules(configuration_directory, root='./'):
+def load_preproc(configuration_directory, root='./'):
     """
     Copied and modified version of load_rules function.
     TODO: fix load_rules and load_prerules for better parallelism
@@ -1958,12 +1967,12 @@ def load_prerules(configuration_directory, root='./'):
         logger.error("File required to be at {0}".format(preproc_path))
         logger.error("No preprocessing will be performed in this run.")
     elif os.path.exists(preproc_path):
-        run_prerules(preproc_path)
+        run_preproc(preproc_path)
         loaded_rules=""
     logger.info("Loaded %s pre-processing rule(s)" % len(loaded_rules))
     return loaded_rules
 
-def run_prerules(preproc_path):
+def run_preproc(preproc_path):
     logger.info("Running preprocessing rules")
 
 def run_rules(rules, person_form_event_tree_with_data):
