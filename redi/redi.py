@@ -126,6 +126,8 @@ def main():
 
     - write the Final ElementTree to EAV
     """
+    # TODO: preprocessing will go here
+    print "hello world"
 
     # TODO: UPDATE COMMENT HERE
     global _person_form_events_service
@@ -194,16 +196,13 @@ def main():
         report_courier = report.ReportFileWriter(os.path.join(output_files,
             settings.report_file_path2), logger)
 
-# TODO: preprocessing will go here
-    print "hello world"
-
     # This is the run that loads the data
     _run(config_file, configuration_directory, do_keep_gen_files, dry_run,
          get_emr_data, settings, output_files, db_path, redcap_client,
          report_courier, report_creator, args['--resume'],
          args['--skip-blanks'], args['--bulk-send-blanks'])
 
-# TODO: post processing will go here
+    # TODO: post processing will go here
     print "goodbye world"
 
 
