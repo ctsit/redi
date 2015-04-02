@@ -1,1 +1,0 @@
-from .nosexcover import XCoverage
