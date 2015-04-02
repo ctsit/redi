@@ -69,7 +69,7 @@ import pkg_resources
 import shutil
 from pprint import pprint
 
-from ..config import preproc
+#from ..config import preproc
 
 from requests import RequestException
 from lxml import etree
@@ -150,7 +150,7 @@ def main():
     logger = configure_logging(data_directory, args['--verbose'])
 
     # TODO: preprocessing will go here
-    print "hello world"
+    #print "hello world"
     load_preproc(configuration_directory)
 
     # Parsing the config file using a method from module SimpleConfigParser
@@ -1978,7 +1978,8 @@ def load_preproc(configuration_directory, root='./'):
 
 def run_preproc(preproc_path):
     # TODO figure out if this creates a sub process or not
-    preproc
+    # TODO need to check for program exe3cution otherwise give error
+    os.system(preproc_path)
     logger.info("Running preprocessing rules")
 
 def run_rules(rules, person_form_event_tree_with_data):
