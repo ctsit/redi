@@ -1941,30 +1941,22 @@ def load_rules(rules, root='./'):
 
 def load_prerules(configuration_directory, root='./'):
     """
-    Copied version of load_rules funciton.
+    Copied and modified version of load_rules function.
+    TODO: fix load_rules and load_prerules for better parallelism
 
-    Rules should be added to the configuration file under a property called
-    "rules", which has key-value pairs mapping a unique rule name to a Python
-    file. Each Python file intended to be used as a rules file should have a
-    run_rules() function which takes one argument.
-
-    Example config.json:
-      { "rules": { "my_rules": "rules/my_rules.py" } }
-
-    Example rules file:
-      def run_rules(data):
-        pass
     """
- 
-
     loaded_rules = {}
 
     path = os.path.join(configuration_directory, "preproc")
     preproc_path = os.path.join(path, "preproc.py")
+
     module = None
+
+    # verify pre-processing runner file exists 
     if not os.path.exists(preproc_path):
-        logger.error("ERROR: required preprocessing runner file not present")
-        logger.error("ERROR: file required to be in {0}".format(preproc_path))
+        logger.error("Required preprocessing runner file not present")
+        logger.error("File required to be at {0}".format(preproc_path))
+        logger.error("No preprocessing will be performed in this run.")
     elif os.path.exists(preproc_path):
         run_prerules(preproc_path)
         loaded_rules=""
