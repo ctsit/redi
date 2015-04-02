@@ -1,0 +1,10 @@
+#!/Users/kevinhanson/code/redi/redi/v/bin/python
+# EASY-INSTALL-ENTRY-SCRIPT: 'redi==0.13.2','console_scripts','redi'
+__requires__ = 'redi==0.13.2'
+import sys
+from pkg_resources import load_entry_point
+
+if __name__ == '__main__':
+    sys.exit(
+        load_entry_point('redi==0.13.2', 'console_scripts', 'redi')()
+    )

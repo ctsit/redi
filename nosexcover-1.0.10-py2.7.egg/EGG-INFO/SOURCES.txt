@@ -1,0 +1,12 @@
+setup.cfg
+setup.py
+nosexcover/__init__.py
+nosexcover/nosexcover.py
+nosexcover/tests.py
+nosexcover.egg-info/PKG-INFO
+nosexcover.egg-info/SOURCES.txt
+nosexcover.egg-info/dependency_links.txt
+nosexcover.egg-info/entry_points.txt
+nosexcover.egg-info/not-zip-safe
+nosexcover.egg-info/requires.txt
+nosexcover.egg-info/top_level.txt

@@ -1,0 +1,3 @@
+[console_scripts]
+redi = redi.redi:main
+

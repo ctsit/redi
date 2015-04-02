@@ -1,0 +1,3 @@
+[nose.plugins]
+xcover = nosexcover.nosexcover:XCoverage
+
