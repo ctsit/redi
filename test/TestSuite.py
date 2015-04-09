@@ -1,3 +1,20 @@
+#!/usr/bin/env python
+
+# Contributors:
+# Christopher P. Barnes <senrabc@gmail.com>
+# Andrei Sura: github.com/indera
+# Mohan Das Katragadda <mohan.das142@gmail.com>
+# Philip Chase <philipbchase@gmail.com>
+# Ruchi Vivek Desai <ruchivdesai@gmail.com>
+# Taeber Rapczak <taeber@ufl.edu>
+# Nicholas Rejack <nrejack@ufl.edu>
+# Josh Hanna <josh@hanna.io>
+# Copyright (c) 2014-2015, University of Florida
+# All rights reserved.
+#
+# Distributed under the BSD 3-Clause License
+# For full text of the BSD 3-Clause License see http://opensource.org/licenses/BSD-3-Clause
+
 '''
 This file creates a test suite for all the test classes.
 
@@ -18,6 +35,8 @@ from TestUpdateTimestamp import TestUpdateTimestamp
 from TestUpdateFormDateField import TestUpdateFormDateField
 from TestUpdateFormCompletedFieldName import TestUpdateFormCompletedFieldName
 from TestSortElementTree import TestSortElementTree
+from TestCompressDataUsingStudyFormDate import TestCompressDataUsingStudyFormDate
+
 from TestUpdateDataFromLookup import TestUpdateDataFromLookup
 from TestAddElementsToTree import TestAddElementsToTree
 from TestUpdateRedcapFieldNameValueAndUnits import TestUpdateRedcapFieldNameValueAndUnits
@@ -43,6 +62,7 @@ from TestPersonFormEventsRepository import TestPersonFormEventsRepository
 from TestVerifyAndCorrectCollectionDate import TestVerifyAndCorrectCollectionDate
 from TestRediEmail import TestRediEmail
 from TestSentEventIndex import TestSentEventIndex
+from TestSendDatatoRedcap import TestSendDatatoRedcap
 
 class redi_suite(unittest.TestSuite):
 
@@ -57,6 +77,7 @@ class redi_suite(unittest.TestSuite):
         redi_test_suite.addTest(TestUpdateTimestamp)
         redi_test_suite.addTest(TestUpdateFormDateField)
         redi_test_suite.addTest(TestSortElementTree)
+        redi_test_suite.addTest(TestCompressDataUsingStudyFormDate)
         redi_test_suite.addTest(TestUpdateDataFromLookup)
         redi_test_suite.addTest(TestAddElementsToTree)
         redi_test_suite.addTest(TestUpdateRedcapFieldNameValueAndUnits)
@@ -86,6 +107,7 @@ class redi_suite(unittest.TestSuite):
         redi_test_suite.addTest(TestPersonFormEventsRepository)
         redi_test_suite.addTest(TestRediEmail)
         redi_test_suite.addTest(TestDaysSinceToday)
+        redi_test_suite.addTest(TestSendDatatoRedcap)
 
         # return the suite
         return unittest.TestSuite([redi_test_suite])

@@ -1,3 +1,18 @@
+# Contributors:
+# Christopher P. Barnes <senrabc@gmail.com>
+# Andrei Sura: github.com/indera
+# Mohan Das Katragadda <mohan.das142@gmail.com>
+# Philip Chase <philipbchase@gmail.com>
+# Ruchi Vivek Desai <ruchivdesai@gmail.com>
+# Taeber Rapczak <taeber@ufl.edu>
+# Nicholas Rejack <nrejack@ufl.edu>
+# Josh Hanna <josh@hanna.io>
+# Copyright (c) 2015, University of Florida
+# All rights reserved.
+#
+# Distributed under the BSD 3-Clause License
+# For full text of the BSD 3-Clause License see http://opensource.org/licenses/BSD-3-Clause
+
 """
 Utility module for throttling calls to a function
 """
@@ -6,11 +21,6 @@ import collections
 import datetime
 import logging
 import time
-
-__author__ = "University of Florida CTS-IT Team"
-__copyright__ = "Copyright 2014, University of Florida"
-__license__ = "BSD 3-Clause"
-
 
 logger = logging.getLogger(__name__)
 logger.addHandler(logging.NullHandler())
@@ -51,6 +61,13 @@ class Throttle(object):
 
     def _remove_old_entries(self):
         """ Removes old timestamp entries """
+        # @TODO: investigate why the deque is not
+        # cleared after we reach the limit
+
+        #logger.debug("Clear the deque")
+        #self._timestamps.clear()
+        #return
+
         while (len(self._timestamps) > 0 and
                self._now() - self._timestamps[0] >= self._interval):
             self._timestamps.popleft()
@@ -63,7 +80,8 @@ class Throttle(object):
     def _wait(self):
         """ Sleeps for the remaining interval if the limit has been reached """
         if self._limit_reached():
-            logger.debug('Throttling limit reached.')
+            logger.warn('Throttling limit {} reached.' \
+                    .format(self._max_requests))
             lapsed = self._now() - self._timestamps[0]
 
             if lapsed < self._interval:

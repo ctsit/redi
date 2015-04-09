@@ -1,3 +1,20 @@
+#!/usr/bin/env python
+
+# Contributors:
+# Christopher P. Barnes <senrabc@gmail.com>
+# Andrei Sura: github.com/indera
+# Mohan Das Katragadda <mohan.das142@gmail.com>
+# Philip Chase <philipbchase@gmail.com>
+# Ruchi Vivek Desai <ruchivdesai@gmail.com>
+# Taeber Rapczak <taeber@ufl.edu>
+# Nicholas Rejack <nrejack@ufl.edu>
+# Josh Hanna <josh@hanna.io>
+# Copyright (c) 2014-2015, University of Florida
+# All rights reserved.
+#
+# Distributed under the BSD 3-Clause License
+# For full text of the BSD 3-Clause License see http://opensource.org/licenses/BSD-3-Clause
+
 import unittest
 import smtplib
 from mock import patch, call
@@ -24,6 +41,7 @@ class TestRediEmail(unittest.TestCase):
             'batch_warning_days': 13,
             'sender_email': 'report_sender@example.com',
             'receiver_email': 'rep_a@example.com rep_b@example.com',
+            'project': 'TEST SITE',
             }
         self.settings = type("", (), settings)()
         self.email_settings = redi.get_email_settings(self.settings)
@@ -46,6 +64,7 @@ class TestRediEmail(unittest.TestCase):
                 "report_sender@example.com")
         self.assertEqual(ese['batch_report_receiving_list'], \
                 ["rep_a@example.com", "rep_b@example.com"])
+        self.assertEqual(ese['site_name'], "TEST SITE")
 
     def dummy_send_success(*args, **kwargs):
         """Skip sending email"""

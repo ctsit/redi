@@ -1,3 +1,18 @@
+# Contributors:
+# Christopher P. Barnes <senrabc@gmail.com>
+# Andrei Sura: github.com/indera
+# Mohan Das Katragadda <mohan.das142@gmail.com>
+# Philip Chase <philipbchase@gmail.com>
+# Ruchi Vivek Desai <ruchivdesai@gmail.com>
+# Taeber Rapczak <taeber@ufl.edu>
+# Nicholas Rejack <nrejack@ufl.edu>
+# Josh Hanna <josh@hanna.io>
+# Copyright (c) 2015, University of Florida
+# All rights reserved.
+#
+# Distributed under the BSD 3-Clause License
+# For full text of the BSD 3-Clause License see http://opensource.org/licenses/BSD-3-Clause
+
 """
 This module is used to connect to an sftp server
 and retrieve the raw EMR file to be used as input for RED-I.
@@ -9,6 +24,8 @@ from xml.sax import saxutils
 import logging
 import pysftp
 from csv2xml import openio, Writer
+from paramiko.ssh_exception import SSHException, BadAuthenticationType
+import sys
 
 logger = logging.getLogger(__name__)
 logger.setLevel(logging.INFO)
@@ -53,10 +70,29 @@ def download_file(destination, access_details):
     # delete unnecessary element form the dictionary
     del connection_info['download_file']
 
-    with pysftp.Connection(**connection_info) as sftp:
-        logger.info("User %s connected to sftp server %s" % \
-            (connection_info['username'], connection_info['host']))
-        sftp.get(access_details.download_file, destination)
+    # check for errors during authentication with EMR server
+    try:
+        with pysftp.Connection(**connection_info) as sftp:
+            logger.info("User %s connected to sftp server %s" % \
+                (connection_info['username'], connection_info['host']))
+            sftp.get(access_details.download_file, destination)
+    except IOError as e:
+        logger.error("Please verify that the private key file mentioned in "\
+            "settings.ini exists.")
+        logger.exception(e)
+        sys.exit()
+    except BadAuthenticationType as e:
+        logger.error("Please verify that the EMR server connection details "\
+            "under section emr_data in settings.ini are correct")
+        logger.exception(e)
+        sys.exit()
+    except SSHException as e:
+        logger.error("Please verify that the EMR server connection details "\
+            "under section emr_data in settings.ini are correct")
+        logger.exception(e)
+        sys.exit()
+
+
 
 def data_preprocessing(input_filename, output_filename):
     # replace &, >, < with &amp;, &>;, &<;
@@ -68,7 +104,7 @@ def data_preprocessing(input_filename, output_filename):
 def generate_xml(input_filename, output_filename):
 
     # generate_xml now replicates the functionality from the
-    # "__name__ == '__main__'" code block of csv2xml.py. This allows us to use
+    # "main" code block of csv2xml.py. This allows us to use
     # it like another module in our project without having to call os.system().
     class Arguments:
         pass
@@ -140,3 +176,4 @@ def get_emr_data(conf_dir, connection_details):
 
     # delete rawEscaped.txt
     cleanup(escaped_file)
+

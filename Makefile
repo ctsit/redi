@@ -16,9 +16,9 @@ help:
 	@echo "\t coverage         - run code coverage analysis"
 	@echo "\t lint             - check code for sytax error"
 	@echo "\t clean            - remove generated files"
-	@echo "\t pypi             - upload files to https://pypi.python.org/pypi/redi-py"
+	@echo "\t pypi             - upload files to https://pypi.python.org/pypi/redi"
 	@echo "\t show_pips        - show python packages installed globally"
-	@echo "\t venv_help        - show commands for installing 'redi-py' package in the 'venv' virtual environment"
+	@echo "\t venv_help        - show commands for installing 'redi' package in the 'venv' virtual environment"
 	@echo "\t venv_show_pips   - show python packages installed in the 'venv' virtual environment"
 
 test: tests
@@ -37,30 +37,13 @@ lint:
 
 clean:
 	find . -type f -name "*.pyc" -print | xargs rm -f
-	rm -rf out
-	rm -rf dist
-	rm -rf build
-	rm -rf *.egg-info
-	rm -rf nosetests.xml cover .coverage coverage.xml
-	rm -rf *.egg
-	rm -f pylint.out
-	rm -f formData.xml
-	rm -f rawData.xml
-	rm -f translationalData.xml
-	rm -f rawDataWithFormName.xml
-	rm -f rawDataWithFormCompletedField.xml
-	rm -f rawDataWithDatumAndUnitsFieldNames.xml
-	rm -f rawDataSorted.xml
-	rm -f rawDataWithAllUpdates.xml
-	rm -f rawDataWithFormImported.xml
-	rm -f rawDataWithFormStatus.xml
-	rm -f all_form_events.xml
-	rm -f person_form_event_tree.xml
-	rm -f person_form_event_tree_with_data.xml
-	rm -rf vagrant/data/
-	rm -f vagrant/redi.db
-	rm -f config-example/report.xml
-	rm -f redi.pstats
+	@rm -rf out dist build *.egg-info *.egg
+	@rm -rf nosetests.xml cover .coverage coverage.xml
+	@rm -f pylint.out unittest_pysftp_rsa_key unittest_pysftp_rsa_key.pub destination_file source_file
+	@rm -f formData.xml rawData.xml translationalData.xml rawDataWithFormName.xml rawDataWithFormCompletedField.xml
+	@rm -f rawDataWithDatumAndUnitsFieldNames.xml rawDataSorted.xml rawDataWithAllUpdates.xml rawDataWithFormImported.xml rawDataWithFormStatus.xml
+	@rm -f all_form_events.xml person_form_event_tree.xml person_form_event_tree_with_data.xml
+	@rm -f vagrant/redi.db config-example/report.xml redi.pstats mprofile_*.dat
 
 pypi:
 	#https://pythonhosted.org/Distutils2/distutils/packageindex.html
@@ -70,7 +53,7 @@ show_pips:
 	find /Library/Python/2.7/site-packages/ -maxdepth 2 -name __init__.py | cut -d '/' -f 6
 
 venv_help:
-	@echo "\n To install 'redi' in the virtual environment please execute: \n\n\t virtualenv venv && source venv/bin/activate && pip install redi-py"
+	@echo "\n To install 'redi' in the virtual environment please execute: \n\n\t virtualenv venv && source venv/bin/activate && pip install redi"
 	@echo "\n To destroy the virtual environment please execute: \n\n\t deactivate && rm -rf ./venv"
 
 venv_show_pips:

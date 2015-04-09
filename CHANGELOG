@@ -1,3 +1,38 @@
+2015-04-09 v0.14.0
+ * Summary: RED-I has multiple functional and other improvements in this release: licensing has been added in each file. RED-I is now available from PyPI as 'redi'. Most importantly,
+ when multiple lab results come in on the same day, RED-I now takes the first lab of the day, unless it has a value of 'canceled'. RED-I also auto-resumes in the case of a network timeout. Reporting has been improved with more information.
+
+ * Update README.md (Andrei Sura)
+ * removed loinc_code from get_key_timestamp sorting function. data should only be sorted by study_id, form, and date_time_stamp initially. (Nicholas Rejack)
+ * Add license to all .py files (Ruchi Vivek Desai)
+ * Remove bug in pull request for github issue #104 (Ruchi Vivek Desai)
+ * Add initial changes to code for fixing bug in Github issue #104 (Ruchi Vivek Desai)
+ * Move check for file existence from GetEMRData to SimpleConfigParser (Ruchi Vivek Desai)
+ * Log errors related to EMR server to facilitate debugging of redi run from cron (Ruchi Vivek Desai)
+ * Add bad Research IDs to the Error block in the report that gets emailed (Ruchi Vivek Desai)
+ * #133 Add actual site name to subject line in the emailed report (Ruchi Vivek Desai)
+ * Add tools for creating input xml files from csv + new profiling task (Andrei Sura)
+ * Call `compress_data_using_study_form_date` inside `sort_element_tree` This is one example of pre-processing data  before using translation table... (Ruchi Vivek Desai)
+ * Update the unit test test/TestSortElementTree.py (Ruchi Vivek Desai)
+ * Add pycrypto as a required library for installation in setup.py (Ruchi Vivek Desai)
+ * `make clean` - Remove generated pysftp files during testing (Ruchi Vivek Desai)
+ * Save partial fix for filtering out multiple results on same day (Ruchi Vivek Desai)
+ * Minor corrections to Makefile due rename of `bin` to `redi` (Ruchi Vivek Desai)
+ * removed line in setup.py. README.md already included in MANIFEST. In addition, defining 'redi' package twice in package_data overwrites the previous definition, causing .xsd and .xsl files to not be included (Nicholas Rejack)
+ * Uncomment raise MaxRetryError and change the factor by which sleep time increases to 6 (Ruchi Vivek Desai)
+ * Correct the function name for retry number 10 (Ruchi Vivek Desai)
+ * Fix test case broken by commit id adf6f96764f319b41027e1423ea85862e0f3162f (Ruchi Vivek Desai)
+ * Make changes suggested in the review of pull request (Ruchi Vivek Desai)
+ * Move import sys to top of the code (Ruchi Vivek Desai)
+ * Correct concatenation of Attempt no and retry_count (Ruchi Vivek Desai)
+ * Add comment for dummy_init function (Ruchi Vivek Desai)
+ * Add code for github issue #108 auto resume (Ruchi Vivek Desai)
+ * Add working test for send_data_to_redcap function (Ruchi Vivek Desai)
+ * Add test for send_data_to_redcap function (Ruchi Vivek Desai)
+ * Add code for auto-resume on network timeout (Ruchi Vivek Desai)
+
+ * Change the email in setup.py to `ctsit@ctsi.ufl.edu` because the old email was not reachable (Andrei Sura)
+
 2014-12-19 v0.13.2
  * hotfix to change behavior in updateStatusFieldValueInPersonFormEventree. Status field no longer
    marked "NOT_DONE" if units for that field are missing. 
@@ -43,7 +78,7 @@ decreased anywhere between 12 and 57%.
  * Add docopt to redi (Radha Kandula)
  * Small fix for the README links (Andrei Sura)
  * Use the `cts-it-red@ctsi.ufl.edu` email for consistency with `setup.py` (Andrei Sura)
- * Document installation from binaries: `pip install redi-py` (Andrei Sura)
+ * Document installation from binaries: `pip install redi` (Andrei Sura)
  * Restore the short README.md because it is referenced by `setup.py` (Andrei Sura)
  * Remove unused `doc` folder All `*.rst` files are in now in the `docs` folder (Andrei Sura)
  * Move `doc/flowcharts` to `docs/flowcharts` (Andrei Sura)
@@ -51,7 +86,7 @@ decreased anywhere between 12 and 57%.
  * Replace `README.md` by a shorter `README.rst` because we have the full content in `docs/about.rst` (Andrei Sura)
  * Add `help` tasks in the the main `Makefile` (Andrei Sura)
  * Fix some misspellings of REDCap (Taeber Rapczak)
- * Fix configuration files to allow uploadig to the pypi.python.org repo @see https://pypi.python.org/pypi/redi-py/0.11.3 (Andrei Sura)
+ * Fix configuration files to allow uploadig to the pypi.python.org repo @see https://pypi.python.org/pypi/redi/ (Andrei Sura)
  * Fix broken documentation links during conversion to `*.rst` (Andrei Sura)
  * Remove files `setup.rst and test.rst` from `docs/api` to avoid unnecessary document creation (Andrei Sura)
  * added default emr password of None (Nicholas Rejack)

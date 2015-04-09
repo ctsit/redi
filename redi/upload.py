@@ -1,10 +1,21 @@
+# Contributors:
+# Christopher P. Barnes <senrabc@gmail.com>
+# Andrei Sura: github.com/indera
+# Mohan Das Katragadda <mohan.das142@gmail.com>
+# Philip Chase <philipbchase@gmail.com>
+# Ruchi Vivek Desai <ruchivdesai@gmail.com>
+# Taeber Rapczak <taeber@ufl.edu>
+# Nicholas Rejack <nrejack@ufl.edu>
+# Josh Hanna <josh@hanna.io>
+# Copyright (c) 2014-2015, University of Florida
+# All rights reserved.
+#
+# Distributed under the BSD 3-Clause License
+# For full text of the BSD 3-Clause License see http://opensource.org/licenses/BSD-3-Clause
+
 """
 Functions related to uploading data to REDCap
 """
-
-__author__ = "University of Florida CTS-IT Team"
-__copyright__ = "Copyright 2014, University of Florida"
-__license__ = "BSD 3-Clause"
 
 import ast
 import collections
@@ -20,18 +31,18 @@ from utils import throttle
 logger = logging.getLogger(__name__)
 logger.addHandler(logging.NullHandler())
 
-DEFAULT_DATA_DIRECTORY = os.getcwd()
-
 
 def create_import_data_json(import_data_dict, event_tree):
     """
-    create_import_data_json:
-    This function converts data in event tree into json format.
-    Parameters:
-        import_data_dict: This parameter holds the event tree data
-        event_tree: This parameter holds the event tree data
+    Convert data from event_tree to json format.
 
-    @see #generate_output()
+    @TODO: evaluate performance
+    @see the caller {@link #redi.upload.generate_output()}
+
+    :param: import_data_dict: holds the event tree data
+    :param: event_tree: holds the event tree data
+    :rtype: dict
+    :return the json version of the xml data
     """
 
     root = event_tree
@@ -88,7 +99,7 @@ def create_redcap_records(import_data):
 
 
 def generate_output(person_tree, redcap_client, rate_limit, sent_events,
-                    skip_blanks=False, bulk_send_blanks=False):
+    max_retry_count, skip_blanks=False, bulk_send_blanks=False):
     """
     Note: This function communicates with the redcap application.
     Steps:
@@ -96,8 +107,10 @@ def generate_output(person_tree, redcap_client, rate_limit, sent_events,
         - generate a csv fragment `using create_eav_output`
         - send csv fragment to REDCap using `send_eav_data_to_redcap`
 
+    @see the caller {@link #redi.redi._run()}
 
-    @return the report_data dictionary
+    :rtype:     dictionary
+    :return:    the report_data which is passed to the report rendering function
     """
 
     # the global dictionary to be returned
@@ -210,18 +223,16 @@ def generate_output(person_tree, redcap_client, rate_limit, sent_events,
                     # if (0 == event_count % 2) : continue
 
                     try:
-                        found_error = False
-                        upload_data([json_data_dict], overwrite=True)
+                        upload_data([json_data_dict], max_retry_count,
+                            overwrite=True)
                         sent_events.mark_sent(study_id_key, form_name, event_name)
                         logger.debug("Sent " + event_name)
                         if contains_data:
                             # if no errors encountered update event counters
                             subject_details[study_id_key][form_key] += 1
                             form_details[form_key] += 1
-                    except RedcapError as e:
-                        found_error = handle_errors_in_redcap_xml_response(
-                            e.message,
-                            report_data)
+                    except RedcapError as redcap_err:
+                        handle_errors_in_redcap_xml_response(study_id, redcap_err, report_data)
 
                 except Exception as e:
                     logger.error(e.message)
@@ -240,9 +251,10 @@ def generate_output(person_tree, redcap_client, rate_limit, sent_events,
             for study_id_key, form_name, event_name, record in blanks:
                 sent_events.mark_sent(study_id_key, form_name, event_name)
             logger.info("Sent {} blank form-events.".format(response['count']))
-        except RedcapError as error:
+
+        except RedcapError as redcap_err:
             logger.error("Failed to send blank form-events.")
-            handle_errors_in_redcap_xml_response(error.message, report_data)
+            handle_errors_in_redcap_xml_response(study_id, redcap_err, report_data)
 
     report_data.update({
         'total_subjects': person_count,
@@ -255,27 +267,49 @@ def generate_output(person_tree, redcap_client, rate_limit, sent_events,
     return report_data
 
 
-def handle_errors_in_redcap_xml_response(redcap_response, report_data):
+def handle_errors_in_redcap_xml_response(study_id, redcap_err, report_data):
     """
-    handle_errors_in_redcap_xml_response:
-    This function checks for any errors in the redcap response and update report data if there are any errors.
-    Parameters:
-        redcap_response_xml: This parameter holds the redcap response passed to this function
-        report_data: This parameter holds the report data passed to this function
+    Checks for any errors in the redcap response and update
+    report data if there are any errors.
 
+    Parameters:
+    -----------
+    redcap_err: RedcapError object
+    report_data: dictionary to which we store error details
     """
+
     # converting string to dictionary
-    response = ast.literal_eval(str(redcap_response))
+    response = ast.literal_eval(str(redcap_err))
     logger.debug('handling response from the REDCap')
-    try:
-        if 'error' in response:
-            for recordData in response['records']:
-                error_string = "Error writing to record " + recordData["record"] + " field " + recordData[
-                    "field_name"] + " Value " + recordData["value"] + ".Error Message: " + recordData["message"]
-                logger.info(error_string)
-                report_data['errors'].append(error_string)
-        else:
-            logger.error("REDCap response is in unknown format")
-    except KeyError as e:
-        logger.error(str(e))
-    return True
+
+    if 'error' not in response:
+        logger.warn("RedcapError does not contain the expected 'error' key: {}"
+                .format(response))
+        return
+
+    if 'records' in response:
+        records = response['records']
+
+        for record in records:
+            details = "(record: {}, field_name: {}, value: {}, message: {})" \
+                    .format(
+                            record['record'],
+                            record['field_name'],
+                            record['value'],
+                            record['message'])
+            error_string = "{}: {}".format(response['error'], details)
+            report_data['errors'].append(error_string)
+            logger.error("{}".format(error_string))
+
+    elif 'fields' in response:
+        fields = response['fields']
+        details = "{}".format(fields)
+        error_string = "{}: {}".format(response['error'], details)
+        report_data['errors'].append(error_string)
+        logger.error(error_string)
+
+    else:
+        err = "A RedcapError ocured for study_id: {}. " \
+                "It contains an unexpected type of error: {}" \
+                .format(study_id, response)
+        logger.warn(err)
