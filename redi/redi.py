@@ -151,7 +151,7 @@ def main():
 
     # TODO: preprocessing will go here
     #print "hello world"
-    load_preproc(configuration_directory)
+    #load_preproc(configuration_directory)
 
     # Parsing the config file using a method from module SimpleConfigParser
     settings = SimpleConfigParser.SimpleConfigParser()
@@ -312,7 +312,7 @@ def _run(config_file, configuration_directory, do_keep_gen_files, dry_run,
             )
         GetEmrData.get_emr_data(configuration_directory, connection_details)
     # load custom pre-processing filters
-    pre_filters = load_preproc(configuration_directory)
+    pre_filters = load_preproc(settings.preprocessors, configuration_directory)
     # load custom post-processing rules
     rules = load_rules(settings.rules, configuration_directory)
 
@@ -332,6 +332,8 @@ def _run(config_file, configuration_directory, do_keep_gen_files, dry_run,
 
     if not resume:
         _delete_last_runs_data(data_folder)
+
+        run_preproc(pre_filters)
 
         alert_summary, person_form_event_tree_with_data, rule_errors, \
         collection_date_summary_dict, bad_ids =\
@@ -1952,35 +1954,53 @@ def load_rules(rules, root='./'):
     return loaded_rules
 
 
-def load_preproc(configuration_directory, root='./'):
+def load_preproc(preprocessors, root='./'):
     """
     Copied and modified version of load_rules function.
     TODO: fix load_rules and load_prerules for better parallelism
 
     """
-    loaded_rules = {}
+    if not preprocessors:
+        return {}
 
-    path = os.path.join(configuration_directory, "preproc")
-    preproc_path = os.path.join(path, "preproc.py")
+    loaded = {}
 
-    module = None
+    for (preprocessor, path) in ast.literal_eval(preprocessors).iteritems():
+        module = None
+        if os.path.exists(path):
+            module = imp.load_source(preprocessor, path)
+        elif os.path.exists(os.path.join(root, path)):
+            module = imp.load_source(preprocessor, os.path.join(root, path))
 
-    # verify pre-processing runner file exists 
-    if not os.path.exists(preproc_path):
-        logger.error("Required preprocessing runner file not present")
-        logger.error("File required to be at {0}".format(preproc_path))
-        logger.error("No preprocessing will be performed in this run.")
-    elif os.path.exists(preproc_path):
-        run_preproc(preproc_path)
-        loaded_rules=""
-    logger.info("Loaded %s pre-processing rule(s)" % len(loaded_rules))
-    return loaded_rules
+        assert module is not None
+        assert module.run_processing is not None
 
-def run_preproc(preproc_path):
+        loaded[preprocessor] = module
+
+    logger.info("Loaded {} pre-processing script{}".format(
+        len(loaded), 's' if len(loaded) != 1 else 0))
+    return loaded
+
+
+def run_preproc(preprocessors):
     # TODO figure out if this creates a sub process or not
     # TODO need to check for program exe3cution otherwise give error
-    os.system(preproc_path)
     logger.info("Running preprocessing rules")
+    errors = []
+
+    for (preprocessor, module) in preprocessors.iteritems():
+        try:
+            module.run_processing()
+        except Exception as e:
+            message_format = 'Error processing rule "{0}". {1}'
+            if not hasattr(e, 'errors'):
+                errors.append(message_format.format(preprocessor, e.message))
+                continue
+            for error in e.errors:
+                errors.append(message_format.format(preprocessor, error))
+
+    return errors
+
 
 def run_rules(rules, person_form_event_tree_with_data):
     errors = []
