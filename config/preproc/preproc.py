@@ -8,6 +8,9 @@
 #
 # Distributed under the BSD 3-Clause License
 # For full text of the BSD 3-Clause License see http://opensource.org/licenses/BSD-3-Clause
+import csv
+import shutil
+
 
 clinical_component_to_loinc_path = 'clinical-componenet-to-loinc-mapping.xml'
 results_path = 'raw.txt'
@@ -16,7 +19,6 @@ translation_table_path = 'translationTable.xml'
 
 
 def run_processing():
-    backup(results_path)
     rows = load(results_path)
     subject_ids = []
     for row in rows:
@@ -36,12 +38,7 @@ def run_processing():
     #     'NONE': [<csv_row>, <csv_row>]
     # }
     filtered = filter_old_labs(grouped_by_panel, consent_dates)
-    save(filtered)
-
-
-def backup(filepath):
-    # shutil.copy2(filepath, filepath + '.bak')
-    raise NotImplementedError()
+    save(filtered, results_path)
 
 
 def fetch_consent_dates(subject_ids):
@@ -70,8 +67,14 @@ def main():
     run_processing()
 
 
-def save(rows):
-    raise NotImplementedError()
+def save(rows, path, backup=shutil.copy2, open_file=open):
+    if backup:
+        backup(path, path + '.bak')
+
+    with open_file(path, 'w') as csvfile:
+        writer = csv.DictWriter(csvfile, fieldnames=rows.fieldnames)
+        writer.writeheader()
+        writer.writerows(iter(rows))
 
 
 if __name__ == "__main__":
