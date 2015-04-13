@@ -1,7 +1,8 @@
 import contextlib
 import csv
-import StringIO
+import datetime
 import os
+import StringIO
 import unittest
 
 import preproc
@@ -29,6 +30,7 @@ expected = """
 
 STUDY_ID = 'STUDY_ID'
 COMPONENT_ID = 'COMPONENT_ID'
+TAKEN_TIME = 'TAKEN_TIME'
 
 
 class PreprocessingTests(unittest.TestCase):
@@ -46,6 +48,25 @@ class PreprocessingTests(unittest.TestCase):
             'chemistry': ['1975-2', '2160-0', '2339-0', '1920-8', '1968-7',
                           '1751-7', '1742-6', '2947-0', '6298-4']},
             panels)
+
+    def test_filter_old_labs(self):
+        panel = [
+            {STUDY_ID: '304', COMPONENT_ID: '1230', TAKEN_TIME: '2012-06-23',
+             'data': '123'},
+            {STUDY_ID: '304', COMPONENT_ID: '1230', TAKEN_TIME: '2012-06-20',
+             'data': 'Yes?'},
+            {STUDY_ID: '304', COMPONENT_ID: '1230', TAKEN_TIME: '2012-06-22',
+             'data': '456'},
+            {STUDY_ID: '304', COMPONENT_ID: '1230', TAKEN_TIME: '2012-06-21',
+             'data': '789'},
+        ]
+
+        rows_grouped_by_panel = {'PanelA': panel}
+        consent_dates = {'304': datetime.date(2012, 06, 23)}
+
+        filtered = preproc.filter_old_labs(rows_grouped_by_panel, consent_dates)
+
+        self.assertListEqual([panel[0], panel[2], panel[3]], filtered)
 
     def test_group_rows_by_panel(self):
         panels = {
