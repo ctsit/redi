@@ -1,6 +1,7 @@
 import contextlib
 import csv
 import StringIO
+import os
 import unittest
 
 import preproc
@@ -31,6 +32,21 @@ COMPONENT_ID = 'COMPONENT_ID'
 
 
 class PreprocessingTests(unittest.TestCase):
+    def test_fetch_panels(self):
+        loinc_map_file = os.path.abspath(os.path.join(
+            os.path.dirname(__file__),
+            '../clinical-component-to-loinc-code-example.xml'))
+        translation_table_file = os.path.abspath(os.path.join(
+            os.path.dirname(__file__), '../translationTable.xml'))
+
+        panels = preproc.fetch_panels(loinc_map_file, translation_table_file)
+
+        self.assertDictEqual({
+            'cbc': ['26515-7', '718-7', '26474-7', '26499-4', '26464-8'],
+            'chemistry': ['1975-2', '2160-0', '2339-0', '1920-8', '1968-7',
+                          '1751-7', '1742-6', '2947-0', '6298-4']},
+            panels)
+
     def test_group_rows_by_panel(self):
         panels = {
             'rna': [1230],
