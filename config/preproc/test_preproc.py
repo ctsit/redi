@@ -81,7 +81,8 @@ class PreprocessingTests(unittest.TestCase):
         data = StringIO.StringIO(results_input.strip())
         reader = csv.DictReader(data)
 
-        preproc.save(reader, 'UNUSED', backup=None, open_file=open_memory)
+        preproc.save(reader.fieldnames, reader, 'UNUSED', backup=None,
+                     open_file=open_memory)
 
         self.assertTrue(results_input.strip(), str(output))
 

@@ -38,7 +38,7 @@ def run_processing():
     #     'NONE': [<csv_row>, <csv_row>]
     # }
     filtered = filter_old_labs(grouped_by_panel, consent_dates)
-    save(filtered, results_path)
+    save(rows.fieldnames, filtered, results_path)
 
 
 def fetch_consent_dates(subject_ids):
@@ -67,12 +67,12 @@ def main():
     run_processing()
 
 
-def save(rows, path, backup=shutil.copy2, open_file=open):
+def save(headers, rows, path, backup=shutil.copy2, open_file=open):
     if backup:
         backup(path, path + '.bak')
 
     with open_file(path, 'w') as csvfile:
-        writer = csv.DictWriter(csvfile, fieldnames=rows.fieldnames)
+        writer = csv.DictWriter(csvfile, fieldnames=headers)
         writer.writeheader()
         writer.writerows(iter(rows))
 
