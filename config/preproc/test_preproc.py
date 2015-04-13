@@ -47,7 +47,8 @@ class PreprocessingTests(unittest.TestCase):
 
         expected = {
             'rna': [rows[0], rows[1]],
-            'cbc': [rows[2], rows[3]]
+            'cbc': [rows[2], rows[3]],
+            'NONE': [rows[4]]
         }
 
         grouped = preproc.group_rows_by_panel(panels, rows)
