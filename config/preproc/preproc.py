@@ -13,15 +13,20 @@ import os
 import shutil
 import StringIO
 
-from redi.utils import SimpleConfigParser
+from redcap import Project, RedcapError
+from utils import SimpleConfigParser
 
 
 SUBJECT_ID_COLUMN = 'STUDY_ID'
-
+# REDCap field used to denote consent date
+CONSENT_DATE_RC_FIELD = "eot_dsstdtc"
+SUBJECT_ID_RC_FIELD = "consent_usubjid"
 
 def run_processing(settings):
     translation_table_path = settings.translation_table_file
     component_to_loinc_path = settings.component_to_loinc_code_xml
+
+    redcap_settings = get_redcap_settings(settings)
 
     results_path = os.path.realpath(
         os.path.join(__file__, '..', '..', 'synthetic-lab-data.csv'))
@@ -31,7 +36,8 @@ def run_processing(settings):
     for row in rows:
         subject_ids.append(row[SUBJECT_ID_COLUMN])
 
-    consent_dates = fetch_consent_dates(subject_ids)
+    print "HERE I AM"
+    consent_dates = fetch_consent_dates(subject_ids, redcap_settings)
     panels = fetch_panels(component_to_loinc_path, translation_table_path)
 
     grouped_by_panel = group_rows_by_panel(panels, rows)
@@ -45,8 +51,30 @@ def run_processing(settings):
     save(rows.fieldnames, filtered, results_path)
 
 
-def fetch_consent_dates(subject_ids):
-    raise NotImplementedError()
+def fetch_consent_dates(subject_ids, redcap_settings):
+    """
+    Fetch consent dates. 
+    First, query for all consent date and subject IDs.
+    Then match subject IDs in input set.
+    """
+    token = redcap_settings['token']
+    url = redcap_settings['uri']
+    verify_ssl = redcap_settings['verify_ssl']
+
+    # we want the consent date, as well as the subject ID
+    fields = CONSENT_DATE_RC_FIELD + "," + SUBJECT_ID_RC_FIELD
+
+    try:
+        project = Project(args['url'], args['token'], "", args['verify_ssl'])
+        source_subject_ids = project.export_records(
+            fields=fields,
+            events="1_arm_1")
+        print str(source_subject_ids)
+    except:
+        print "Cannot connect to project at " + args['url'] + ' with token ' + args['token']
+        quit()
+
+   
 
 
 def fetch_panels(loinc_mapping, translation_table):
