@@ -25,13 +25,8 @@ def run_processing():
         subject_ids.append(row[subject_id_column])
 
     consent_dates = fetch_consent_dates(subject_ids)
-    # panels = fetch_panels('clinical-component-to-loinc.xml','translationTable.xml')
-    panels = {
-         'rna': [1230, 3774, 1914, 4189, 6912, 1561675, 6860]
-         'cbc': [1534435, 918, 1534444, 1577116, 1009, 1558101, 1539315, 913, 999, 1577876]
-         'chem': [1534098, 971, 1534081, 968, 1810650, 1526000, 1525870, 1558221, 1534076]
-         'inr': [1534098, 1810583]
-     }
+    panels = fetch_panels('clinical-component-to-loinc.xml',
+                          'translationTable.xml')
 
     grouped_by_panel = group_rows_by_panel(panels, rows)
     #grouped_by_panel = {
@@ -50,7 +45,14 @@ def fetch_consent_dates(subject_ids):
 
 
 def fetch_panels(loinc_mapping, translation_table):
-    raise NotImplementedError()
+    return {
+        'rna': [1230, 3774, 1914, 4189, 6912, 1561675, 6860],
+        'cbc': [1534435, 918, 1534444, 1577116, 1009, 1558101, 1539315, 913,
+                999, 1577876],
+        'chem': [1534098, 971, 1534081, 968, 1810650, 1526000, 1525870, 1558221,
+                 1534076],
+        'inr': [1534098, 1810583]
+    }
 
 
 def filter_old_labs(rows, consent_dates):
