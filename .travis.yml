@@ -7,12 +7,15 @@ install:
   - pip install requests
   - pip install lxml
   - pip install sftpserver
+  - pip install coveralls
 
 script: make test
+
+after_success:
+    - coveralls
+
 
 branches:
   only:
     - master
     - develop
-
-

@@ -33,7 +33,7 @@ setup(
     description='REDCap Electronic Data Importer',
     long_description=open('README.md').read(),
     install_requires=[
-        "requests >= 2.2.1",
+        "requests >= 2.5.1",
         "lxml >= 3.3.5",
         "PyCap >= 1.0",
         "pysftp >= 0.2.8",
