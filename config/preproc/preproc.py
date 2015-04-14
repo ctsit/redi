@@ -17,7 +17,7 @@ from redcap import Project, RedcapError
 from utils import SimpleConfigParser
 import redi as redi
 
-SUBJECT_ID_COLUMN = 'STUDY_ID'
+SUBJECT_ID_COLUMN = 'study_id'
 # REDCap field used to denote consent date
 CONSENT_DATE_RC_FIELD = "eot_dsstdtc"
 SUBJECT_ID_RC_FIELD = "consent_usubjid"
@@ -59,20 +59,20 @@ def fetch_consent_dates(subject_ids, redcap_settings):
     Then match subject IDs in input set.
     """
     token = redcap_settings['token']
-    url = redcap_settings['uri']
+    url = redcap_settings['redcap_uri']
     verify_ssl = redcap_settings['verify_ssl']
 
     # we want the consent date, as well as the subject ID
     fields = CONSENT_DATE_RC_FIELD + "," + SUBJECT_ID_RC_FIELD
 
     try:
-        project = Project(args['url'], args['token'], "", args['verify_ssl'])
+        project = Project(url, token, "", verify_ssl)
         source_subject_ids = project.export_records(
             fields=fields,
             events="1_arm_1")
         logger.debug(str(source_subject_ids))
     except:
-        print "Cannot connect to project at " + args['url'] + ' with token ' + args['token']
+        print "Cannot connect to project at " + url + ' with token ' + token
         quit()
 
    
