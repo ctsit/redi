@@ -9,25 +9,30 @@
 # Distributed under the BSD 3-Clause License
 # For full text of the BSD 3-Clause License see http://opensource.org/licenses/BSD-3-Clause
 import csv
+import os
 import shutil
 import StringIO
 
-
-clinical_component_to_loinc_path = 'clinical-componenet-to-loinc-mapping.xml'
-results_path = 'raw.txt'
-subject_id_column = 'STUDY_ID'
-translation_table_path = 'translationTable.xml'
+from redi.utils import SimpleConfigParser
 
 
-def run_processing():
+SUBJECT_ID_COLUMN = 'STUDY_ID'
+
+
+def run_processing(settings):
+    translation_table_path = settings.translation_table_file
+    component_to_loinc_path = settings.component_to_loinc_code_xml
+
+    results_path = os.path.realpath(
+        os.path.join(__file__, '..', '..', 'synthetic-lab-data.csv'))
+
     rows = load(results_path)
     subject_ids = []
     for row in rows:
-        subject_ids.append(row[subject_id_column])
+        subject_ids.append(row[SUBJECT_ID_COLUMN])
 
     consent_dates = fetch_consent_dates(subject_ids)
-    panels = fetch_panels('clinical-component-to-loinc.xml',
-                          'translationTable.xml')
+    panels = fetch_panels(component_to_loinc_path, translation_table_path)
 
     grouped_by_panel = group_rows_by_panel(panels, rows)
     #grouped_by_panel = {
@@ -35,7 +40,6 @@ def run_processing():
     #    'cbc': [],
     #    'NONE': [<csv_row>, <csv_row>]
     #}
-
 
     filtered = filter_old_labs(grouped_by_panel, consent_dates)
     save(rows.fieldnames, filtered, results_path)
@@ -66,12 +70,18 @@ def group_rows_by_panel(panels, rows):
 
 def load(filepath):
     with open(filepath) as fp:
-        content = fp.readall()
+        content = fp.read()
     return csv.DictReader(StringIO.StringIO(content))
 
 
 def main():
-    run_processing()
+    settings = SimpleConfigParser.SimpleConfigParser()
+    config_file = os.path.realpath(os.path.join(__file__, '..', '..',
+                                                'settings.ini'))
+    settings.read(config_file)
+    # this method reduces the syntax
+    settings.set_attributes()
+    run_processing(settings)
 
 
 def save(headers, rows, path, backup=shutil.copy2, open_file=open):

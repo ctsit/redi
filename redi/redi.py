@@ -333,7 +333,7 @@ def _run(config_file, configuration_directory, do_keep_gen_files, dry_run,
     if not resume:
         _delete_last_runs_data(data_folder)
 
-        run_preproc(pre_filters)
+        run_preproc(pre_filters, settings)
 
         alert_summary, person_form_event_tree_with_data, rule_errors, \
         collection_date_summary_dict, bad_ids =\
@@ -1982,7 +1982,7 @@ def load_preproc(preprocessors, root='./'):
     return loaded
 
 
-def run_preproc(preprocessors):
+def run_preproc(preprocessors, settings):
     # TODO figure out if this creates a sub process or not
     # TODO need to check for program exe3cution otherwise give error
     logger.info("Running preprocessing rules")
@@ -1990,7 +1990,7 @@ def run_preproc(preprocessors):
 
     for (preprocessor, module) in preprocessors.iteritems():
         try:
-            module.run_processing()
+            module.run_processing(settings)
         except Exception as e:
             message_format = 'Error processing rule "{0}". {1}'
             if not hasattr(e, 'errors'):
