@@ -10,6 +10,7 @@
 # For full text of the BSD 3-Clause License see http://opensource.org/licenses/BSD-3-Clause
 import csv
 import shutil
+import StringIO
 
 
 clinical_component_to_loinc_path = 'clinical-componenet-to-loinc-mapping.xml'
@@ -64,9 +65,9 @@ def group_rows_by_panel(panels, rows):
 
 
 def load(filepath):
-    # with open(filepath) as fp:
-    #     return csv.DictReader(fp)
-    raise NotImplementedError()
+    with open(filepath) as fp:
+        content = fp.readall()
+    return csv.DictReader(StringIO.StringIO(content))
 
 
 def main():
