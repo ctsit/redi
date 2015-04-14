@@ -28,7 +28,7 @@ def run_processing(settings):
     try:
         redcap_settings = redi.get_redcap_settings(settings)
     except Exception as ex:
-        print str(ex)
+        logger.error("Can't load REDCap settings: ", ex)
 
     results_path = os.path.realpath(
         os.path.join(__file__, '..', '..', 'synthetic-lab-data.csv'))
@@ -70,8 +70,9 @@ def fetch_consent_dates(subject_ids, redcap_settings):
         source_subject_ids = project.export_records(
             fields=fields,
             events="1_arm_1")
-        logger.debug(str(source_subject_ids))
-    except:
+        #logger.debug(str(source_subject_ids))
+    except Exception as ex:
+        print fields, source_subject_ids
         print "Cannot connect to project at " + url + ' with token ' + token
         quit()
 
