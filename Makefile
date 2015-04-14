@@ -24,9 +24,6 @@ help:
 test: tests
 tests: coverage
 	[ ! -d config/rules ] || python -munittest discover config/rules
-	rm -f .coverage
-	rm -rf cover/
-	rm -f coverage.xml nosetests.xml
 
 coverage:
 	ARCHFLAGS=$(ARCHFLAGS) python setup.py nosetests
