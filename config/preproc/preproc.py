@@ -15,7 +15,7 @@ import StringIO
 
 from redcap import Project, RedcapError
 from utils import SimpleConfigParser
-
+import redi as redi
 
 SUBJECT_ID_COLUMN = 'STUDY_ID'
 # REDCap field used to denote consent date
@@ -25,8 +25,10 @@ SUBJECT_ID_RC_FIELD = "consent_usubjid"
 def run_processing(settings):
     translation_table_path = settings.translation_table_file
     component_to_loinc_path = settings.component_to_loinc_code_xml
-
-    redcap_settings = get_redcap_settings(settings)
+    try:
+        redcap_settings = redi.get_redcap_settings(settings)
+    except Exception as ex:
+        print str(ex)
 
     results_path = os.path.realpath(
         os.path.join(__file__, '..', '..', 'synthetic-lab-data.csv'))
@@ -36,7 +38,6 @@ def run_processing(settings):
     for row in rows:
         subject_ids.append(row[SUBJECT_ID_COLUMN])
 
-    print "HERE I AM"
     consent_dates = fetch_consent_dates(subject_ids, redcap_settings)
     panels = fetch_panels(component_to_loinc_path, translation_table_path)
 
@@ -69,7 +70,7 @@ def fetch_consent_dates(subject_ids, redcap_settings):
         source_subject_ids = project.export_records(
             fields=fields,
             events="1_arm_1")
-        print str(source_subject_ids)
+        logger.debug(str(source_subject_ids))
     except:
         print "Cannot connect to project at " + args['url'] + ' with token ' + args['token']
         quit()
