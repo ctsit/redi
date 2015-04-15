@@ -14,8 +14,13 @@ import shutil
 import StringIO
 
 from redcap import Project, RedcapError
-from utils import SimpleConfigParser
-import redi as redi
+
+import redi
+try:
+    from redi.utils import SimpleConfigParser
+except ImportError:
+    from utils import SimpleConfigParser
+
 
 SUBJECT_ID_COLUMN = 'study_id'
 # REDCap field used to denote consent date
