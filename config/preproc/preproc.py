@@ -19,8 +19,8 @@ import redi as redi
 
 SUBJECT_ID_COLUMN = 'study_id'
 # REDCap field used to denote consent date
-CONSENT_DATE_RC_FIELD = "eot_dsstdtc"
-SUBJECT_ID_RC_FIELD = "consent_usubjid"
+CONSENT_DATE_RC_FIELD = "consent_dssstdtc"
+SUBJECT_ID_RC_FIELD = "dm_usubjid"
 
 def run_processing(settings):
     translation_table_path = settings.translation_table_file
@@ -63,20 +63,32 @@ def fetch_consent_dates(subject_ids, redcap_settings):
     verify_ssl = redcap_settings['verify_ssl']
 
     # we want the consent date, as well as the subject ID
-    fields = CONSENT_DATE_RC_FIELD + "," + SUBJECT_ID_RC_FIELD
+    fields = [CONSENT_DATE_RC_FIELD, SUBJECT_ID_RC_FIELD]
+    events = ["1_arm_1"]
 
     try:
         project = Project(url, token, "", verify_ssl)
         source_subject_ids = project.export_records(
+            events=events,
             fields=fields,
-            events="1_arm_1")
-        #logger.debug(str(source_subject_ids))
+            forms="demographics")
     except Exception as ex:
-        print fields, source_subject_ids
-        print "Cannot connect to project at " + url + ' with token ' + token
+        logger.error("Cannot connect to project at " + url + ' with token ' + token)
         quit()
 
-   
+    # make the list of subject_ids unique (convert to set)
+    subject_ids = list(set(subject_ids))
+
+    # process the source_subject_ids and passed in subject_ids
+    # output a list that has the subject_ids and consent date
+    # key is subject_id, value is consent date
+    joined_subject_ids_and_consent_date = {}
+    for row in subject_ids:
+        for rc_row in source_subject_ids:
+            if rc_row[SUBJECT_ID_RC_FIELD] == row:
+                joined_subject_ids_and_consent_date[row] = rc_row[CONSENT_DATE_RC_FIELD]
+
+    return joined_subject_ids_and_consent_date
 
 
 def fetch_panels(loinc_mapping, translation_table):
