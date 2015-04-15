@@ -9,6 +9,8 @@
 # Distributed under the BSD 3-Clause License
 # For full text of the BSD 3-Clause License see http://opensource.org/licenses/BSD-3-Clause
 import csv
+import datetime
+import itertools
 import os
 import shutil
 import StringIO
@@ -24,6 +26,7 @@ except ImportError:
 
 SUBJECT_ID_COLUMN = 'study_id'
 COMPONENT_ID_COLUMN = 'loinc_code'
+TAKEN_TIME_COLUMN = 'date_time_stamp'
 # REDCap field used to denote consent date
 CONSENT_DATE_RC_FIELD = "consent_dssstdtc"
 SUBJECT_ID_RC_FIELD = "dm_usubjid"
@@ -108,8 +111,33 @@ def fetch_panels(loinc_mapping, translation_table):
     }
 
 
-def filter_old_labs(rows, consent_dates):
-    raise NotImplementedError()
+def filter_old_labs(rows_grouped_by_panel, consent_dates):
+    filtered = []
+
+    def parse_date(date_string):
+        DATE_FORMAT = '%Y-%m-%d'
+        return datetime.datetime.strptime(date_string, DATE_FORMAT)
+
+    def consent_date(row):
+        subject_id = row[SUBJECT_ID_COLUMN]
+        return parse_date(consent_dates[subject_id])
+
+    for panel, rows in rows_grouped_by_panel.iteritems():
+        after_consent = itertools.ifilter(
+            lambda r: parse_date(r[TAKEN_TIME_COLUMN]) >= consent_date(r),
+            rows)
+
+        filtered += after_consent
+
+        before_consent = itertools.ifilter(
+            lambda r: parse_date(r[TAKEN_TIME_COLUMN]) < consent_date(r),
+            rows)
+
+        filtered += sorted(before_consent,
+                           key=lambda r: parse_date(r[TAKEN_TIME_COLUMN]),
+                           reverse=True)[:2]
+
+    return filtered
 
 
 def group_rows_by_panel(panels, rows):

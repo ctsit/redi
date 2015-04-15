@@ -62,9 +62,14 @@ class PreprocessingTests(unittest.TestCase):
         ]
 
         rows_grouped_by_panel = {'PanelA': panel}
-        consent_dates = {'304': datetime.date(2012, 06, 23)}
+        consent_dates = {'304': '2012-06-23'}
+        previous = preproc.TAKEN_TIME_COLUMN, preproc.SUBJECT_ID_COLUMN
+        preproc.TAKEN_TIME_COLUMN = TAKEN_TIME
+        preproc.SUBJECT_ID_COLUMN = STUDY_ID
 
         filtered = preproc.filter_old_labs(rows_grouped_by_panel, consent_dates)
+
+        preproc.TAKEN_TIME_COLUMN, preproc.SUBJECT_ID_COLUMN = previous
 
         self.assertListEqual([panel[0], panel[2], panel[3]], filtered)
 
