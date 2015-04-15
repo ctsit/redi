@@ -23,6 +23,7 @@ except ImportError:
 
 
 SUBJECT_ID_COLUMN = 'study_id'
+COMPONENT_ID_COLUMN = 'loinc_code'
 # REDCap field used to denote consent date
 CONSENT_DATE_RC_FIELD = "consent_dssstdtc"
 SUBJECT_ID_RC_FIELD = "dm_usubjid"
@@ -112,7 +113,18 @@ def filter_old_labs(rows, consent_dates):
 
 
 def group_rows_by_panel(panels, rows):
-    raise NotImplementedError()
+    NO_PANEL = 'NONE'
+    rows_by_panel = {name: [] for name in panels.iterkeys()}
+    rows_by_panel[NO_PANEL] = []
+
+    for row in rows:
+        panel_name = next((name
+                           for name, ids in panels.iteritems()
+                           if row[COMPONENT_ID_COLUMN] in ids),
+                          NO_PANEL)
+        rows_by_panel[panel_name].append(row)
+
+    return rows_by_panel
 
 
 def load(filepath):

@@ -70,8 +70,8 @@ class PreprocessingTests(unittest.TestCase):
 
     def test_group_rows_by_panel(self):
         panels = {
-            'rna': [1230],
-            'cbc': [600, 712, 372]
+            'rna': ['1230'],
+            'cbc': ['600', '712', '372']
         }
 
         rows = [
@@ -87,8 +87,12 @@ class PreprocessingTests(unittest.TestCase):
             'cbc': [rows[2], rows[3]],
             'NONE': [rows[4]]
         }
+        previous = preproc.COMPONENT_ID_COLUMN
+        preproc.COMPONENT_ID_COLUMN = COMPONENT_ID
 
         grouped = preproc.group_rows_by_panel(panels, rows)
+
+        preproc.COMPONENT_ID_COLUMN = previous
 
         self.assertDictEqual(expected, grouped)
 
