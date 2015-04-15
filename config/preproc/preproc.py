@@ -24,12 +24,16 @@ except ImportError:
     from utils import SimpleConfigParser
 
 
-SUBJECT_ID_COLUMN = 'study_id'
-COMPONENT_ID_COLUMN = 'loinc_code'
-TAKEN_TIME_COLUMN = 'date_time_stamp'
+SUBJECT_ID_COLUMN = 'STUDY_ID'
+COMPONENT_ID_COLUMN = 'COMPONENT_ID'
+TAKEN_TIME_COLUMN = 'SPECIMN_TAKEN_TIME'
+RESULT_DATE_COLUMN = 'RESULT_DATE'
 # REDCap field used to denote consent date
-CONSENT_DATE_RC_FIELD = "consent_dssstdtc"
-SUBJECT_ID_RC_FIELD = "dm_usubjid"
+# CONSENT_DATE_RC_FIELD = "consent_dssstdtc"
+# SUBJECT_ID_RC_FIELD = "dm_usubjid"
+CONSENT_DATE_RC_FIELD = "c2985782"
+SUBJECT_ID_RC_FIELD = 'c2826694'
+
 
 def run_processing(settings):
     translation_table_path = settings.translation_table_file
@@ -40,17 +44,17 @@ def run_processing(settings):
         logger.error("Can't load REDCap settings: ", ex)
 
     results_path = os.path.realpath(
-        os.path.join(__file__, '..', '..', 'synthetic-lab-data.csv'))
+        os.path.join(__file__, '..', '..', 'raw.txt'))
 
-    rows = load(results_path)
+    fieldnames, rows = load(results_path)
     subject_ids = []
-    for row in rows:
+    for row in iter(rows):
         subject_ids.append(row[SUBJECT_ID_COLUMN])
 
     consent_dates = fetch_consent_dates(subject_ids, redcap_settings)
     panels = fetch_panels(component_to_loinc_path, translation_table_path)
 
-    grouped_by_panel = group_rows_by_panel(panels, rows)
+    grouped_by_panel = group_rows_by_panel(panels, iter(rows))
     #grouped_by_panel = {
     #    'rna': [<csv_row>, <csv_row>, <csv_row>],
     #    'cbc': [],
@@ -58,12 +62,12 @@ def run_processing(settings):
     #}
 
     filtered = filter_old_labs(grouped_by_panel, consent_dates)
-    save(rows.fieldnames, filtered, results_path)
+    save(fieldnames, filtered, results_path)
 
 
 def fetch_consent_dates(subject_ids, redcap_settings):
     """
-    Fetch consent dates. 
+    Fetch consent dates.
     First, query for all consent date and subject IDs.
     Then match subject IDs in input set.
     """
@@ -114,9 +118,20 @@ def fetch_panels(loinc_mapping, translation_table):
 def filter_old_labs(rows_grouped_by_panel, consent_dates):
     filtered = []
 
+    def date_to_use(row):
+        # If DATE_TIME_STAMP tag is present but it has no text (ie blank tag)
+        # and if RESULT_DATE is present, then subtract 4 from RESULT_DATE and
+        # assign that value to DATE_TIME_STAMP
+        if row[TAKEN_TIME_COLUMN]:
+            return parse_date(row[TAKEN_TIME_COLUMN])
+        else:
+            FOUR_DAYS = datetime.timedelta(days=4)
+            return parse_date(row[RESULT_DATE_COLUMN])-FOUR_DAYS
+
     def parse_date(date_string):
         DATE_FORMAT = '%Y-%m-%d'
-        return datetime.datetime.strptime(date_string, DATE_FORMAT)
+        date_portion = date_string.split()[0]
+        return datetime.datetime.strptime(date_portion, DATE_FORMAT)
 
     def consent_date(row):
         subject_id = row[SUBJECT_ID_COLUMN]
@@ -124,17 +139,17 @@ def filter_old_labs(rows_grouped_by_panel, consent_dates):
 
     for panel, rows in rows_grouped_by_panel.iteritems():
         after_consent = itertools.ifilter(
-            lambda r: parse_date(r[TAKEN_TIME_COLUMN]) >= consent_date(r),
+            lambda r: date_to_use(r) >= consent_date(r),
             rows)
 
         filtered += after_consent
 
         before_consent = itertools.ifilter(
-            lambda r: parse_date(r[TAKEN_TIME_COLUMN]) < consent_date(r),
+            lambda r: date_to_use(r) < consent_date(r),
             rows)
 
         filtered += sorted(before_consent,
-                           key=lambda r: parse_date(r[TAKEN_TIME_COLUMN]),
+                           key=lambda r: date_to_use(r),
                            reverse=True)[:2]
 
     return filtered
@@ -158,7 +173,8 @@ def group_rows_by_panel(panels, rows):
 def load(filepath):
     with open(filepath) as fp:
         content = fp.read()
-    return csv.DictReader(StringIO.StringIO(content))
+    reader = csv.DictReader(StringIO.StringIO(content))
+    return reader.fieldnames, list(reader)
 
 
 def main():
