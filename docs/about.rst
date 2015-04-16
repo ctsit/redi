@@ -111,7 +111,7 @@ Installing RED-I on Windows
 
 .. raw:: html
 
-   <pre>
+   <pre style="padding: 1em; background: #000; color: #fff; font: normal 1em Courier, Andale Mono">
       git clone https://github.com/ctsit/redi.git
    </pre>
 
@@ -126,23 +126,26 @@ Installing RED-I on Windows
 
 .. raw:: html
 
-   <pre>
+   <pre style="padding: 1em; background: #000; color: #fff; font: normal 1em Courier, Andale Mono">
       (Invoke-WebRequest https://bootstrap.pypa.io/ez_setup.py).Content | python
    </pre>
 
 8. Launch Git Shell icon
 9. In the redi/ directory, run:
 
-python setup.py bdist_egg
-cd c:\python27\scripts\
-.\easy_install.exe
-C:\Users\user1\Documents\code\redi\dist\redi_py-0.13.2-py2.7.egg
+.. raw:: html
+
+   <pre style="padding: 1em; background: #000; color: #fff; font: normal 1em Courier, Andale Mono">
+      python setup.py bdist_egg
+      cd c:\python27\scripts\
+      .\easy_install.exe C:\Users\user1\Documents\code\redi\dist\redi_py-0.13.2-py2.7.egg
+   </pre>
 
 10. Add Python scripts directory to your system path by issuing the following command:
 
 .. raw:: html
 
-   <pre>
+   <pre style="padding: 1em; background: #000; color: #fff; font: normal 1em Courier, Andale Mono">
       set path=%PATH%;c:\python27\scripts
    </pre>
 
