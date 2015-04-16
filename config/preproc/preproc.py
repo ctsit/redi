@@ -173,6 +173,10 @@ def filter_old_labs(rows_grouped_by_panel, consent_dates):
         return parse_date(consent_dates[subject_id])
 
     for panel, rows in rows_grouped_by_panel.iteritems():
+        if panel == 'NONE':
+            filtered += rows
+            continue
+
         after_consent = itertools.ifilter(
             lambda r: date_to_use(r) >= consent_date(r),
             rows)
@@ -197,7 +201,6 @@ def get_path(path_relative_to_config_root):
     config_root = os.path.realpath(os.path.join(__file__, '..', '..'))
     path = os.path.join(config_root, path_relative_to_config_root)
     return os.path.realpath(path)
-
 
 
 def group_rows_by_panel(panels, rows):
