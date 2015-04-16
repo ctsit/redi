@@ -58,6 +58,8 @@ class PreprocessingTests(unittest.TestCase):
              'data': '456'},
             {STUDY_ID: '304', COMPONENT_ID: '1230', TAKEN_TIME: '2012-06-21',
              'data': '789'},
+            {STUDY_ID: '304', COMPONENT_ID: '630', TAKEN_TIME: '2012-06-21',
+             'data': 'yes'},
         ]
 
         rows_grouped_by_panel = {'PanelA': panel}
@@ -70,7 +72,7 @@ class PreprocessingTests(unittest.TestCase):
 
         preproc.TAKEN_TIME_COLUMN, preproc.SUBJECT_ID_COLUMN = previous
 
-        self.assertListEqual([panel[0], panel[2], panel[3]], filtered)
+        self.assertListEqual([panel[0], panel[2], panel[3], panel[4]], filtered)
 
     def test_group_rows_by_panel(self):
         panels = {

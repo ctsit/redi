@@ -333,7 +333,9 @@ def _run(config_file, configuration_directory, do_keep_gen_files, dry_run,
     if not resume:
         _delete_last_runs_data(data_folder)
 
-        run_preproc(pre_filters, settings)
+        errors = run_preproc(pre_filters, settings)
+        map(logger.warning, errors)
+        # TODO: Add preproc errors to report
 
         alert_summary, person_form_event_tree_with_data, rule_errors, \
         collection_date_summary_dict, bad_ids =\

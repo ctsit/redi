@@ -11,6 +11,7 @@
 import csv
 import datetime
 import itertools
+import operator
 import os
 import shutil
 import StringIO
@@ -42,7 +43,7 @@ def run_processing(settings, redi, logger):
         logger.error("Can't load REDCap settings: ", ex)
         raise
 
-    results_path = get_path('raw.csv')
+    results_path = get_path('raw.txt')
 
     fieldnames, rows = load(results_path)
     subject_ids = []
@@ -168,28 +169,39 @@ def filter_old_labs(rows_grouped_by_panel, consent_dates):
         date_portion = date_string.split()[0]
         return datetime.datetime.strptime(date_portion, DATE_FORMAT)
 
-    def consent_date(row):
-        subject_id = row[SUBJECT_ID_COLUMN]
-        return parse_date(consent_dates[subject_id])
+    def consent_date(row, subject_id=None):
+        if subject_id is None:
+            subject_id = row[SUBJECT_ID_COLUMN]
+        consented = consent_dates.get(subject_id, None)
+        if not consented:
+            return datetime.date.min
+        else:
+            return parse_date(consented)
 
     for panel, rows in rows_grouped_by_panel.iteritems():
         if panel == 'NONE':
             filtered += rows
             continue
 
-        after_consent = itertools.ifilter(
-            lambda r: date_to_use(r) >= consent_date(r),
-            rows)
+        get_subject_id = operator.itemgetter(SUBJECT_ID_COLUMN)
+        sorted_rows = sorted(rows, key=get_subject_id)
 
-        filtered += after_consent
+        for subject_id, records in itertools.groupby(sorted_rows, key=get_subject_id):
+            subjects_rows = list(records)
+            consented = consent_date(None, subject_id=subject_id)
+            dates_before_consent = [date_to_use(row) for row in subjects_rows
+                                    if date_to_use(row) < consented]
+            dates_before_consent.sort()
 
-        before_consent = itertools.ifilter(
-            lambda r: date_to_use(r) < consent_date(r),
-            rows)
+            if not dates_before_consent:
+                second_closet_date_to_baseline = consented
+            else:
+                second_closet_date_to_baseline = \
+                    sorted(set(dates_before_consent))[-2:][0]
 
-        filtered += sorted(before_consent,
-                           key=lambda r: date_to_use(r),
-                           reverse=True)[:2]
+            filtered += itertools.ifilter(
+                lambda r: date_to_use(r) >= second_closet_date_to_baseline,
+                subjects_rows)
 
     return filtered
 
