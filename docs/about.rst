@@ -130,8 +130,8 @@ Installing RED-I on Windows
       (Invoke-WebRequest https://bootstrap.pypa.io/ez_setup.py).Content | python
    </pre>
 
-8. Launch Git Shell icon
-9. In the redi/ directory, run:
+11. Launch Git Shell icon
+12. In the redi/ directory, run:
 
 .. raw:: html
 
@@ -141,7 +141,7 @@ Installing RED-I on Windows
       .\easy_install.exe C:\Users\user1\Documents\code\redi\dist\redi_py-0.13.2-py2.7.egg
    </pre>
 
-10. Add Python scripts directory to your system path by issuing the following command:
+13. Add Python scripts directory to your system path by issuing the following command:
 
 .. raw:: html
 
