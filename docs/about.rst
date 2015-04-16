@@ -118,7 +118,7 @@ Installing RED-I on Windows
 5. Install Powershell 4 for Windows:
    http://www.microsoft.com/en-us/download/confirmation.aspx?id=40855
 6. Reboot
-7. Install Visucal C++ 9:
+7. Install Visual C++ 9:
    http://www.microsoft.com/en-us/download/details.aspx?id=44266
 8. Install SetupTools for Windows https://pypi.python.org/pypi/setuptools/12.2
 9. Launch PowerShell as administrator
