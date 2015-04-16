@@ -162,7 +162,7 @@ details about all arguments supported in the command line.
 How to Get Support
 ------------------
 
-If you need any help with using RED-I please email us at cts-it-red@ctsi.ufl.edu
+If you need any help with using RED-I please email us at ctsit@ctsi.ufl.edu
 
 How to Contribute
 -----------------
