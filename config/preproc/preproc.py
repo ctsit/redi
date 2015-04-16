@@ -42,18 +42,13 @@ def run_processing(settings, redi, logger):
 
     fieldnames, rows = load(results_path)
     subject_ids = []
-    for row in iter(rows):
+    for row in rows:
         subject_ids.append(row[SUBJECT_ID_COLUMN])
 
     consent_dates = fetch_consent_dates(subject_ids, redcap_settings, logger)
     panels = fetch_panels(component_to_loinc_path, translation_table_path)
 
-    grouped_by_panel = group_rows_by_panel(panels, iter(rows))
-    #grouped_by_panel = {
-    #    'rna': [<csv_row>, <csv_row>, <csv_row>],
-    #    'cbc': [],
-    #    'NONE': [<csv_row>, <csv_row>]
-    #}
+    grouped_by_panel = group_rows_by_panel(panels, rows)
 
     filtered = filter_old_labs(grouped_by_panel, consent_dates)
     save(fieldnames, filtered, results_path)
