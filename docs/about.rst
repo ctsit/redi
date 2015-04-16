@@ -107,24 +107,37 @@ Installing RED-I on Windows
 1. Install Python 2.7.x from: https://www.python.org/downloads/windows/
 2. Install a git client for Windows https://windows.github.com/
 3. Run Git Shell icon
+
 a) Clone the RED-I repository
+
 i) git clone https://github.com/ctsit/redi.git
+
 4. Install Powershell 4 for Windows:
    http://www.microsoft.com/en-us/download/confirmation.aspx?id=40855
 5. Reboot
 6. Install Visucal C++ 9:
    http://www.microsoft.com/en-us/download/details.aspx?id=44266
 7. Install SetupTools for Windows https://pypi.python.org/pypi/setuptools/12.2
+
 a) Launch PowerShell as administrator
 b) run this command:
+
 i) (Invoke-WebRequest https://bootstrap.pypa.io/ez_setup.py).Content | python
+
 8. Launch Git Shell icon
+
 a) In the redi/ directory, run:
+
 i) python setup.py bdist_egg
+
 b) CD to c:\python27\scripts\
+
 i) run .\easy_install.exe
-   C:\Users\user1\Documents\code\redi\dist\redi_py-0.13.2-py2.7.egg
+
+C:\Users\user1\Documents\code\redi\dist\redi_py-0.13.2-py2.7.egg
+
 9. Add Python scripts directory to your system path by issuing the following command:
+
 a) set path=%PATH%;c:\python27\scripts
 
 
