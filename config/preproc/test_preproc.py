@@ -43,9 +43,9 @@ class PreprocessingTests(unittest.TestCase):
         panels = preproc.fetch_panels(loinc_map_file, translation_table_file)
 
         self.assertDictEqual({
-            'cbc': ['26515-7', '718-7', '26474-7', '26499-4', '26464-8'],
-            'chemistry': ['1975-2', '2160-0', '2339-0', '1920-8', '1968-7',
-                          '1751-7', '1742-6', '2947-0', '6298-4']},
+            'cbc': ['26515-7', '26464-8', '26474-7', '718-7', '26499-4'],
+            'chemistry': ['1975-2', '2160-0', '2339-0', '1920-8', '6298-4',
+                          '1968-7', '1751-7', '1742-6', '2947-0']},
             panels)
 
     def test_filter_old_labs(self):
