@@ -15,13 +15,7 @@ import os
 import shutil
 import StringIO
 
-from redcap import Project, RedcapError
-
-import redi
-try:
-    from redi.utils import SimpleConfigParser
-except ImportError:
-    from utils import SimpleConfigParser
+from redcap import Project
 
 
 SUBJECT_ID_COLUMN = 'STUDY_ID'
@@ -35,23 +29,23 @@ CONSENT_DATE_RC_FIELD = "c2985782"
 SUBJECT_ID_RC_FIELD = 'c2826694'
 
 
-def run_processing(settings):
+def run_processing(settings, redi, logger):
     translation_table_path = settings.translation_table_file
     component_to_loinc_path = settings.component_to_loinc_code_xml
     try:
         redcap_settings = redi.get_redcap_settings(settings)
     except Exception as ex:
         logger.error("Can't load REDCap settings: ", ex)
+        raise
 
-    results_path = os.path.realpath(
-        os.path.join(__file__, '..', '..', 'raw.txt'))
+    results_path = os.path.realpath(os.path.join(__file__, '..', 'results.csv'))
 
     fieldnames, rows = load(results_path)
     subject_ids = []
     for row in iter(rows):
         subject_ids.append(row[SUBJECT_ID_COLUMN])
 
-    consent_dates = fetch_consent_dates(subject_ids, redcap_settings)
+    consent_dates = fetch_consent_dates(subject_ids, redcap_settings, logger)
     panels = fetch_panels(component_to_loinc_path, translation_table_path)
 
     grouped_by_panel = group_rows_by_panel(panels, iter(rows))
@@ -65,7 +59,7 @@ def run_processing(settings):
     save(fieldnames, filtered, results_path)
 
 
-def fetch_consent_dates(subject_ids, redcap_settings):
+def fetch_consent_dates(subject_ids, redcap_settings, logger):
     """
     Fetch consent dates.
     First, query for all consent date and subject IDs.
@@ -178,13 +172,18 @@ def load(filepath):
 
 
 def main():
+    # conditional import (only called if running from command line)
+    from redi.utils import SimpleConfigParser
+    from redi import redi
+    import logging
+    # end of conditional import
+
     settings = SimpleConfigParser.SimpleConfigParser()
     config_file = os.path.realpath(os.path.join(__file__, '..', '..',
                                                 'settings.ini'))
     settings.read(config_file)
-    # this method reduces the syntax
     settings.set_attributes()
-    run_processing(settings)
+    run_processing(settings, redi, logger=logging)
 
 
 def save(headers, rows, path, backup=shutil.copy2, open_file=open):

@@ -1990,7 +1990,8 @@ def run_preproc(preprocessors, settings):
 
     for (preprocessor, module) in preprocessors.iteritems():
         try:
-            module.run_processing(settings)
+            module.run_processing(settings, redi=sys.modules[__name__],
+                                  logger=logging)
         except Exception as e:
             message_format = 'Error processing rule "{0}". {1}'
             if not hasattr(e, 'errors'):
