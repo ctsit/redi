@@ -15,6 +15,7 @@ import os
 import shutil
 import StringIO
 
+from lxml import etree
 from redcap import Project
 
 
@@ -22,6 +23,9 @@ SUBJECT_ID_COLUMN = 'STUDY_ID'
 COMPONENT_ID_COLUMN = 'COMPONENT_ID'
 TAKEN_TIME_COLUMN = 'SPECIMN_TAKEN_TIME'
 RESULT_DATE_COLUMN = 'RESULT_DATE'
+
+SOURCE_NAME = COMPONENT_ID_COLUMN
+TARGET_NAME = 'loinc_code'
 # REDCap field used to denote consent date
 # CONSENT_DATE_RC_FIELD = "consent_dssstdtc"
 # SUBJECT_ID_RC_FIELD = "dm_usubjid"
@@ -30,15 +34,15 @@ SUBJECT_ID_RC_FIELD = 'c2826694'
 
 
 def run_processing(settings, redi, logger):
-    translation_table_path = settings.translation_table_file
-    component_to_loinc_path = settings.component_to_loinc_code_xml
+    translation_table_path = get_path(settings.translation_table_file)
+    component_to_loinc_path = get_path(settings.component_to_loinc_code_xml)
     try:
         redcap_settings = redi.get_redcap_settings(settings)
     except Exception as ex:
         logger.error("Can't load REDCap settings: ", ex)
         raise
 
-    results_path = os.path.realpath(os.path.join(__file__, '..', 'results.csv'))
+    results_path = get_path('raw.csv')
 
     fieldnames, rows = load(results_path)
     subject_ids = []
@@ -94,14 +98,56 @@ def fetch_consent_dates(subject_ids, redcap_settings, logger):
 
 
 def fetch_panels(loinc_mapping, translation_table):
-    return {
-        'rna': [1230, 3774, 1914, 4189, 6912, 1561675, 6860],
-        'cbc': [1534435, 918, 1534444, 1577116, 1009, 1558101, 1539315, 913,
-                999, 1577876],
-        'chem': [1534098, 971, 1534081, 968, 1810650, 1526000, 1525870, 1558221,
-                 1534076],
-        'inr': [1534098, 1810583]
-    }
+    def get_loinc_code(component):
+        return component.find('loinc_code').text
+
+    def get_form_name(component):
+        return component.find('redcapFormName').text
+
+    with open(translation_table) as tt:
+        tt_tree = etree.parse(tt)
+        root = tt_tree.getroot()
+
+        loinc_to_form = {get_loinc_code(c): get_form_name(c)
+                         for c in root.findall('.//clinicalComponent')}
+
+    with open(loinc_mapping) as lm:
+        lm_tree = etree.parse(lm)
+        clinical_datum = lm_tree.getroot()
+
+        query = (".//component[./source/name/text() = '{0}' and "
+                 "./target/name/text() = '{1}']").format(
+            SOURCE_NAME, TARGET_NAME)
+        components = clinical_datum.xpath(query)
+
+        component_to_loinc = {
+            c.find('./source/value').text: c.find('./target/value').text
+            for c in components}
+
+    # To build the form-to-component mapping, we must first find out which LOINC
+    # code was used for each Clinical Component ID.
+    form_to_component = {name: [] for name in loinc_to_form.itervalues()}
+    for loinc_code, form in loinc_to_form.iteritems():
+        # Since it's possible to have
+        # multiple CCIDs mapped to the same LOINC code, we would add a mapping
+        # for each one.
+        components = [cid for cid, code in component_to_loinc.iteritems()
+                      if code == loinc_code]
+        if components:
+            form_to_component[form].extend(components)
+        else:
+            # No mapping found, so assume the LOINC code *is* the CCID
+            form_to_component[form].append(loinc_code)
+
+    return form_to_component
+    # return {
+    #     'rna': [1230, 3774, 1914, 4189, 6912, 1561675, 6860],
+    #     'cbc': [1534435, 918, 1534444, 1577116, 1009, 1558101, 1539315, 913,
+    #             999, 1577876],
+    #     'chem': [1534098, 971, 1534081, 968, 1810650, 1526000, 1525870, 1558221,
+    #              1534076],
+    #     'inr': [1534098, 1810583]
+    # }
 
 
 def filter_old_labs(rows_grouped_by_panel, consent_dates):
@@ -144,16 +190,27 @@ def filter_old_labs(rows_grouped_by_panel, consent_dates):
     return filtered
 
 
+def get_path(path_relative_to_config_root):
+    """
+    Get the real path of a file relative to the configuration directory
+    """
+    config_root = os.path.realpath(os.path.join(__file__, '..', '..'))
+    path = os.path.join(config_root, path_relative_to_config_root)
+    return os.path.realpath(path)
+
+
+
 def group_rows_by_panel(panels, rows):
-    NO_PANEL = 'NONE'
+    DEFAULT_PANEL_NAME = 'NONE'
+
     rows_by_panel = {name: [] for name in panels.iterkeys()}
-    rows_by_panel[NO_PANEL] = []
+    rows_by_panel[DEFAULT_PANEL_NAME] = []
 
     for row in rows:
         panel_name = next((name
                            for name, ids in panels.iteritems()
                            if row[COMPONENT_ID_COLUMN] in ids),
-                          NO_PANEL)
+                          DEFAULT_PANEL_NAME)
         rows_by_panel[panel_name].append(row)
 
     return rows_by_panel
@@ -174,8 +231,7 @@ def main():
     # end of conditional import
 
     settings = SimpleConfigParser.SimpleConfigParser()
-    config_file = os.path.realpath(os.path.join(__file__, '..', '..',
-                                                'settings.ini'))
+    config_file = get_path('settings.ini')
     settings.read(config_file)
     settings.set_attributes()
     run_processing(settings, redi, logger=logging)
