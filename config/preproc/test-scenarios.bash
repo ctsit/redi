@@ -33,5 +33,6 @@ test_scenario 5
 # Scenario 6: Multiple subjects with more than 2 tests before consent date
 test_scenario 6
 # Scenario 7: Multiple subjects with no more than 2 tests before consent date
+# test scenario 7
 # Scenario 8: Two panels with more than 2 tests for each before consent date
 # Scenario 9: Multiple panels, fields, and subjects with more than 2 tests for each before consent date
