@@ -69,8 +69,6 @@ import pkg_resources
 import shutil
 from pprint import pprint
 
-#from ..config import preproc
-
 from requests import RequestException
 from lxml import etree
 from docopt import docopt
@@ -149,10 +147,6 @@ def main():
     #configure logger
     logger = configure_logging(data_directory, args['--verbose'])
 
-    # TODO: preprocessing will go here
-    #print "hello world"
-    #load_preproc(configuration_directory)
-
     # Parsing the config file using a method from module SimpleConfigParser
     settings = SimpleConfigParser.SimpleConfigParser()
     config_file = os.path.join(configuration_directory, 'settings.ini')
@@ -208,7 +202,6 @@ def main():
          args['--skip-blanks'], args['--bulk-send-blanks'])
 
     # TODO: post processing will go here
-    print "goodbye world"
 
 
 def get_db_path(batch_info_database, database_path):
