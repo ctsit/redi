@@ -36,3 +36,4 @@ test_scenario 6
 # test scenario 7
 # Scenario 8: Two panels with more than 2 tests for each before consent date
 # Scenario 9: Multiple panels, fields, and subjects with more than 2 tests for each before consent date
+test_scenario 9
