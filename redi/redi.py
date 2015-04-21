@@ -9,6 +9,7 @@
 # Taeber Rapczak <taeber@ufl.edu>
 # Nicholas Rejack <nrejack@ufl.edu>
 # Josh Hanna <josh@hanna.io>
+# Kevin Hanson <hansonks@gmail.com>
 # Copyright (c) 2014-2015, University of Florida
 # All rights reserved.
 #
@@ -125,6 +126,9 @@ def main():
 
     - write the Final ElementTree to EAV
     """
+
+
+    # TODO: UPDATE COMMENT HERE
     global _person_form_events_service
 
     # obtaining command line arguments for path to configuration directory
@@ -191,10 +195,13 @@ def main():
         report_courier = report.ReportFileWriter(os.path.join(output_files,
             settings.report_file_path2), logger)
 
+    # This is the run that loads the data
     _run(config_file, configuration_directory, do_keep_gen_files, dry_run,
          get_emr_data, settings, output_files, db_path, redcap_client,
          report_courier, report_creator, args['--resume'],
          args['--skip-blanks'], args['--bulk-send-blanks'])
+
+    # TODO: post processing will go here
 
 
 def get_db_path(batch_info_database, database_path):
@@ -297,7 +304,8 @@ def _run(config_file, configuration_directory, do_keep_gen_files, dry_run,
             settings.emr_sftp_server_private_key_pass,
             )
         GetEmrData.get_emr_data(configuration_directory, connection_details)
-
+    # load custom pre-processing filters
+    pre_filters = load_preproc(settings.preprocessors, configuration_directory)
     # load custom post-processing rules
     rules = load_rules(settings.rules, configuration_directory)
 
@@ -317,6 +325,10 @@ def _run(config_file, configuration_directory, do_keep_gen_files, dry_run,
 
     if not resume:
         _delete_last_runs_data(data_folder)
+
+        errors = run_preproc(pre_filters, settings)
+        map(logger.warning, errors)
+        # TODO: Add preproc errors to report
 
         alert_summary, person_form_event_tree_with_data, rule_errors, \
         collection_date_summary_dict, bad_ids =\
@@ -1935,6 +1947,55 @@ def load_rules(rules, root='./'):
 
     logger.info("Loaded %s post-processing rule(s)" % len(loaded_rules))
     return loaded_rules
+
+
+def load_preproc(preprocessors, root='./'):
+    """
+    Copied and modified version of load_rules function.
+    TODO: fix load_rules and load_prerules for better parallelism
+
+    """
+    if not preprocessors:
+        return {}
+
+    loaded = {}
+
+    for (preprocessor, path) in ast.literal_eval(preprocessors).iteritems():
+        module = None
+        if os.path.exists(path):
+            module = imp.load_source(preprocessor, path)
+        elif os.path.exists(os.path.join(root, path)):
+            module = imp.load_source(preprocessor, os.path.join(root, path))
+
+        assert module is not None
+        assert module.run_processing is not None
+
+        loaded[preprocessor] = module
+
+    logger.info("Loaded {} pre-processing script{}".format(
+        len(loaded), 's' if len(loaded) != 1 else 0))
+    return loaded
+
+
+def run_preproc(preprocessors, settings):
+    # TODO figure out if this creates a sub process or not
+    # TODO need to check for program exe3cution otherwise give error
+    logger.info("Running preprocessing rules")
+    errors = []
+
+    for (preprocessor, module) in preprocessors.iteritems():
+        try:
+            module.run_processing(settings, redi=sys.modules[__name__],
+                                  logger=logging)
+        except Exception as e:
+            message_format = 'Error processing rule "{0}". {1}'
+            if not hasattr(e, 'errors'):
+                errors.append(message_format.format(preprocessor, e.message))
+                continue
+            for error in e.errors:
+                errors.append(message_format.format(preprocessor, error))
+
+    return errors
 
 
 def run_rules(rules, person_form_event_tree_with_data):
