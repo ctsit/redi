@@ -1,3 +1,43 @@
+2015-04-23 v0.14.1
+ * Summary: PreProc and PostProc Hooks! RED-I has added the ability to hook scripts for post processing and preprocessing along with other minor fixes. These features now allow for the writing of filters and the emailing of log messages, for example, at the begining and end of a RED-I run.
+
+ * removed project-specific code from preproc.py (Nicholas Rejack)
+ * removing project-specific preprocessing test file (Nicholas Rejack)
+ * removed line from settings.ini. REDI-I runs out of the box without any preprocessors required (Nich
+ * removing test-scenarios bash script (Nicholas Rejack)
+ * removed scenario data files. These were for project-specific testing. (Nicholas Rejack)
+ * removed non-informative comments in redi.py (Nicholas Rejack)
+ * removed renamed config dir (Nicholas Rejack)
+ * renaming config to previous config-example (Nicholas Rejack)
+ * added scenario 9 to test scenarios. (Nicholas Rejack)
+ * added scenario 7. bash script now shows test number. (Nicholas Rejack)
+ * added scenario 6 (Nicholas Rejack)
+ * updated test-scenarios with scenario 6 : (Nicholas Rejack)
+ * Add Scenario 9 (Taeber Rapczak)
+ * Correct the date of a result in Scenario 5 (Taeber Rapczak)
+ * Add Scenario 6 (Taeber Rapczak)
+ * Add 5 test scenarios and test-scenarios.bash (Taeber Rapczak)
+ * Do not filter rows without a known "panel" (Taeber Rapczak)
+ * Correct spelling error (Ruchi Vivek Desai)
+ * Fix order of expected output in test_fetch_panels (Taeber Rapczak)
+ * Fix the numbering (Ruchi Vivek Desai)
+ * Add missing tags (Ruchi Vivek Desai)
+ * Replace hard-coded fetch_panels() (Taeber Rapczak)
+ * Renumber the steps (Ruchi Vivek Desai)
+ * Fix indentation briken by commit id b8431f26ec459daf1cc1efe9ebf7c4583dacc572 (Ruchi Vivek Desai)
+ * Fix indentation of Windows installation instructions (Ruchi Vivek Desai)
+ * Add instructions for installing RED-I on Windows (Ruchi Vivek Desai)
+ * Fix email address (Ruchi Vivek Desai)
+ * Minor code cleanup (Taeber Rapczak)
+ * Add more context for preprocessors to use (Taeber Rapczak)
+ * Implement filter_old_labs() (Taeber Rapczak)
+ * Implement filter_old_labs() (Taeber Rapczak)
+ * Implement group_rows_by_panel (Taeber Rapczak)
+ * fetch_consent_dates function now implemented and working. (Nicholas Rejack)
+ * Resolve preproc import issue (Taeber Rapczak)
+ * updated preproc.py. Only fails on NotImplementedError now. (Nicholas Rejack)
+ * updated preproc.py to fix variable names when fetching consent date. (Nicholas Rejack)
+ 
 2015-04-09 v0.14.0
  * Summary: RED-I has multiple functional and other improvements in this release: licensing has been added in each file. RED-I is now available from PyPI as 'redi'. Most importantly,
  when multiple lab results come in on the same day, RED-I now takes the first lab of the day, unless it has a value of 'canceled'. RED-I also auto-resumes in the case of a network timeout. Reporting has been improved with more information.
