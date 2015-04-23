@@ -21,7 +21,7 @@ from StringIO import StringIO
 from lxml import etree
 
 import cancel
-from form import Form
+from redi.form import Form
 
 FIELD_NAME = "test_field_name"
 TEST_FIELD_VALUE1 = "CANCELLED"
