@@ -101,6 +101,54 @@ To uninstall the application:
 
 .. seealso:: http://pip.readthedocs.org/en/latest/reference/pip.html
 
+Installing RED-I on Windows
+----------------------------
+
+1. Install Python 2.7.x from: https://www.python.org/downloads/windows/
+2. Install a git client for Windows https://windows.github.com/
+3. Run Git Shell icon
+4. Clone the RED-I repository
+
+.. raw:: html
+
+   <pre style="padding: 1em; background: #000; color: #fff; font: normal 1em Courier, Andale Mono">
+      git clone https://github.com/ctsit/redi.git
+   </pre>
+
+5. Install Powershell 4 for Windows:
+   http://www.microsoft.com/en-us/download/confirmation.aspx?id=40855
+6. Reboot
+7. Install Visual C++ 9:
+   http://www.microsoft.com/en-us/download/details.aspx?id=44266
+8. Install SetupTools for Windows https://pypi.python.org/pypi/setuptools/12.2
+9. Launch PowerShell as administrator
+10. Run this command:
+
+.. raw:: html
+
+   <pre style="padding: 1em; background: #000; color: #fff; font: normal 1em Courier, Andale Mono">
+      (Invoke-WebRequest https://bootstrap.pypa.io/ez_setup.py).Content | python
+   </pre>
+
+11. Launch Git Shell icon
+12. In the redi/ directory, run:
+
+.. raw:: html
+
+   <pre style="padding: 1em; background: #000; color: #fff; font: normal 1em Courier, Andale Mono">
+      python setup.py bdist_egg
+      cd c:\python27\scripts\
+      .\easy_install.exe C:\Users\user1\Documents\code\redi\dist\redi_py-0.13.2-py2.7.egg
+   </pre>
+
+13. Add Python scripts directory to your system path by issuing the following command:
+
+.. raw:: html
+
+   <pre style="padding: 1em; background: #000; color: #fff; font: normal 1em Courier, Andale Mono">
+      set path=%PATH%;c:\python27\scripts
+   </pre>
+
 
 How to Test RED-I with a Sample Project
 ---------------------------------------
@@ -162,7 +210,7 @@ details about all arguments supported in the command line.
 How to Get Support
 ------------------
 
-If you need any help with using RED-I please email us at cts-it-red@ctsi.ufl.edu
+If you need any help with using RED-I please email us at ctsit@ctsi.ufl.edu
 
 How to Contribute
 -----------------
