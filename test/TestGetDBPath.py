@@ -35,5 +35,13 @@ class TestGetDBPath(unittest.TestCase):
         assert os.path.exists(full_db_path) == 1
         shutil.rmtree(full_db_path)
 
+    def test_get_db_path_not_exists(self):
+        # verify that db path is created if it doesn't exist
+        db_path =  "nonExistentPath"
+        batch_info_database = "database.db"
+        created_db_path = redi.get_db_path(batch_info_database, db_path)
+        assert created_db_path ==  os.path.join(db_path, batch_info_database)
+        shutil.rmtree(db_path)
+
 if __name__ == '__main__':
     unittest.main()
