@@ -16,7 +16,7 @@
 # For full text of the BSD 3-Clause License see http://opensource.org/licenses/BSD-3-Clause
 
 """
-TestCreateEavOutput.py:
+TestCreateImportDataJson.py:
 
    Verifies the correct functionality 
    of the `test_create_import_data_json` function
