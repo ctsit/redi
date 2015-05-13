@@ -63,6 +63,7 @@ from TestVerifyAndCorrectCollectionDate import TestVerifyAndCorrectCollectionDat
 from TestRediEmail import TestRediEmail
 from TestSentEventIndex import TestSentEventIndex
 from TestSendDatatoRedcap import TestSendDatatoRedcap
+from TestGetDBPath import TestGetDBPath
 
 class redi_suite(unittest.TestSuite):
 
@@ -108,6 +109,8 @@ class redi_suite(unittest.TestSuite):
         redi_test_suite.addTest(TestRediEmail)
         redi_test_suite.addTest(TestDaysSinceToday)
         redi_test_suite.addTest(TestSendDatatoRedcap)
+
+        redi_test_suite.addTest(TestGetDBPath)
 
         # return the suite
         return unittest.TestSuite([redi_test_suite])
