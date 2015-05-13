@@ -104,51 +104,45 @@ To uninstall the application:
 Installing RED-I on Windows
 ----------------------------
 
-1. Install Python 2.7.x from: https://www.python.org/downloads/windows/
-2. Install a git client for Windows https://windows.github.com/
-3. Run Git Shell icon
-4. Clone the RED-I repository
+* Open a command prompt by clicking on the Start menu, and typing "cmd" in the Run box.
+* Install 64-bit Python 2.7.9 by running the following command in the command prompt:
+<pre>
+msiexec /i https://www.python.org/ftp/python/2.7.9/python-2.7.9.amd64.msi 
+</pre>
+* Next you need to be insure the command interpreter will be able to find the Python modules. Set
+the paths to the modules by running the following commands in the command prompt:
+<pre>
+setx path "%path%;c:\python27"
+setx path "%path%;c:\python27\lib\site-packages"
+setx path "%path%;c:\python27\scripts”
+</pre>
+* Make a new directory for the RED-I files by running the following command in the command prompt:
+<pre>
+mkdir c:\redi
+</pre>
+* Download the RED-I source code from: [https://github.com/ctsit/redi/archive/0.14.1.zip]
+* Copy the contents of the RED-I zip file from c:\Users\%username%\Downloads\redi-0.14.1\redi-0.14.1 to c:\redi
+* Download the easy_install setup file from: https://bootstrap.pypa.io/ez_setup.py 
+* Run the easy_install setup file with the following command in the command prompt:
+<pre>
+python c:\Users\%username%\Downloads\ez_setup.py
+</pre>
+Note: you may need to modify the path to the ez_setup.py file if it is downloaded to a different location.
 
-.. raw:: html
-
-   <pre style="padding: 1em; background: #000; color: #fff; font: normal 1em Courier, Andale Mono">
-      git clone https://github.com/ctsit/redi.git
-   </pre>
-
-5. Install Powershell 4 for Windows:
-   http://www.microsoft.com/en-us/download/confirmation.aspx?id=40855
-6. Reboot
-7. Install Visual C++ 9:
-   http://www.microsoft.com/en-us/download/details.aspx?id=44266
-8. Install SetupTools for Windows https://pypi.python.org/pypi/setuptools/12.2
-9. Launch PowerShell as administrator
-10. Run this command:
-
-.. raw:: html
-
-   <pre style="padding: 1em; background: #000; color: #fff; font: normal 1em Courier, Andale Mono">
-      (Invoke-WebRequest https://bootstrap.pypa.io/ez_setup.py).Content | python
-   </pre>
-
-11. Launch Git Shell icon
-12. In the redi/ directory, run:
-
-.. raw:: html
-
-   <pre style="padding: 1em; background: #000; color: #fff; font: normal 1em Courier, Andale Mono">
-      python setup.py bdist_egg
-      cd c:\python27\scripts\
-      .\easy_install.exe C:\Users\user1\Documents\code\redi\dist\redi_py-0.13.2-py2.7.egg
-   </pre>
-
-13. Add Python scripts directory to your system path by issuing the following command:
-
-.. raw:: html
-
-   <pre style="padding: 1em; background: #000; color: #fff; font: normal 1em Courier, Andale Mono">
-      set path=%PATH%;c:\python27\scripts
-   </pre>
-
+* Next, make a binary install of RED-I by running the following commands in the command prompt:
+<pre>
+cd c:\redi
+python c:\redi\setup.py bdist_egg
+</pre>
+* You will need to manually install the pycrypto dependency. To avoid having to compile it with VCForPython you can
+download a pre-compiled binary and install it with the following command:
+<pre>
+c:\python27\scripts\easy_install http://www.voidspace.org.uk/python/pycrypto-2.6.1/pycrypto-2.6.1.win-amd64-py2.7.exe
+</pre>
+* Finally, install your binary of RED-I with the following command:
+<pre>
+c:\python27\scripts\easy_install.exe c:\redi\dist\redi-0.14.1-py2.7.egg
+</pre>   
 
 How to Test RED-I with a Sample Project
 ---------------------------------------
