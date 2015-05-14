@@ -67,7 +67,7 @@ version control installed on your system.
       $ make && make install
    </pre>
 
-Once you are done with testing RED-I an you are satisfied with the
+Once you are done with testing RED-I and you are satisfied with the
 results you can remove the virtualenv artifacts and install the RED-I
 package to be available system-wide.
 
