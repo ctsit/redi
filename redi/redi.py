@@ -47,7 +47,7 @@ Options:
 """
 
 __author__ = "University of Florida CTS-IT Team"
-__version__ = "0.14.1"
+__version__ = "0.14.2"
 __email__ = "ctsit@ctsi.ufl.edu"
 __status__ = "Development"
 
