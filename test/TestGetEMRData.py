@@ -51,6 +51,7 @@ class TestGetEMRData(unittest.TestCase):
         Note: This test is not concerned with testing the sftp communication"""
         temp_folder = tempfile.mkdtemp('/')
         temp_txt_file = os.path.join(temp_folder, "raw.txt")
+        temp_escaped_file = os.path.join(temp_folder, "rawEscaped.txt")
         temp_xml_file = os.path.join(temp_folder, "raw.xml")
 
         input_string = '''"NAME","COMPONENT_ID","RESULT","REFERENCE_UNIT","DATE_TIME_STAMP","STUDY_ID"
@@ -72,6 +73,8 @@ class TestGetEMRData(unittest.TestCase):
             )
 
         GetEmrData.get_emr_data(temp_folder, props)
+        GetEmrData.data_preprocessing(temp_txt_file, temp_escaped_file)
+        GetEmrData.generate_xml(temp_escaped_file, temp_xml_file)
 
         with open(temp_xml_file) as f:
             result = f.read()

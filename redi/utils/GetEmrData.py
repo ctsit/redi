@@ -162,18 +162,6 @@ def get_emr_data(conf_dir, connection_details):
     :connection_details EmrFileAccessDetails object
     """
     raw_txt_file = os.path.join(conf_dir, 'raw.txt')
-    escaped_file = os.path.join(conf_dir, 'rawEscaped.txt')
-    raw_xml_file = os.path.join(conf_dir, 'raw.xml')
 
     # download csv file
     download_file(raw_txt_file, connection_details)
-
-    # replace certain characters with escape sequences
-    data_preprocessing(raw_txt_file, escaped_file)
-
-    # run csv2xml.py to generate data in xml format
-    generate_xml(escaped_file, raw_xml_file)
-
-    # delete rawEscaped.txt
-    cleanup(escaped_file)
-

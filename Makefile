@@ -24,6 +24,9 @@ help:
 test: tests
 tests: coverage
 	[ ! -d config/rules ] || python -munittest discover config/rules
+	[ ! -d config/preproc ] || python -munittest discover config/preproc
+	[ ! -d config-example/rules ] || python -munittest discover config-example/rules
+	[ ! -d configexample/preproc ] || python -munittest discover config-example/preproc
 
 coverage:
 	ARCHFLAGS=$(ARCHFLAGS) python setup.py nosetests

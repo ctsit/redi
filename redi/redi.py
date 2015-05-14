@@ -47,7 +47,7 @@ Options:
 """
 
 __author__ = "University of Florida CTS-IT Team"
-__version__ = "0.13.2"
+__version__ = "0.14.2"
 __email__ = "ctsit@ctsi.ufl.edu"
 __status__ = "Development"
 
@@ -309,6 +309,25 @@ def _run(config_file, configuration_directory, do_keep_gen_files, dry_run,
     # load custom post-processing rules
     rules = load_rules(settings.rules, configuration_directory)
 
+    errors = run_preproc(pre_filters, settings)
+    map(logger.warning, errors)
+
+    raw_txt_file = os.path.join(configuration_directory, 'raw.txt')
+    escaped_file = os.path.join(configuration_directory, 'rawEscaped.txt')
+    raw_xml_file = os.path.join(configuration_directory, 'raw.xml')
+
+    # TODO: make this able to run against a local file if desired
+    # replace certain characters with escape sequences
+    if get_emr_data:
+        GetEmrData.data_preprocessing(raw_txt_file, escaped_file)
+    if get_emr_data:
+        # run csv2xml.py to generate data in xml format
+        GetEmrData.generate_xml(escaped_file, raw_xml_file)
+    if get_emr_data:
+        # delete rawEscaped.txt
+        GetEmrData.cleanup(escaped_file)
+
+
     raw_xml_file = os.path.join(configuration_directory, settings.raw_xml_file)
     email_settings = get_email_settings(settings)
     db_path = database_path
@@ -326,8 +345,6 @@ def _run(config_file, configuration_directory, do_keep_gen_files, dry_run,
     if not resume:
         _delete_last_runs_data(data_folder)
 
-        errors = run_preproc(pre_filters, settings)
-        map(logger.warning, errors)
         # TODO: Add preproc errors to report
 
         alert_summary, person_form_event_tree_with_data, rule_errors, \

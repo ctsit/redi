@@ -1,3 +1,19 @@
+2015-05-14 v0.14.2
+ * Summary: Preprocessing has been improved to use the rewritten raw CSV file after processing it. This relocates some of the XML processing from GetEMRData.
+
+ * Update about.rst (Buck at UF)
+ * updated Windows install instructions to simplify the procedure (Nicholas Rejack)
+ * added expanded test for TestGetDBPath (Nicholas Rejack)
+ * updated TestSuite to run new test (Nicholas Rejack)
+ * fixed function name in comment in TestCreateImportDataJson.py (Nicholas Rejack)
+ * added new test for TestGetDBPath to increase coverage. (Nicholas Rejack)
+ * fixing version number in redi.py (Nicholas Rejack)
+ * fixed broken tests after relocating processing from GetEmrData (Nicholas Rejack)
+ * made csv to xml preprocessing dependent on getting the EMR file (Nicholas Rejack)
+ * moved XML conversion of raw file out of GetEmrData. (Nicholas Rejack)
+ * `make test` runs all tests (Andrei Sura)
+ * Update README.md (Christopher Barnes)
+
 2015-04-23 v0.14.1
  * Summary: PreProc and PostProc Hooks! RED-I has added the ability to hook scripts for post processing and preprocessing along with other minor fixes. These features now allow for the writing of filters and the emailing of log messages, for example, at the begining and end of a RED-I run.
 
