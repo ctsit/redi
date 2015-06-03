@@ -106,43 +106,70 @@ Installing RED-I on Windows
 
 * Open a command prompt by clicking on the Start menu, and typing "cmd" in the Run box.
 * Install 64-bit Python 2.7.9 by running the following command in the command prompt:
-<pre>
-msiexec /i https://www.python.org/ftp/python/2.7.9/python-2.7.9.amd64.msi 
-</pre>
+
+.. raw:: html
+   
+   <pre>
+      msiexec /i https://www.python.org/ftp/python/2.7.9/python-2.7.9.amd64.msi 
+   </pre>
+
 * Next you need to be insure the command interpreter will be able to find the Python modules. Set
 the paths to the modules by running the following commands in the command prompt:
-<pre>
-setx path "%path%;c:\python27"
-setx path "%path%;c:\python27\lib\site-packages"
-setx path "%path%;c:\python27\scripts”
-</pre>
+
+.. raw:: html
+   
+   <pre>
+      setx path "%path%;c:\python27"
+      setx path "%path%;c:\python27\lib\site-packages"
+      setx path "%path%;c:\python27\scripts”
+   </pre>
+
 * Make a new directory for the RED-I files by running the following command in the command prompt:
-<pre>
-mkdir c:\redi
-</pre>
+
+.. raw:: html
+   
+   <pre>
+      mkdir c:\redi
+   </pre>
+
 * Download the RED-I source code from: [https://github.com/ctsit/redi/archive/0.14.1.zip]
 * Copy the contents of the RED-I zip file from c:\Users\%username%\Downloads\redi-0.14.1\redi-0.14.1 to c:\redi
 * Download the easy_install setup file from: https://bootstrap.pypa.io/ez_setup.py 
 * Run the easy_install setup file with the following command in the command prompt:
-<pre>
-python c:\Users\%username%\Downloads\ez_setup.py
-</pre>
+
+.. raw:: html
+   
+   <pre>
+      python c:\Users\%username%\Downloads\ez_setup.py
+   </pre>
+
 Note: you may need to modify the path to the ez_setup.py file if it is downloaded to a different location.
 
 * Next, make a binary install of RED-I by running the following commands in the command prompt:
-<pre>
-cd c:\redi
-python c:\redi\setup.py bdist_egg
-</pre>
+
+.. raw:: html
+   
+   <pre>
+      cd c:\redi
+      python c:\redi\setup.py bdist_egg
+   </pre>
+
 * You will need to manually install the pycrypto dependency. To avoid having to compile it with VCForPython you can
 download a pre-compiled binary and install it with the following command:
-<pre>
-c:\python27\scripts\easy_install http://www.voidspace.org.uk/python/pycrypto-2.6.1/pycrypto-2.6.1.win-amd64-py2.7.exe
-</pre>
+
+.. raw:: html
+
+   <pre>
+      c:\python27\scripts\easy_install http://www.voidspace.org.uk/python/pycrypto-2.6.1/pycrypto-2.6.1.win-amd64-py2.7.exe
+   </pre>
+
 * Finally, install your binary of RED-I with the following command:
-<pre>
-c:\python27\scripts\easy_install.exe c:\redi\dist\redi-0.14.1-py2.7.egg
-</pre>   
+
+.. raw:: html
+   
+   <pre>
+      c:\python27\scripts\easy_install.exe c:\redi\dist\redi-0.14.1-py2.7.egg
+   </pre>   
 
 How to Test RED-I with a Sample Project
 ---------------------------------------
