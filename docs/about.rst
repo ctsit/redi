@@ -169,7 +169,93 @@ download a pre-compiled binary and install it with the following command:
    
    <pre>
       c:\python27\scripts\easy_install.exe c:\redi\dist\redi-0.14.1-py2.7.egg
-   </pre>   
+   </pre>
+
+Installing RED-I on Red Hat and Fedora
+----------------------------
+Download and install setuptools. Setuptools will aid you in installing the redi package. 
+
+.. raw:: html
+
+   <pre>
+   curl "https://bootstrap.pypa.io/get-pip.py" -o "get-pip.py" && sudo python get-pip.py
+   </pre>
+
+Note that you must have gcc (the Gnu Compiler Collection) to build RED-I. Check that you have gcc installed:
+
+.. raw:: html
+
+   <pre>
+   gcc --version
+   </pre>
+
+If gcc is not installed, install it:
+
+.. raw:: html
+
+   <pre>
+   sudo yum install gcc
+   </pre>
+
+Install the development libxslt, libxml2, and python-devel libraries. These allow you to build the redi source.
+
+.. raw:: html
+
+   <pre>
+   sudo yum install libxslt-devel libxml2-devel python-devel
+   </pre>
+
+Install redi using pip.
+
+.. raw:: html
+
+   <pre>
+   sudo pip install redi
+   </pre>
+
+RED-I is now be installed. 
+
+If you get an error message while compiling pycrypto, you will need to install pycrypto separately:
+
+.. raw:: html
+
+   <pre>
+   sudo yum install python-crypto
+   </pre>
+
+* To use the example config, documentation, and other associated RED-I files, you will need to get files from the GitHub repository. You have two options: 
+
+1.  Clone the repo by using Git.
+
+.. raw:: html
+
+   <pre>
+   yum install git
+   </pre>
+
+Set up your install of Git to use the key on your GitHub account. Instructions are at: https://help.github.com/articles/generating-ssh-keys/
+
+Now, clone the redi git repo:
+
+.. raw:: html
+
+   <pre>
+   clone git@github.com:ctsit/redi.git
+   </pre>
+
+You now have a directory called redi with the source, docs, example configuration and other RED-I files.
+
+2.  Download the zip file
+
+.. raw:: html
+
+   <pre>
+   wget https://github.com/ctsit/redi/archive/master.zip
+   sudo yum install unzip
+   unzip master.zip
+   </pre>
+
+* You now have a directory called redi-master with the source, docs, example configuration and other RED-I files.
 
 How to Test RED-I with a Sample Project
 ---------------------------------------
