@@ -57,3 +57,4 @@ redi.pstats
 callgraph.svg
 mprofile_*
 private/
+.ropeproject/
