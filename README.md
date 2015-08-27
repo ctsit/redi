@@ -12,7 +12,7 @@ RED-I Project
 Introduction
 ------------
 
-The REDCap Electronic Data Importer (RED-I) is a tool which is used to
+The Research Electronic Data Importer (RED-I) is a tool which is used to
 automate the process of loading clinical data from Electronic Medical
 Records (EMR) systems into [REDCap](http://www.project-redcap.org/)
 Study data capture systems. RED-I is a general purpose tool for REDCap
