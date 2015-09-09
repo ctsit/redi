@@ -21,7 +21,8 @@ ifneq ("$(wildcard $(MAKE_CONFIG_FILE))", "")
    REDCAP_API_URI := $(shell cat ${CONFIG_FILE} | sed -e 's/ //g' | grep -v '^\#' | grep 'redcap_uri=' | cut -d '=' -f2)
    REDCAP_VM_URI := $(subst api/,,$(REDCAP_API_URI))
    REDCAP_VM_TOKEN := $(shell cat ${CONFIG_FILE} | sed -e 's/ //g' | grep -v '^\#' | grep 'token=' | cut -d '=' -f2)
-   REDCAP_RECORDS_CMD:=../redi/utils/redcap_records.py --token=$(REDCAP_VM_TOKEN) --url=$(REDCAP_API_URI)
+   REDCAP_RECORDS_PROGRAM:=redcap_records
+   REDCAP_RECORDS_CMD:=$REDCAP_RECORDS_PROGRAM --token=$(REDCAP_VM_TOKEN) --url=$(REDCAP_API_URI)
    REDCAP_PROJECT_ID := $(shell cat ${MAKE_CONFIG_FILE} | sed -e 's/ //g' | grep -v '^\#' | grep 'redcap_project_id=' | cut -d '=' -f2)
    REDCAP_PROJECT_FORMS := $(shell cat ${MAKE_CONFIG_FILE} | sed -e 's/ //g' | grep -v '^\#' | grep 'redcap_project_forms=' | cut -d '=' -f2)
    REDCAP_PROJECT_ENROLLMENT_FORM := $(shell cat ${MAKE_CONFIG_FILE} | sed -e 's/ //g' | grep -v '^\#' | grep 'redcap_project_enrollment_form=' | cut -d '=' -f2)
@@ -101,6 +102,7 @@ check_config:
 	@test -f $(REDCAP_CODE_ZIP_FILE) || (echo 'Please obtain the redcap software zip file "$(REDCAP_CODE_ZIP_FILE)"' && exit 1)
 	@test -d $(REDCAP_CODE_PLUGIN_FOLDER) || (echo 'WARNING: did not find a REDCap plugins folder "$(REDCAP_CODE_PLUGIN_FOLDER)"')
 	@test -f $(ENROLLMENT_CSV_FILE) || (echo 'Config error: missing file "$(ENROLLMENT_CSV_FILE)"' && exit 1)
+	@which $REDCAP_RECORDS_PROGRAM || (echo 'Config error: missing redcap_records command.  Run "pip install redcap_cli" to install' && exit 1)
 
 show_config: check_config
 	@echo "$(MAKE_CONFIG_FILE) indicates that extra parameters should be read from : $(CONFIG_FILE)"

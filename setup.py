@@ -39,6 +39,7 @@ setup(
         "pysftp >= 0.2.8",
         "docopt >= 0.6.2",
         "pycrypto >= 2.6.1",
+        "redcap_cli >= 0.1.0",
     ],
     entry_points={
         'console_scripts': [

@@ -44,14 +44,6 @@ redi.utils.redcapClient module
     :undoc-members:
     :show-inheritance:
 
-redi.utils.redcap_records module
---------------------------------
-
-.. automodule:: redi.utils.redcap_records
-    :members:
-    :undoc-members:
-    :show-inheritance:
-
 redi.utils.redi_email module
 ----------------------------
 
