@@ -26,6 +26,8 @@ import pysftp
 from csv2xml import openio, Writer
 from paramiko.ssh_exception import SSHException, BadAuthenticationType
 import sys
+import ast
+import copy
 
 logger = logging.getLogger(__name__)
 logger.setLevel(logging.INFO)
@@ -37,6 +39,7 @@ class EmrFileAccessDetails(object) :
     @see redi#_run()
     """
     def __init__(self,
+            emr_sftp_project_name,
             emr_download_file,
             emr_host,
             emr_username,
@@ -46,6 +49,7 @@ class EmrFileAccessDetails(object) :
             emr_private_key_pass
             ):
 
+        self.sftp_project_name = emr_sftp_project_name
         self.download_file = emr_download_file
         self.host = emr_host
         self.username = emr_username
@@ -67,8 +71,9 @@ def download_file(destination, access_details):
     @see get_emr_data()
     """
     connection_info = dict(access_details.__dict__)
-    # delete unnecessary element form the dictionary
+    # delete unnecessary elements form the dictionary
     del connection_info['download_file']
+    del connection_info['sftp_project_name']
 
     # check for errors during authentication with EMR server
     try:
@@ -161,7 +166,24 @@ def get_emr_data(conf_dir, connection_details):
     :conf_dir configuration directory name
     :connection_details EmrFileAccessDetails object
     """
-    raw_txt_file = os.path.join(conf_dir, 'raw.txt')
-
-    # download csv file
-    download_file(raw_txt_file, connection_details)
+    # enable backwards comparability with older config repos
+    # try reading emr_data_file as a dict first
+    try:
+        connection_details.download_file = ast.literal_eval(connection_details.download_file)
+        logger.info("Downloading multiple files: %s", str(connection_details.download_file))
+        for key in connection_details.download_file:
+            # make a copy of the dict
+            temp_connection_details = copy.deepcopy(connection_details)
+            # download the next file in the dict
+            raw_txt_file = os.path.join(conf_dir, connection_details.download_file[key])
+            temp_connection_details.download_file = os.path.join(connection_details.sftp_project_name, key)
+            logger.info("Downloading remote file file: " + temp_connection_details.download_file)
+            logger.info("Saving to local file name: " + raw_txt_file)
+            download_file(raw_txt_file, temp_connection_details)
+    # if we can't read it into a dictionary, assume it's a single file
+    except ValueError:
+        connection_details.download_file = os.path.join(connection_details.sftp_project_name, connection_details.download_file)
+        logger.info("Downloading single file: %s", connection_details.download_file)
+        raw_txt_file = os.path.join(conf_dir, 'raw.txt')
+        # download csv file
+        download_file(raw_txt_file, connection_details)
