@@ -295,7 +295,8 @@ def _run(config_file, configuration_directory, do_keep_gen_files, dry_run,
     # Getting EMR data
     if get_emr_data:
         connection_details = EmrFileAccessDetails(
-            os.path.join(settings.emr_sftp_project_name, settings.emr_data_file),
+            settings.emr_sftp_project_name,
+            settings.emr_data_file,
             settings.emr_sftp_server_hostname,
             settings.emr_sftp_server_username,
             settings.emr_sftp_server_password,
