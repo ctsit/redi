@@ -63,6 +63,7 @@ class TestGetEMRData(unittest.TestCase):
             f.write(input_string)
 
         props = EmrFileAccessDetails(
+            emr_sftp_project_name='/',
             emr_download_file='raw.csv',
             emr_host='localhost',
             emr_username='admin',
@@ -202,6 +203,7 @@ def create_sample_file(sample_file):
 def get_connection_info(private_key):
     """Return a dictionary of parameters for creating a sftp connection"""
     access_details = EmrFileAccessDetails(
+        emr_sftp_project_name='/',
         emr_download_file='raw.csv',
         emr_host='localhost',
         emr_username='admin',
@@ -212,7 +214,8 @@ def get_connection_info(private_key):
     )
 
     connection_info = dict(access_details.__dict__)
-    # delete unnecessary element form the dictionary
+    # delete unnecessary elements form the dictionary
+    del connection_info['sftp_project_name']
     del connection_info['download_file']
     return connection_info
 
