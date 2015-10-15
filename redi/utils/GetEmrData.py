@@ -50,7 +50,12 @@ class EmrFileAccessDetails(object) :
             ):
 
         self.sftp_project_name = emr_sftp_project_name
-        self.download_list = emr_download_list
+        try:
+           self.download_list = ast.literal_eval(emr_download_list)
+        # maintain backwards compatibility with existing config repos
+        # if it doesn't automatically evaluate to a dictionary, make a dictionary
+        except ValueError:
+            self.download_list = {str(emr_download_list): "raw.txt"}
         self.host = emr_host
         self.username = emr_username
         self.password = emr_password
@@ -166,24 +171,16 @@ def get_emr_data(conf_dir, connection_details):
     :conf_dir configuration directory name
     :connection_details EmrFileAccessDetails object
     """
-    # enable backwards comparability with older config repos
-    # try reading emr_data_file as a dict first
-    try:
-        connection_details.download_list = ast.literal_eval(connection_details.download_list)
-        logger.info("Downloading multiple files: %s", str(connection_details.download_list))
-        for key in connection_details.download_list:
-            # make a copy of the dict
-            temp_connection_details = copy.deepcopy(connection_details)
-            # download the next file in the dict
-            raw_txt_file = os.path.join(conf_dir, connection_details.download_list[key])
-            temp_connection_details.download_list = os.path.join(connection_details.sftp_project_name, key)
-            logger.info("Downloading remote file file: " + temp_connection_details.download_list)
-            logger.info("Saving to local file name: " + raw_txt_file)
-            download_files(raw_txt_file, temp_connection_details)
-    # if we can't read it into a dictionary, assume it's a single file
-    except ValueError:
-        connection_details.download_list = os.path.join(connection_details.sftp_project_name, connection_details.download_list)
-        logger.info("Downloading single file: %s", connection_details.download_list)
-        raw_txt_file = os.path.join(conf_dir, 'raw.txt')
-        # download csv file
-        download_files(raw_txt_file, connection_details)
+    number_of_files = len(connection_details.download_list)
+    counter = 1
+    for key in connection_details.download_list:
+        logger.info("Now downloading %i of %i file(s)", counter, number_of_files)
+        # make a copy of the dict
+        temp_connection_details = copy.deepcopy(connection_details)
+        # download the next file in the dict
+        raw_txt_file = os.path.join(conf_dir, connection_details.download_list[key])
+        temp_connection_details.download_list = os.path.join(connection_details.sftp_project_name, key)
+        logger.info("Downloading remote file file: " + temp_connection_details.download_list)
+        logger.info("Saving to local file name: " + raw_txt_file)
+        download_files(raw_txt_file, temp_connection_details)
+        counter += 1
