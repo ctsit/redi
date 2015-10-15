@@ -43,7 +43,7 @@ class TestGetEMRData(unittest.TestCase):
 
 
     @patch.multiple(pysftp, Connection=_noop)
-    @patch.multiple(GetEmrData, download_file=_noop)
+    @patch.multiple(GetEmrData, download_files=_noop)
     def test_get_emr_data(self):
         """
         This test verifies only that the csv file on the sftp server
@@ -64,7 +64,7 @@ class TestGetEMRData(unittest.TestCase):
 
         props = EmrFileAccessDetails(
             emr_sftp_project_name='/',
-            emr_download_file='raw.csv',
+            emr_download_list='raw.csv',
             emr_host='localhost',
             emr_username='admin',
             emr_password='admin',
@@ -204,7 +204,7 @@ def get_connection_info(private_key):
     """Return a dictionary of parameters for creating a sftp connection"""
     access_details = EmrFileAccessDetails(
         emr_sftp_project_name='/',
-        emr_download_file='raw.csv',
+        emr_download_list='raw.csv',
         emr_host='localhost',
         emr_username='admin',
         emr_password='admin',
@@ -216,7 +216,7 @@ def get_connection_info(private_key):
     connection_info = dict(access_details.__dict__)
     # delete unnecessary elements form the dictionary
     del connection_info['sftp_project_name']
-    del connection_info['download_file']
+    del connection_info['download_list']
     return connection_info
 
 
