@@ -40,7 +40,7 @@ class EmrFileAccessDetails(object) :
     """
     def __init__(self,
             emr_sftp_project_name,
-            emr_download_file,
+            emr_download_list,
             emr_host,
             emr_username,
             emr_password,
@@ -50,7 +50,7 @@ class EmrFileAccessDetails(object) :
             ):
 
         self.sftp_project_name = emr_sftp_project_name
-        self.download_file = emr_download_file
+        self.download_list = emr_download_list
         self.host = emr_host
         self.username = emr_username
         self.password = emr_password
@@ -62,7 +62,7 @@ class EmrFileAccessDetails(object) :
 # Module level functions
 #============================
 
-def download_file(destination, access_details):
+def download_files(destination, access_details):
     """
     Download a file from the sftp server
     :destination the name of the file which will be downloaded
@@ -72,7 +72,7 @@ def download_file(destination, access_details):
     """
     connection_info = dict(access_details.__dict__)
     # delete unnecessary elements form the dictionary
-    del connection_info['download_file']
+    del connection_info['download_list']
     del connection_info['sftp_project_name']
 
     # check for errors during authentication with EMR server
@@ -80,7 +80,7 @@ def download_file(destination, access_details):
         with pysftp.Connection(**connection_info) as sftp:
             logger.info("User %s connected to sftp server %s" % \
                 (connection_info['username'], connection_info['host']))
-            sftp.get(access_details.download_file, destination)
+            sftp.get(access_details.download_list, destination)
     except IOError as e:
         logger.error("Please verify that the private key file mentioned in "\
             "settings.ini exists.")
@@ -169,21 +169,21 @@ def get_emr_data(conf_dir, connection_details):
     # enable backwards comparability with older config repos
     # try reading emr_data_file as a dict first
     try:
-        connection_details.download_file = ast.literal_eval(connection_details.download_file)
-        logger.info("Downloading multiple files: %s", str(connection_details.download_file))
-        for key in connection_details.download_file:
+        connection_details.download_list = ast.literal_eval(connection_details.download_list)
+        logger.info("Downloading multiple files: %s", str(connection_details.download_list))
+        for key in connection_details.download_list:
             # make a copy of the dict
             temp_connection_details = copy.deepcopy(connection_details)
             # download the next file in the dict
-            raw_txt_file = os.path.join(conf_dir, connection_details.download_file[key])
-            temp_connection_details.download_file = os.path.join(connection_details.sftp_project_name, key)
-            logger.info("Downloading remote file file: " + temp_connection_details.download_file)
+            raw_txt_file = os.path.join(conf_dir, connection_details.download_list[key])
+            temp_connection_details.download_list = os.path.join(connection_details.sftp_project_name, key)
+            logger.info("Downloading remote file file: " + temp_connection_details.download_list)
             logger.info("Saving to local file name: " + raw_txt_file)
-            download_file(raw_txt_file, temp_connection_details)
+            download_files(raw_txt_file, temp_connection_details)
     # if we can't read it into a dictionary, assume it's a single file
     except ValueError:
-        connection_details.download_file = os.path.join(connection_details.sftp_project_name, connection_details.download_file)
-        logger.info("Downloading single file: %s", connection_details.download_file)
+        connection_details.download_list = os.path.join(connection_details.sftp_project_name, connection_details.download_list)
+        logger.info("Downloading single file: %s", connection_details.download_list)
         raw_txt_file = os.path.join(conf_dir, 'raw.txt')
         # download csv file
-        download_file(raw_txt_file, connection_details)
+        download_files(raw_txt_file, connection_details)
