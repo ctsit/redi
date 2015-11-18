@@ -14,36 +14,43 @@
 # All rights reserved.
 #
 # Distributed under the BSD 3-Clause License
-# For full text of the BSD 3-Clause License see http://opensource.org/licenses/BSD-3-Clause
+# For full text of the BSD 3-Clause License see
+# http://opensource.org/licenses/BSD-3-Clause
 
 """
 redi.py - Converter from raw clinical data in XML format to REDCap API data
 
 Usage:
-        redi.py -h | --help
-        redi.py [-v] [-k] [-e] [-d] [-r] [-c=<path>] [-D=<datadir>] [-s] [-b]
+    redi.py -h | --help
+    redi.py [-v] [-V] [-k] [-e] [-d] [-r] [-c=<path>] [-D=<datadir>] [-s] [-b]
 
 Options:
-        -h --help                   show this help message and exit
-        -v --verbose                Increase verbosity of output [default:False]
-        -k --keep                   Specify this option to preserve the files generated during execution [default:False]
-        -e --emrdata                Specify this option to get EMR data [default:False]
-        -d --dryrun                 To execute redi.py in dry run state. This is to be
-                                    able to test each release by doing a dry run, where
-                                    the data is fetched and processed but not transferred
-                                    to the production REDCap. Email is also not sent. The
-                                    processed data is stored as output files under the
-                                    "out" folder under project root [default:False].
-        -r --resume                 WARNING!!! Resumes the last run of the program. This
-                                    switch is for a specific scenario. Check the
-                                    documentation before using it [default:False]
-        -c --config-path=<path>     Specify the path to the configuration directory
-        -D --datadir=<datadir>      Specify the path to the directory containing project
-                                    specific input and output data which will help in
-                                    running multiple simultaneous instances of redi for
-                                    different projects
-        -s --skip-blanks            skip blank events when sending event data to REDCap [default:False]
-        -b --bulk-send-blanks       send blank events in bulk instead of individually [default:False]
+    -h --help                   Show this help message and exit
+    -v --verbose                Increase output verbosity [default:False]
+    -V --version                Show version number [default:False]
+    -k --keep                   Use this option to preserve the files
+                                generated during execution [default:False]
+    -e --emrdata                Use this option to get EMR data [default:False]
+    -d --dryrun                 To execute redi.py in dry run state. This
+                                is to be able to test each release by doing
+                                a dry run, where the data is fetched and
+                                processed but not transferred to the
+                                production REDCap. Email is also not sent.
+                                The processed data is stored as output
+                                files under the "out" folder under project
+                                root [default:False].
+    -r --resume                 WARNING!!! Resumes the last run. This
+                                switch is for a specific case. Check the
+                                documentation before using it. [default:False]
+    -c --config-path=<path>     Specify the path to the configuration directory
+    -D --datadir=<datadir>      Specify the path to the directory containing
+                                project specific input and output data which
+                                will help in running multiple simultaneous
+                                instances of redi for different projects
+    -s --skip-blanks            Skip blank events when sending data to REDCap
+                                [default:False]
+    -b --bulk-send-blanks       Send blank events in bulk instead of
+                                individually [default:False]
 """
 
 __author__ = "University of Florida CTS-IT Team"
@@ -137,14 +144,23 @@ def main():
     data_directory = args['--datadir']
     if data_directory is None:
         data_directory = DEFAULT_DATA_DIRECTORY
+
     configuration_directory = args['--config-path']
     if configuration_directory is None:
         configuration_directory = os.path.join(data_directory, "config")
+
     do_keep_gen_files = args['--keep']
     get_emr_data = args['--emrdata']
     dry_run = args['--dryrun']
 
-    #configure logger
+    # display version number and quit
+    if args['--version']:
+        print(__version__)
+        print("redi - REDCap Electronic Data Importer")
+        print("http://redi.readthedocs.org")
+        sys.exit()
+
+    # configure logger
     logger = configure_logging(data_directory, args['--verbose'])
 
     # Parsing the config file using a method from module SimpleConfigParser
@@ -278,8 +294,9 @@ def connect_to_redcap(email_settings, redcap_settings, dry_run=False):
                             redcap_settings['verify_ssl'])
     except RequestException as error:
         logger.exception(error)
-        logger.info("Sending email to redcap support")
+
         if not dry_run:
+            logger.info("Sending email to redcap support")
             redi_email.send_email_redcap_connection_error(email_settings)
         sys.exit()
 
