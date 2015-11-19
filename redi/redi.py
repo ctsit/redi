@@ -1995,7 +1995,7 @@ def load_preproc(preprocessors, root='./'):
 
     loaded = {}
 
-    for (preprocessor, path) in ast.literal_eval(preprocessors).iteritems():
+    for (preprocessor, path) in ast.literal_eval(preprocessors.sorted()).iteritems():
         module = None
         if os.path.exists(path):
             module = imp.load_source(preprocessor, path)
