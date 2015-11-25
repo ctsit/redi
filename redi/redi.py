@@ -1995,7 +1995,7 @@ def load_preproc(preprocessors, root='./'):
 
     loaded = {}
 
-    for (preprocessor, path) in ast.literal_eval(preprocessors.sorted()).iteritems():
+    for (preprocessor, path) in sorted(ast.literal_eval(preprocessors).iteritems()):
         module = None
         if os.path.exists(path):
             module = imp.load_source(preprocessor, path)
@@ -2020,6 +2020,7 @@ def run_preproc(preprocessors, settings):
 
     for (preprocessor, module) in preprocessors.iteritems():
         try:
+            logger.info("Running preprocessing rule: %s %s", preprocessor, module)
             module.run_processing(settings, redi=sys.modules[__name__],
                                   logger=logging)
         except Exception as e:
