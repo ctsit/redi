@@ -1,0 +1,9 @@
+[distutils]
+
+index-servers =
+    mdat
+
+[mdat]
+repository: https://pypi.python.org/pypi
+username: mdat
+password: ***

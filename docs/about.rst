@@ -106,43 +106,156 @@ Installing RED-I on Windows
 
 * Open a command prompt by clicking on the Start menu, and typing "cmd" in the Run box.
 * Install 64-bit Python 2.7.9 by running the following command in the command prompt:
-<pre>
-msiexec /i https://www.python.org/ftp/python/2.7.9/python-2.7.9.amd64.msi 
-</pre>
+
+.. raw:: html
+   
+   <pre>
+      msiexec /i https://www.python.org/ftp/python/2.7.9/python-2.7.9.amd64.msi 
+   </pre>
+
 * Next you need to be insure the command interpreter will be able to find the Python modules. Set
 the paths to the modules by running the following commands in the command prompt:
-<pre>
-setx path "%path%;c:\python27"
-setx path "%path%;c:\python27\lib\site-packages"
-setx path "%path%;c:\python27\scripts”
-</pre>
+
+.. raw:: html
+   
+   <pre>
+      setx path "%path%;c:\python27"
+      setx path "%path%;c:\python27\lib\site-packages"
+      setx path "%path%;c:\python27\scripts”
+   </pre>
+
 * Make a new directory for the RED-I files by running the following command in the command prompt:
-<pre>
-mkdir c:\redi
-</pre>
+
+.. raw:: html
+   
+   <pre>
+      mkdir c:\redi
+   </pre>
+
 * Download the RED-I source code from: [https://github.com/ctsit/redi/archive/0.14.1.zip]
 * Copy the contents of the RED-I zip file from c:\Users\%username%\Downloads\redi-0.14.1\redi-0.14.1 to c:\redi
 * Download the easy_install setup file from: https://bootstrap.pypa.io/ez_setup.py 
 * Run the easy_install setup file with the following command in the command prompt:
-<pre>
-python c:\Users\%username%\Downloads\ez_setup.py
-</pre>
+
+.. raw:: html
+   
+   <pre>
+      python c:\Users\%username%\Downloads\ez_setup.py
+   </pre>
+
 Note: you may need to modify the path to the ez_setup.py file if it is downloaded to a different location.
 
 * Next, make a binary install of RED-I by running the following commands in the command prompt:
-<pre>
-cd c:\redi
-python c:\redi\setup.py bdist_egg
-</pre>
+
+.. raw:: html
+   
+   <pre>
+      cd c:\redi
+      python c:\redi\setup.py bdist_egg
+   </pre>
+
 * You will need to manually install the pycrypto dependency. To avoid having to compile it with VCForPython you can
 download a pre-compiled binary and install it with the following command:
-<pre>
-c:\python27\scripts\easy_install http://www.voidspace.org.uk/python/pycrypto-2.6.1/pycrypto-2.6.1.win-amd64-py2.7.exe
-</pre>
+
+.. raw:: html
+
+   <pre>
+      c:\python27\scripts\easy_install http://www.voidspace.org.uk/python/pycrypto-2.6.1/pycrypto-2.6.1.win-amd64-py2.7.exe
+   </pre>
+
 * Finally, install your binary of RED-I with the following command:
-<pre>
-c:\python27\scripts\easy_install.exe c:\redi\dist\redi-0.14.1-py2.7.egg
-</pre>   
+
+.. raw:: html
+   
+   <pre>
+      c:\python27\scripts\easy_install.exe c:\redi\dist\redi-0.14.1-py2.7.egg
+   </pre>
+
+Installing RED-I on Red Hat and Fedora
+----------------------------
+Download and install setuptools. Setuptools will aid you in installing the redi package. 
+
+.. raw:: html
+
+   <pre>
+   curl "https://bootstrap.pypa.io/get-pip.py" -o "get-pip.py" && sudo python get-pip.py
+   </pre>
+
+Note that you must have gcc (the Gnu Compiler Collection) to build RED-I. Check that you have gcc installed:
+
+.. raw:: html
+
+   <pre>
+   gcc --version
+   </pre>
+
+If gcc is not installed, install it:
+
+.. raw:: html
+
+   <pre>
+   sudo yum install gcc
+   </pre>
+
+Install the development libxslt, libxml2, and python-devel libraries. These allow you to build the redi source.
+
+.. raw:: html
+
+   <pre>
+   sudo yum install libxslt-devel libxml2-devel python-devel
+   </pre>
+
+Install redi using pip.
+
+.. raw:: html
+
+   <pre>
+   sudo pip install redi
+   </pre>
+
+RED-I is now be installed. 
+
+If you get an error message while compiling pycrypto, you will need to install pycrypto separately:
+
+.. raw:: html
+
+   <pre>
+   sudo yum install python-crypto
+   </pre>
+
+* To use the example config, documentation, and other associated RED-I files, you will need to get files from the GitHub repository. You have two options: 
+
+1.  Clone the repo by using Git.
+
+.. raw:: html
+
+   <pre>
+   yum install git
+   </pre>
+
+Set up your install of Git to use the key on your GitHub account. Instructions are at: https://help.github.com/articles/generating-ssh-keys/
+
+Now, clone the redi git repo:
+
+.. raw:: html
+
+   <pre>
+   clone git@github.com:ctsit/redi.git
+   </pre>
+
+You now have a directory called redi with the source, docs, example configuration and other RED-I files.
+
+2.  Download the zip file
+
+.. raw:: html
+
+   <pre>
+   wget https://github.com/ctsit/redi/archive/master.zip
+   sudo yum install unzip
+   unzip master.zip
+   </pre>
+
+* You now have a directory called redi-master with the source, docs, example configuration and other RED-I files.
 
 How to Test RED-I with a Sample Project
 ---------------------------------------

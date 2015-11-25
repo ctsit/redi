@@ -26,6 +26,8 @@ import pysftp
 from csv2xml import openio, Writer
 from paramiko.ssh_exception import SSHException, BadAuthenticationType
 import sys
+import ast
+import copy
 
 logger = logging.getLogger(__name__)
 logger.setLevel(logging.INFO)
@@ -37,7 +39,8 @@ class EmrFileAccessDetails(object) :
     @see redi#_run()
     """
     def __init__(self,
-            emr_download_file,
+            emr_sftp_project_name,
+            emr_download_list,
             emr_host,
             emr_username,
             emr_password,
@@ -46,7 +49,13 @@ class EmrFileAccessDetails(object) :
             emr_private_key_pass
             ):
 
-        self.download_file = emr_download_file
+        self.sftp_project_name = emr_sftp_project_name
+        try:
+           self.download_list = ast.literal_eval(emr_download_list)
+        # maintain backwards compatibility with existing config repos
+        # if it doesn't automatically evaluate to a dictionary, make a dictionary
+        except ValueError:
+            self.download_list = {str(emr_download_list): "raw.txt"}
         self.host = emr_host
         self.username = emr_username
         self.password = emr_password
@@ -58,7 +67,7 @@ class EmrFileAccessDetails(object) :
 # Module level functions
 #============================
 
-def download_file(destination, access_details):
+def download_files(destination, access_details):
     """
     Download a file from the sftp server
     :destination the name of the file which will be downloaded
@@ -67,15 +76,16 @@ def download_file(destination, access_details):
     @see get_emr_data()
     """
     connection_info = dict(access_details.__dict__)
-    # delete unnecessary element form the dictionary
-    del connection_info['download_file']
+    # delete unnecessary elements form the dictionary
+    del connection_info['download_list']
+    del connection_info['sftp_project_name']
 
     # check for errors during authentication with EMR server
     try:
         with pysftp.Connection(**connection_info) as sftp:
             logger.info("User %s connected to sftp server %s" % \
                 (connection_info['username'], connection_info['host']))
-            sftp.get(access_details.download_file, destination)
+            sftp.get(access_details.download_list, destination)
     except IOError as e:
         logger.error("Please verify that the private key file mentioned in "\
             "settings.ini exists.")
@@ -161,7 +171,16 @@ def get_emr_data(conf_dir, connection_details):
     :conf_dir configuration directory name
     :connection_details EmrFileAccessDetails object
     """
-    raw_txt_file = os.path.join(conf_dir, 'raw.txt')
-
-    # download csv file
-    download_file(raw_txt_file, connection_details)
+    number_of_files = len(connection_details.download_list)
+    counter = 1
+    for key in connection_details.download_list:
+        logger.info("Now downloading %i of %i file(s)", counter, number_of_files)
+        # make a copy of the dict
+        temp_connection_details = copy.deepcopy(connection_details)
+        # download the next file in the dict
+        raw_txt_file = os.path.join(conf_dir, connection_details.download_list[key])
+        temp_connection_details.download_list = os.path.join(connection_details.sftp_project_name, key)
+        logger.info("Downloading remote file file: " + temp_connection_details.download_list)
+        logger.info("Saving to local file name: " + raw_txt_file)
+        download_files(raw_txt_file, temp_connection_details)
+        counter += 1
