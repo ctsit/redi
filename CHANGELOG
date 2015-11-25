@@ -1,4 +1,24 @@
 2015-05-14 v0.14.2
+ * Summary: Now RED-I can fetch more files initially and run pre-processors in a specific order.
+
+ * Runs the dictionary of preprocessors in order sorted by their keys (module names). This is necessary when using multiple preprocessors that have ordered rules. Unsorted dictionaries have unpredictable ordering. (Nicholas Rejack)
+ * make clean: remove `.eggs` folder (Andrei Sura)
+ * Fixes #168 - add option to display version number (Andrei Sura)
+ * Moving logic for creating dictionary of files to download to __init__ method. Improved logging. (Nicholas Rejack)
+ * Updating TestGetEMRData.py to match new variable names in GetEmrData.py. (Nicholas Rejack)
+ * Updated GetEmrData.py to rename download_file variable to download_list and download_file function to download_files. (Nicholas Rejack)
+ * Fixing TestGetEMRData.py now that a new variable has been added to the EmrFileAccessDetails. (Nicholas Rejack)
+ * UpdatingGetEmrData.py with new functionality. Now, in settings.ini a dictionary of files to be downloaded can be specified for emr_data_file. (Nicholas Rejack)
+ * Changing variables in EmrFileAccessDetails for readability. (Nicholas Rejack)
+ * Update README.md (Christopher P. Barnes)
+ * Update README.md (Christopher P. Barnes)
+ * use travis in container (Andrei Sura)
+ * Add makefile tasks related to pypi (Andrei Sura)
+ * added RedHat/Fedora installation documentation. (Nicholas Rejack)
+ * bumping version number on docs/conf.py (Nicholas Rejack)
+ * repaired some broken text in about.rst in documentation. (Nicholas Rejack)
+
+2015-05-14 v0.14.2
  * Summary: Preprocessing has been improved to use the rewritten raw CSV file after processing it. This relocates some of the XML processing from GetEMRData.
 
  * Update about.rst (Buck at UF)
