@@ -1995,7 +1995,7 @@ def load_preproc(preprocessors, root='./'):
 
     loaded = {}
 
-    for (preprocessor, path) in sorted(ast.literal_eval(preprocessors).iteritems()):
+    for (preprocessor, path) in ast.literal_eval(preprocessors).iteritems():
         module = None
         if os.path.exists(path):
             module = imp.load_source(preprocessor, path)
@@ -2018,7 +2018,10 @@ def run_preproc(preprocessors, settings):
     logger.info("Running preprocessing rules")
     errors = []
 
-    for (preprocessor, module) in preprocessors.iteritems():
+    # iterate through sorted list of preprocessors
+    for preprocessor in sorted(preprocessors):
+        # use original dict of preprocessors to get module name
+        module = preprocessors[preprocessor]
         try:
             logger.info("Running preprocessing rule: %s %s", preprocessor, module)
             module.run_processing(settings, redi=sys.modules[__name__],
