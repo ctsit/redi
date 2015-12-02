@@ -1,4 +1,4 @@
-	RED-I Usage
+RED-I Usage
 ===========
 
 Currently the RED-I application can be only executed from the command
