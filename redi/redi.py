@@ -61,6 +61,7 @@ __status__ = "Development"
 import ast
 import errno
 import logging
+from logging.handlers import TimedRotatingFileHandler
 import math
 import pickle
 import time
@@ -161,7 +162,8 @@ def main():
         sys.exit()
 
     # configure logger
-    logger = configure_logging(data_directory, args['--verbose'])
+    #TODO: make parameters configurable
+    logger = configure_logging(data_directory, args['--verbose'], when='D', interval=1, backup_count=31)
 
     # Parsing the config file using a method from module SimpleConfigParser
     settings = SimpleConfigParser.SimpleConfigParser()
@@ -1350,7 +1352,7 @@ def research_id_to_redcap_id_converter(
     return bad_ids
 
 
-def configure_logging(data_folder, verbose=False):
+def configure_logging(data_folder, verbose=False, when='D', interval=1, backup_count=31):
     """Configures the Logger"""
 
     # create logger for our application
@@ -1379,7 +1381,7 @@ def configure_logging(data_folder, verbose=False):
     # create a file handler
     file_handler = None
     try:
-        file_handler = logging.FileHandler(filename)
+        file_handler = TimedRotatingFileHandler(filename, when, interval, backup_count)
     except IOError:
         logger.exception('Could not open file for logging "%s"', filename)
         raise
