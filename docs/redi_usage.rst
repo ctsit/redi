@@ -1,4 +1,4 @@
-RED-I Usage
+	RED-I Usage
 ===========
 
 Currently the RED-I application can be only executed from the command
@@ -116,7 +116,7 @@ Optional command-line arguments:
 
    The data directory is the directory that will store the following:
 
-   -  log file
+   -  log file. Currently up to 31 days of logs are stored, after which the file begins rotating. 
    -  SQLite database used for storing checksums
    -  intermediate output files which are required for debugging and
       used by the resume logic
