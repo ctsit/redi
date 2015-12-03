@@ -1,4 +1,14 @@
-2015-05-14 v0.14.2
+2015-12-03 v0.14.4
+ * Summary: RED-I now has built-in log rotation.
+
+ * Removing whitespace in docs/redi_usage.rst (Nicholas Rejack)
+ * Adding note in documentation about log rotation. (Nicholas Rejack)
+ * Adding log file rotation. Stores 31 days, after which the files are rotated. (Nicholas Rejack)
+ * Moving logic of preprocessor sorting to run_preproc. Run on a sorted list of preprocessors and fetch module name from original dict. Add comments to clarify logic of running preproc. (Nicholas Rejack)
+ * Log the preprocessors as they are run. Fix a syntax error. (Nicholas Rejack)
+ * Move redcap_records.py to its own package, redcap_cli, already published in the Python Package Index (Philip Chase)
+
+2015-11-25 v0.14.3
  * Summary: Now RED-I can fetch more files initially and run pre-processors in a specific order.
 
  * Runs the dictionary of preprocessors in order sorted by their keys (module names). This is necessary when using multiple preprocessors that have ordered rules. Unsorted dictionaries have unpredictable ordering. (Nicholas Rejack)
@@ -73,7 +83,7 @@
  * Resolve preproc import issue (Taeber Rapczak)
  * updated preproc.py. Only fails on NotImplementedError now. (Nicholas Rejack)
  * updated preproc.py to fix variable names when fetching consent date. (Nicholas Rejack)
- 
+
 2015-04-09 v0.14.0
  * Summary: RED-I has multiple functional and other improvements in this release: licensing has been added in each file. RED-I is now available from PyPI as 'redi'. Most importantly,
  when multiple lab results come in on the same day, RED-I now takes the first lab of the day, unless it has a value of 'canceled'. RED-I also auto-resumes in the case of a network timeout. Reporting has been improved with more information.
@@ -111,7 +121,7 @@
 
 2014-12-19 v0.13.2
  * hotfix to change behavior in updateStatusFieldValueInPersonFormEventree. Status field no longer
-   marked "NOT_DONE" if units for that field are missing. 
+   marked "NOT_DONE" if units for that field are missing.
 
 2014-12-04 v0.13.1
 
@@ -232,7 +242,7 @@ decreased anywhere between 12 and 57%.
  * Log information about rules loading
 
 2014-09-10 v0.11.2
- 
+
  * Summary: performance improvements to speed up run time.
 
  * Closes #42 - "redcap_records.py lost the events and fields arguments" (Andrei Sura)
