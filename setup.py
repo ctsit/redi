@@ -18,7 +18,7 @@ from setuptools import setup, find_packages
 
 setup(
     name='redi',
-    version='0.14.3',
+    version='0.14.4',
     author='https://www.ctsi.ufl.edu/research/study-development/informatics-consulting/',
     author_email='ctsit@ctsi.ufl.edu',
     packages=find_packages(exclude=['test']),
@@ -39,6 +39,7 @@ setup(
         "pysftp >= 0.2.8",
         "docopt >= 0.6.2",
         "pycrypto >= 2.6.1",
+        "redcap_cli >= 0.1.0",
     ],
     entry_points={
         'console_scripts': [
