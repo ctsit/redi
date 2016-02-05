@@ -75,6 +75,7 @@ import imp
 import os
 import pkg_resources
 import shutil
+import traceback
 from pprint import pprint
 
 from requests import RequestException
@@ -2029,12 +2030,14 @@ def run_preproc(preprocessors, settings):
             module.run_processing(settings, redi=sys.modules[__name__],
                                   logger=logging)
         except Exception as e:
-            message_format = 'Error processing rule "{0}". {1}'
+            message_format = 'Error processing rule "{0}". \n{1}'
             if not hasattr(e, 'errors'):
-                errors.append(message_format.format(preprocessor, e.message))
+                ex_type, ex, tb = sys.exc_info()
+                errors.append(message_format.format(preprocessor, traceback.format_exc(tb)))
                 continue
             for error in e.errors:
-                errors.append(message_format.format(preprocessor, error))
+                ex_type, ex, tb = sys.exc_info()
+                errors.append(message_format.format(preprocessor, traceback.format_exc(tb)))
 
     return errors
 
