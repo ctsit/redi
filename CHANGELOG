@@ -1,3 +1,10 @@
+2016-02-12 v0.15.0
+
+ * Summary: Improved handling of network issues while sending to REDCap.
+
+ *   Adding exception handling for NewConnectionError in redi/utils/redcapClient.py (Nicholas Rejack)
+ *   Adding parenthesis to REDCAP_RECORDS_PROGRAM in vagrant/Makefile (Nicholas Rejack)
+
 2015-12-03 v0.14.4
  * Summary: RED-I now has built-in log rotation.
 
