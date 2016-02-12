@@ -20,6 +20,7 @@ import sys
 from redcap import Project, RedcapError
 from requests import RequestException
 from requests.packages.urllib3.exceptions import MaxRetryError
+from requests.packages.urllib3.exceptions import NewConnectionError
 
 # Configure module's logger
 logger = logging.getLogger(__name__)
@@ -110,10 +111,13 @@ class RedcapClient(object):
         try:
             # The following line simulates github issue #108:
             # raise MaxRetryError('', 'localhost:8998', None)
+            # The following line simulates 
+            #raise NewConnectionError('localhost:8998', 443)
             response = self.project.import_records(data,
                 overwrite=overwrite_value)
             return response
-        except MaxRetryError as e:
+        except (MaxRetryError, NewConnectionError) as e:
+            logger.error("Exception encountered: ", exc_info = True)
             logger.debug(e.message + ", Attempt no.: " + str(retry_count))
             if (retry_count == max_retry_count):
                 message = "Exiting since network connection timed out after"\
