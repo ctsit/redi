@@ -170,7 +170,7 @@ def main():
     input_file_path = args['--file']
     logger.info("The file path is" + input_file_path)
 
-    if input_file_path && get_emr_data:
+    if input_file_path and get_emr_data:
         logger.error("You cannot use -e and -f together.")
         logger.error("RED-I will now terminate.")
         sys.exit()
