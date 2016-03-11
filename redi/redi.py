@@ -39,6 +39,7 @@ Options:
                                 The processed data is stored as output
                                 files under the "out" folder under project
                                 root [default:False].
+    -f --file=<filename>        Specify the path and filename to use as input for REDI.
     -r --resume                 WARNING!!! Resumes the last run. This
                                 switch is for a specific case. Check the
                                 documentation before using it. [default:False]
