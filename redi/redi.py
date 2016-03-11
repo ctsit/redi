@@ -338,6 +338,10 @@ def _run(config_file, configuration_directory, do_keep_gen_files, dry_run,
     map(logger.warning, errors)
 
     raw_txt_file = os.path.join(configuration_directory, 'raw.txt')
+        if (input_file_path != ""):
+            raw_txt_file = input_file_path
+        else:
+            raw_txt_file = "raw.txt"
     escaped_file = os.path.join(configuration_directory, 'rawEscaped.txt')
     raw_xml_file = os.path.join(configuration_directory, 'raw.xml')
 
