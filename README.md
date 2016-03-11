@@ -1,9 +1,11 @@
 RED-I Project
 =============
 
-[![DOI](https://zenodo.org/badge/doi/10.5281/zenodo.10014.png ".")](http://dx.doi.org/10.5281/zenodo.10014)
+<a href="http://dx.doi.org/10.5281/zenodo.17125"><img src="https://zenodo.org/badge/4064/ctsit/redi.svg"><a>
 [![Travis CI](https://api.travis-ci.org/ctsit/redi.svg?branch=master)](https://api.travis-ci.org/ctsit/redi.svg?branch=master)
 [![Version](https://pypip.in/v/redi/badge.png)](https://pypip.in/v/redi/badge.png)
+[![Coverage Status Master](https://coveralls.io/repos/ctsit/redi/badge.svg?branch=master)](https://coveralls.io/r/ctsit/redi?branch=master)
+[![Coverage Status Develop](https://coveralls.io/repos/ctsit/redi/badge.svg?branch=develop)](https://coveralls.io/r/ctsit/redi?branch=develop)
 [![Downloads](https://pypip.in/d/redi/badge.png)](https://pypip.in/d/redi/badge.png)
 
 

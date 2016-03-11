@@ -1,18 +1,24 @@
+
+# http://docs.travis-ci.com/user/migrating-from-legacy/
+sudo: false
 language: python
 python:
   - "2.7"
 before_install:
-  sudo apt-get install -y python-setuptools libxml2 libxslt1-dev python-dev
+    echo 'apt-get install -y libxml2 libxslt1-dev'
 install:
   - pip install requests
   - pip install lxml
   - pip install sftpserver
+  - pip install coveralls
 
 script: make test
+
+after_success:
+    - coveralls
+
 
 branches:
   only:
     - master
     - develop
-
-

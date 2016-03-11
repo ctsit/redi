@@ -10,6 +10,20 @@ Optional command-line arguments:
 --------------------------------
 
 -  -h, --help: show the help message
+
+-  -v, --verbose: increase verbosity of output
+
+  ::
+
+        $ redi -v
+
+-  -V, --version: Show version number
+
+  ::
+
+        $ redi -V
+
+
 -  -c: Specify the path to the configuration folder.
 
    ::
@@ -24,7 +38,7 @@ Optional command-line arguments:
 
    ::
 
-       $ redi -k
+        $ redi -k
 
    When this parameter is provided, the output files are stored in
    **/out/out\_<timestamp>**.
@@ -102,7 +116,7 @@ Optional command-line arguments:
 
    The data directory is the directory that will store the following:
 
-   -  log file
+   -  log file. Currently up to 31 days of logs are stored, after which the file begins rotating. 
    -  SQLite database used for storing checksums
    -  intermediate output files which are required for debugging and
       used by the resume logic
@@ -113,9 +127,6 @@ Optional command-line arguments:
    directory. Using this switch, one can run multiple instances of redi
    simultaneously.
 
--  -v, --verbose: increase verbosity of output
-
-   $ redi --verbose
 
 -  --skip-blanks: skip blank events when sending event data to RedCAP
 

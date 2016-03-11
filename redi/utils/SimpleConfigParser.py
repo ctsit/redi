@@ -123,6 +123,7 @@ optional_parameters_dict = {
     "sender_email": "please-do-not-reply@example.com",
     "project": "DEFAULT_PROJECT",
     "rules": {},
+    "preprocessors": {},
     "batch_warning_days": 13,
     "rate_limiter_value_in_redcap": 600,
     "batch_info_database": "redi.db",

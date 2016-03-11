@@ -26,7 +26,7 @@ __license__ = "BSD 3-Clause"
 #
 ######################################################
 
-from form import Form
+from redi.form import Form
 import re
 
 

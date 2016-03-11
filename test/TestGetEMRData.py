@@ -43,7 +43,7 @@ class TestGetEMRData(unittest.TestCase):
 
 
     @patch.multiple(pysftp, Connection=_noop)
-    @patch.multiple(GetEmrData, download_file=_noop)
+    @patch.multiple(GetEmrData, download_files=_noop)
     def test_get_emr_data(self):
         """
         This test verifies only that the csv file on the sftp server
@@ -51,6 +51,7 @@ class TestGetEMRData(unittest.TestCase):
         Note: This test is not concerned with testing the sftp communication"""
         temp_folder = tempfile.mkdtemp('/')
         temp_txt_file = os.path.join(temp_folder, "raw.txt")
+        temp_escaped_file = os.path.join(temp_folder, "rawEscaped.txt")
         temp_xml_file = os.path.join(temp_folder, "raw.xml")
 
         input_string = '''"NAME","COMPONENT_ID","RESULT","REFERENCE_UNIT","DATE_TIME_STAMP","STUDY_ID"
@@ -62,7 +63,8 @@ class TestGetEMRData(unittest.TestCase):
             f.write(input_string)
 
         props = EmrFileAccessDetails(
-            emr_download_file='raw.csv',
+            emr_sftp_project_name='/',
+            emr_download_list='raw.csv',
             emr_host='localhost',
             emr_username='admin',
             emr_password='admin',
@@ -72,6 +74,8 @@ class TestGetEMRData(unittest.TestCase):
             )
 
         GetEmrData.get_emr_data(temp_folder, props)
+        GetEmrData.data_preprocessing(temp_txt_file, temp_escaped_file)
+        GetEmrData.generate_xml(temp_escaped_file, temp_xml_file)
 
         with open(temp_xml_file) as f:
             result = f.read()
@@ -199,7 +203,8 @@ def create_sample_file(sample_file):
 def get_connection_info(private_key):
     """Return a dictionary of parameters for creating a sftp connection"""
     access_details = EmrFileAccessDetails(
-        emr_download_file='raw.csv',
+        emr_sftp_project_name='/',
+        emr_download_list='raw.csv',
         emr_host='localhost',
         emr_username='admin',
         emr_password='admin',
@@ -209,8 +214,9 @@ def get_connection_info(private_key):
     )
 
     connection_info = dict(access_details.__dict__)
-    # delete unnecessary element form the dictionary
-    del connection_info['download_file']
+    # delete unnecessary elements form the dictionary
+    del connection_info['sftp_project_name']
+    del connection_info['download_list']
     return connection_info
 
 

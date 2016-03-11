@@ -1,6 +1,134 @@
+2016-02-12 v0.15.0
+
+ * Summary: Improved handling of network issues while sending to REDCap.
+
+ *   Adding exception handling for NewConnectionError in redi/utils/redcapClient.py (Nicholas Rejack)
+ *   Adding parenthesis to REDCAP_RECORDS_PROGRAM in vagrant/Makefile (Nicholas Rejack)
+
+2015-12-03 v0.14.4
+ * Summary: RED-I now has built-in log rotation.
+
+ * Removing whitespace in docs/redi_usage.rst (Nicholas Rejack)
+ * Adding note in documentation about log rotation. (Nicholas Rejack)
+ * Adding log file rotation. Stores 31 days, after which the files are rotated. (Nicholas Rejack)
+ * Moving logic of preprocessor sorting to run_preproc. Run on a sorted list of preprocessors and fetch module name from original dict. Add comments to clarify logic of running preproc. (Nicholas Rejack)
+ * Log the preprocessors as they are run. Fix a syntax error. (Nicholas Rejack)
+ * Move redcap_records.py to its own package, redcap_cli, already published in the Python Package Index (Philip Chase)
+
+2015-11-25 v0.14.3
+ * Summary: Now RED-I can fetch more files initially and run pre-processors in a specific order.
+
+ * Runs the dictionary of preprocessors in order sorted by their keys (module names). This is necessary when using multiple preprocessors that have ordered rules. Unsorted dictionaries have unpredictable ordering. (Nicholas Rejack)
+ * make clean: remove `.eggs` folder (Andrei Sura)
+ * Fixes #168 - add option to display version number (Andrei Sura)
+ * Moving logic for creating dictionary of files to download to __init__ method. Improved logging. (Nicholas Rejack)
+ * Updating TestGetEMRData.py to match new variable names in GetEmrData.py. (Nicholas Rejack)
+ * Updated GetEmrData.py to rename download_file variable to download_list and download_file function to download_files. (Nicholas Rejack)
+ * Fixing TestGetEMRData.py now that a new variable has been added to the EmrFileAccessDetails. (Nicholas Rejack)
+ * UpdatingGetEmrData.py with new functionality. Now, in settings.ini a dictionary of files to be downloaded can be specified for emr_data_file. (Nicholas Rejack)
+ * Changing variables in EmrFileAccessDetails for readability. (Nicholas Rejack)
+ * Update README.md (Christopher P. Barnes)
+ * Update README.md (Christopher P. Barnes)
+ * use travis in container (Andrei Sura)
+ * Add makefile tasks related to pypi (Andrei Sura)
+ * added RedHat/Fedora installation documentation. (Nicholas Rejack)
+ * bumping version number on docs/conf.py (Nicholas Rejack)
+ * repaired some broken text in about.rst in documentation. (Nicholas Rejack)
+
+2015-05-14 v0.14.2
+ * Summary: Preprocessing has been improved to use the rewritten raw CSV file after processing it. This relocates some of the XML processing from GetEMRData.
+
+ * Update about.rst (Buck at UF)
+ * updated Windows install instructions to simplify the procedure (Nicholas Rejack)
+ * added expanded test for TestGetDBPath (Nicholas Rejack)
+ * updated TestSuite to run new test (Nicholas Rejack)
+ * fixed function name in comment in TestCreateImportDataJson.py (Nicholas Rejack)
+ * added new test for TestGetDBPath to increase coverage. (Nicholas Rejack)
+ * fixing version number in redi.py (Nicholas Rejack)
+ * fixed broken tests after relocating processing from GetEmrData (Nicholas Rejack)
+ * made csv to xml preprocessing dependent on getting the EMR file (Nicholas Rejack)
+ * moved XML conversion of raw file out of GetEmrData. (Nicholas Rejack)
+ * `make test` runs all tests (Andrei Sura)
+ * Update README.md (Christopher Barnes)
+
+2015-04-23 v0.14.1
+ * Summary: PreProc and PostProc Hooks! RED-I has added the ability to hook scripts for post processing and preprocessing along with other minor fixes. These features now allow for the writing of filters and the emailing of log messages, for example, at the begining and end of a RED-I run.
+
+ * removed project-specific code from preproc.py (Nicholas Rejack)
+ * removing project-specific preprocessing test file (Nicholas Rejack)
+ * removed line from settings.ini. REDI-I runs out of the box without any preprocessors required (Nich
+ * removing test-scenarios bash script (Nicholas Rejack)
+ * removed scenario data files. These were for project-specific testing. (Nicholas Rejack)
+ * removed non-informative comments in redi.py (Nicholas Rejack)
+ * removed renamed config dir (Nicholas Rejack)
+ * renaming config to previous config-example (Nicholas Rejack)
+ * added scenario 9 to test scenarios. (Nicholas Rejack)
+ * added scenario 7. bash script now shows test number. (Nicholas Rejack)
+ * added scenario 6 (Nicholas Rejack)
+ * updated test-scenarios with scenario 6 : (Nicholas Rejack)
+ * Add Scenario 9 (Taeber Rapczak)
+ * Correct the date of a result in Scenario 5 (Taeber Rapczak)
+ * Add Scenario 6 (Taeber Rapczak)
+ * Add 5 test scenarios and test-scenarios.bash (Taeber Rapczak)
+ * Do not filter rows without a known "panel" (Taeber Rapczak)
+ * Correct spelling error (Ruchi Vivek Desai)
+ * Fix order of expected output in test_fetch_panels (Taeber Rapczak)
+ * Fix the numbering (Ruchi Vivek Desai)
+ * Add missing tags (Ruchi Vivek Desai)
+ * Replace hard-coded fetch_panels() (Taeber Rapczak)
+ * Renumber the steps (Ruchi Vivek Desai)
+ * Fix indentation briken by commit id b8431f26ec459daf1cc1efe9ebf7c4583dacc572 (Ruchi Vivek Desai)
+ * Fix indentation of Windows installation instructions (Ruchi Vivek Desai)
+ * Add instructions for installing RED-I on Windows (Ruchi Vivek Desai)
+ * Fix email address (Ruchi Vivek Desai)
+ * Minor code cleanup (Taeber Rapczak)
+ * Add more context for preprocessors to use (Taeber Rapczak)
+ * Implement filter_old_labs() (Taeber Rapczak)
+ * Implement filter_old_labs() (Taeber Rapczak)
+ * Implement group_rows_by_panel (Taeber Rapczak)
+ * fetch_consent_dates function now implemented and working. (Nicholas Rejack)
+ * Resolve preproc import issue (Taeber Rapczak)
+ * updated preproc.py. Only fails on NotImplementedError now. (Nicholas Rejack)
+ * updated preproc.py to fix variable names when fetching consent date. (Nicholas Rejack)
+
+2015-04-09 v0.14.0
+ * Summary: RED-I has multiple functional and other improvements in this release: licensing has been added in each file. RED-I is now available from PyPI as 'redi'. Most importantly,
+ when multiple lab results come in on the same day, RED-I now takes the first lab of the day, unless it has a value of 'canceled'. RED-I also auto-resumes in the case of a network timeout. Reporting has been improved with more information.
+
+ * Update README.md (Andrei Sura)
+ * removed loinc_code from get_key_timestamp sorting function. data should only be sorted by study_id, form, and date_time_stamp initially. (Nicholas Rejack)
+ * Add license to all .py files (Ruchi Vivek Desai)
+ * Remove bug in pull request for github issue #104 (Ruchi Vivek Desai)
+ * Add initial changes to code for fixing bug in Github issue #104 (Ruchi Vivek Desai)
+ * Move check for file existence from GetEMRData to SimpleConfigParser (Ruchi Vivek Desai)
+ * Log errors related to EMR server to facilitate debugging of redi run from cron (Ruchi Vivek Desai)
+ * Add bad Research IDs to the Error block in the report that gets emailed (Ruchi Vivek Desai)
+ * #133 Add actual site name to subject line in the emailed report (Ruchi Vivek Desai)
+ * Add tools for creating input xml files from csv + new profiling task (Andrei Sura)
+ * Call `compress_data_using_study_form_date` inside `sort_element_tree` This is one example of pre-processing data  before using translation table... (Ruchi Vivek Desai)
+ * Update the unit test test/TestSortElementTree.py (Ruchi Vivek Desai)
+ * Add pycrypto as a required library for installation in setup.py (Ruchi Vivek Desai)
+ * `make clean` - Remove generated pysftp files during testing (Ruchi Vivek Desai)
+ * Save partial fix for filtering out multiple results on same day (Ruchi Vivek Desai)
+ * Minor corrections to Makefile due rename of `bin` to `redi` (Ruchi Vivek Desai)
+ * removed line in setup.py. README.md already included in MANIFEST. In addition, defining 'redi' package twice in package_data overwrites the previous definition, causing .xsd and .xsl files to not be included (Nicholas Rejack)
+ * Uncomment raise MaxRetryError and change the factor by which sleep time increases to 6 (Ruchi Vivek Desai)
+ * Correct the function name for retry number 10 (Ruchi Vivek Desai)
+ * Fix test case broken by commit id adf6f96764f319b41027e1423ea85862e0f3162f (Ruchi Vivek Desai)
+ * Make changes suggested in the review of pull request (Ruchi Vivek Desai)
+ * Move import sys to top of the code (Ruchi Vivek Desai)
+ * Correct concatenation of Attempt no and retry_count (Ruchi Vivek Desai)
+ * Add comment for dummy_init function (Ruchi Vivek Desai)
+ * Add code for github issue #108 auto resume (Ruchi Vivek Desai)
+ * Add working test for send_data_to_redcap function (Ruchi Vivek Desai)
+ * Add test for send_data_to_redcap function (Ruchi Vivek Desai)
+ * Add code for auto-resume on network timeout (Ruchi Vivek Desai)
+
+ * Change the email in setup.py to `ctsit@ctsi.ufl.edu` because the old email was not reachable (Andrei Sura)
+
 2014-12-19 v0.13.2
  * hotfix to change behavior in updateStatusFieldValueInPersonFormEventree. Status field no longer
-   marked "NOT_DONE" if units for that field are missing. 
+   marked "NOT_DONE" if units for that field are missing.
 
 2014-12-04 v0.13.1
 
@@ -121,7 +249,7 @@ decreased anywhere between 12 and 57%.
  * Log information about rules loading
 
 2014-09-10 v0.11.2
- 
+
  * Summary: performance improvements to speed up run time.
 
  * Closes #42 - "redcap_records.py lost the events and fields arguments" (Andrei Sura)

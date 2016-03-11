@@ -14,46 +14,55 @@
 # All rights reserved.
 #
 # Distributed under the BSD 3-Clause License
-# For full text of the BSD 3-Clause License see http://opensource.org/licenses/BSD-3-Clause
+# For full text of the BSD 3-Clause License see
+# http://opensource.org/licenses/BSD-3-Clause
 
 """
 redi.py - Converter from raw clinical data in XML format to REDCap API data
 
 Usage:
-        redi.py -h | --help
-        redi.py [-v] [-k] [-e] [-d] [-r] [-c=<path>] [-D=<datadir>] [-s] [-b]
+    redi.py -h | --help
+    redi.py [-v] [-V] [-k] [-e] [-d] [-f=<path>] [-r] [-c=<path>] [-D=<datadir>] [-s] [-b]
 
 Options:
-        -h --help                   show this help message and exit
-        -v --verbose                Increase verbosity of output [default:False]
-        -k --keep                   Specify this option to preserve the files generated during execution [default:False]
-        -e --emrdata                Specify this option to get EMR data [default:False]
-        -d --dryrun                 To execute redi.py in dry run state. This is to be
-                                    able to test each release by doing a dry run, where
-                                    the data is fetched and processed but not transferred
-                                    to the production REDCap. Email is also not sent. The
-                                    processed data is stored as output files under the
-                                    "out" folder under project root [default:False].
-        -r --resume                 WARNING!!! Resumes the last run of the program. This
-                                    switch is for a specific scenario. Check the
-                                    documentation before using it [default:False]
-        -c --config-path=<path>     Specify the path to the configuration directory
-        -D --datadir=<datadir>      Specify the path to the directory containing project
-                                    specific input and output data which will help in
-                                    running multiple simultaneous instances of redi for
-                                    different projects
-        -s --skip-blanks            skip blank events when sending event data to REDCap [default:False]
-        -b --bulk-send-blanks       send blank events in bulk instead of individually [default:False]
+    -h --help                   Show this help message and exit
+    -v --verbose                Increase output verbosity [default:False]
+    -V --version                Show version number [default:False]
+    -k --keep                   Use this option to preserve the files
+                                generated during execution [default:False]
+    -e --emrdata                Use this option to get EMR data [default:False]
+    -d --dryrun                 To execute redi.py in dry run state. This
+                                is to be able to test each release by doing
+                                a dry run, where the data is fetched and
+                                processed but not transferred to the
+                                production REDCap. Email is also not sent.
+                                The processed data is stored as output
+                                files under the "out" folder under project
+                                root [default:False].
+    -f --file=<filename>        Specify the path and filename to use as input for REDI.
+    -r --resume                 WARNING!!! Resumes the last run. This
+                                switch is for a specific case. Check the
+                                documentation before using it. [default:False]
+    -c --config-path=<path>     Specify the path to the configuration directory
+    -D --datadir=<datadir>      Specify the path to the directory containing
+                                project specific input and output data which
+                                will help in running multiple simultaneous
+                                instances of redi for different projects
+    -s --skip-blanks            Skip blank events when sending data to REDCap
+                                [default:False]
+    -b --bulk-send-blanks       Send blank events in bulk instead of
+                                individually [default:False]
 """
 
 __author__ = "University of Florida CTS-IT Team"
-__version__ = "0.13.2"
+__version__ = "0.15.0"
 __email__ = "ctsit@ctsi.ufl.edu"
 __status__ = "Development"
 
 import ast
 import errno
 import logging
+from logging.handlers import TimedRotatingFileHandler
 import math
 import pickle
 import time
@@ -126,6 +135,9 @@ def main():
 
     - write the Final ElementTree to EAV
     """
+
+
+    # TODO: UPDATE COMMENT HERE
     global _person_form_events_service
 
     # obtaining command line arguments for path to configuration directory
@@ -134,15 +146,25 @@ def main():
     data_directory = args['--datadir']
     if data_directory is None:
         data_directory = DEFAULT_DATA_DIRECTORY
+
     configuration_directory = args['--config-path']
     if configuration_directory is None:
         configuration_directory = os.path.join(data_directory, "config")
+
     do_keep_gen_files = args['--keep']
     get_emr_data = args['--emrdata']
     dry_run = args['--dryrun']
 
-    #configure logger
-    logger = configure_logging(data_directory, args['--verbose'])
+    # display version number and quit
+    if args['--version']:
+        print(__version__)
+        print("redi - REDCap Electronic Data Importer")
+        print("http://redi.readthedocs.org")
+        sys.exit()
+
+    # configure logger
+    #TODO: make parameters configurable
+    logger = configure_logging(data_directory, args['--verbose'], when='D', interval=1, backup_count=31)
 
     # TODO create local variable to catch commandline arguement -f 
     input_file_path = args['--file']
@@ -196,10 +218,13 @@ def main():
         report_courier = report.ReportFileWriter(os.path.join(output_files,
             settings.report_file_path2), logger)
 
+    # This is the run that loads the data
     _run(config_file, configuration_directory, do_keep_gen_files, dry_run,
          get_emr_data, settings, output_files, db_path, redcap_client,
          report_courier, report_creator, args['--resume'],
          args['--skip-blanks'], args['--bulk-send-blanks'])
+
+    # TODO: post processing will go here
 
 
 def get_db_path(batch_info_database, database_path):
@@ -276,8 +301,9 @@ def connect_to_redcap(email_settings, redcap_settings, dry_run=False):
                             redcap_settings['verify_ssl'])
     except RequestException as error:
         logger.exception(error)
-        logger.info("Sending email to redcap support")
+
         if not dry_run:
+            logger.info("Sending email to redcap support")
             redi_email.send_email_redcap_connection_error(email_settings)
         sys.exit()
 
@@ -293,7 +319,8 @@ def _run(config_file, configuration_directory, do_keep_gen_files, dry_run,
     # Getting EMR data
     if get_emr_data:
         connection_details = EmrFileAccessDetails(
-            os.path.join(settings.emr_sftp_project_name, settings.emr_data_file),
+            settings.emr_sftp_project_name,
+            settings.emr_data_file,
             settings.emr_sftp_server_hostname,
             settings.emr_sftp_server_username,
             settings.emr_sftp_server_password,
@@ -303,9 +330,28 @@ def _run(config_file, configuration_directory, do_keep_gen_files, dry_run,
             )
         GetEmrData.get_emr_data(configuration_directory, connection_details)
     # load custom pre-processing filters
-    pre_filters = load_prerules(configuration_directory)
+    pre_filters = load_preproc(settings.preprocessors, configuration_directory)
     # load custom post-processing rules
     rules = load_rules(settings.rules, configuration_directory)
+
+    errors = run_preproc(pre_filters, settings)
+    map(logger.warning, errors)
+
+    raw_txt_file = os.path.join(configuration_directory, 'raw.txt')
+    escaped_file = os.path.join(configuration_directory, 'rawEscaped.txt')
+    raw_xml_file = os.path.join(configuration_directory, 'raw.xml')
+
+    # TODO: make this able to run against a local file if desired
+    # replace certain characters with escape sequences
+    if get_emr_data:
+        GetEmrData.data_preprocessing(raw_txt_file, escaped_file)
+    if get_emr_data:
+        # run csv2xml.py to generate data in xml format
+        GetEmrData.generate_xml(escaped_file, raw_xml_file)
+    if get_emr_data:
+        # delete rawEscaped.txt
+        GetEmrData.cleanup(escaped_file)
+
 
     raw_xml_file = os.path.join(configuration_directory, settings.raw_xml_file)
     email_settings = get_email_settings(settings)
@@ -323,6 +369,8 @@ def _run(config_file, configuration_directory, do_keep_gen_files, dry_run,
 
     if not resume:
         _delete_last_runs_data(data_folder)
+
+        # TODO: Add preproc errors to report
 
         alert_summary, person_form_event_tree_with_data, rule_errors, \
         collection_date_summary_dict, bad_ids =\
@@ -1309,7 +1357,7 @@ def research_id_to_redcap_id_converter(
     return bad_ids
 
 
-def configure_logging(data_folder, verbose=False):
+def configure_logging(data_folder, verbose=False, when='D', interval=1, backup_count=31):
     """Configures the Logger"""
 
     # create logger for our application
@@ -1338,7 +1386,7 @@ def configure_logging(data_folder, verbose=False):
     # create a file handler
     file_handler = None
     try:
-        file_handler = logging.FileHandler(filename)
+        file_handler = TimedRotatingFileHandler(filename, when, interval, backup_count)
     except IOError:
         logger.exception('Could not open file for logging "%s"', filename)
         raise
@@ -1943,32 +1991,58 @@ def load_rules(rules, root='./'):
     return loaded_rules
 
 
-def load_prerules(configuration_directory, root='./'):
+def load_preproc(preprocessors, root='./'):
     """
     Copied and modified version of load_rules function.
     TODO: fix load_rules and load_prerules for better parallelism
 
     """
-    loaded_rules = {}
+    if not preprocessors:
+        return {}
 
-    path = os.path.join(configuration_directory, "preproc")
-    preproc_path = os.path.join(path, "preproc.py")
+    loaded = {}
 
-    module = None
+    for (preprocessor, path) in ast.literal_eval(preprocessors).iteritems():
+        module = None
+        if os.path.exists(path):
+            module = imp.load_source(preprocessor, path)
+        elif os.path.exists(os.path.join(root, path)):
+            module = imp.load_source(preprocessor, os.path.join(root, path))
 
-    # verify pre-processing runner file exists 
-    if not os.path.exists(preproc_path):
-        logger.error("Required preprocessing runner file not present")
-        logger.error("File required to be at {0}".format(preproc_path))
-        logger.error("No preprocessing will be performed in this run.")
-    elif os.path.exists(preproc_path):
-        run_prerules(preproc_path)
-        loaded_rules=""
-    logger.info("Loaded %s pre-processing rule(s)" % len(loaded_rules))
-    return loaded_rules
+        assert module is not None
+        assert module.run_processing is not None
 
-def run_prerules(preproc_path):
+        loaded[preprocessor] = module
+
+    logger.info("Loaded {} pre-processing script{}".format(
+        len(loaded), 's' if len(loaded) != 1 else 0))
+    return loaded
+
+
+def run_preproc(preprocessors, settings):
+    # TODO figure out if this creates a sub process or not
+    # TODO need to check for program exe3cution otherwise give error
     logger.info("Running preprocessing rules")
+    errors = []
+
+    # iterate through sorted list of preprocessors
+    for preprocessor in sorted(preprocessors):
+        # use original dict of preprocessors to get module name
+        module = preprocessors[preprocessor]
+        try:
+            logger.info("Running preprocessing rule: %s %s", preprocessor, module)
+            module.run_processing(settings, redi=sys.modules[__name__],
+                                  logger=logging)
+        except Exception as e:
+            message_format = 'Error processing rule "{0}". {1}'
+            if not hasattr(e, 'errors'):
+                errors.append(message_format.format(preprocessor, e.message))
+                continue
+            for error in e.errors:
+                errors.append(message_format.format(preprocessor, error))
+
+    return errors
+
 
 def run_rules(rules, person_form_event_tree_with_data):
     errors = []

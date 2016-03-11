@@ -86,7 +86,7 @@ Erase the data in the correct project if necessary:
 ::
 
       $ cd ../vagrant && vagrant ssh -c 'cd /vagrant/scripts && php redcapdbm.php -d 12'
-      
+
        Deleting data for project: 12, name: hcvtarget_20_development
        Rows deleted from `redcap_surveys_response`:0
        Rows deleted from `redcap_surveys_participants`:0
@@ -97,7 +97,7 @@ Erase the data in the correct project if necessary:
 
    ::
 
-        $ ../redi/utils/redcap_records.py --token=121212 --url=http://localhost:8998/redcap/api/ -i demographic_test_data.csv
+        $ redcap_records --token=121212 --url=http://localhost:8998/redcap/api/ -i demographic_test_data.csv
 
 On success the following text is returned:
 
@@ -149,7 +149,7 @@ If the token is invalid the following error is returned:
 
    ::
 
-        $ ../redi/utils/redcap_records.py --token=121212 --url=http://localhost:8998/redcap/api/ -f "demgraphics chemistry" > output_B.csv
+        $ redcap_records --token=121212 --url=http://localhost:8998/redcap/api/ -f "demgraphics chemistry" > output_B.csv
 
 If you have a lot of forms, the output comparison is easier if you
 export the forms separately like this:
@@ -157,16 +157,16 @@ export the forms separately like this:
 ::
 
         #!/bin/bash
-        
+
         batch=$1
         forms="demographics chemistry cbc inr hcv_rna_results"
         if [ ! -e $batch ]; then
             mkdir $batch
         fi
-        
+
         for form in $forms
             do
-              ../redi/utils/redcap_records.py --token=121212 --url=http://localhost:8998/redcap/api/ --forms=$form > $batch/$form.csv
+              redcap_records --token=121212 --url=http://localhost:8998/redcap/api/ --forms=$form > $batch/$form.csv
             done
 
 Later do the diff like this:
@@ -210,7 +210,7 @@ Later do the diff like this:
 
    ::
 
-       $ diff -u output_A.csv output_B.csv 
+       $ diff -u output_A.csv output_B.csv
 
 If no new behavior was introduced the output from the command above
 should be an empty string.
