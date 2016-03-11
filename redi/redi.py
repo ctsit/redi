@@ -168,7 +168,7 @@ def main():
 
     # TODO create local variable to catch commandline arguement -f 
     input_file_path = args['--file']
-    logger.info("The file path is" + input_file_path)
+    logger.info("The file path is: " + input_file_path)
 
     # Parsing the config file using a method from module SimpleConfigParser
     settings = SimpleConfigParser.SimpleConfigParser()
@@ -337,11 +337,13 @@ def _run(config_file, configuration_directory, do_keep_gen_files, dry_run,
     errors = run_preproc(pre_filters, settings)
     map(logger.warning, errors)
 
-    raw_txt_file = os.path.join(configuration_directory, 'raw.txt')
-        if (input_file_path != ""):
-            raw_txt_file = input_file_path
-        else:
-            raw_txt_file = "raw.txt"
+    #raw_txt_file = os.path.join(configuration_directory, 'raw.txt')
+    if (input_file_path != ""):
+        raw_txt_file = input_file_path
+        logger.info("The raw.txt file has been bypassed because the -f argument was specified")
+    else:
+        raw_txt_file = os.path.join(configuration_directory, 'raw.txt')
+
     escaped_file = os.path.join(configuration_directory, 'rawEscaped.txt')
     raw_xml_file = os.path.join(configuration_directory, 'raw.xml')
 
