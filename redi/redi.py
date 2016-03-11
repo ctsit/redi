@@ -9,6 +9,7 @@
 # Taeber Rapczak <taeber@ufl.edu>
 # Nicholas Rejack <nrejack@ufl.edu>
 # Josh Hanna <josh@hanna.io>
+# Kevin Hanson <hansonks@gmail.com>
 # Copyright (c) 2014-2015, University of Florida
 # All rights reserved.
 #
@@ -142,6 +143,10 @@ def main():
 
     #configure logger
     logger = configure_logging(data_directory, args['--verbose'])
+
+    # TODO create local variable to catch commandline arguement -f 
+    input_file_path = args['--file']
+    logger.info("The file path is" + input_file_path)
 
     # Parsing the config file using a method from module SimpleConfigParser
     settings = SimpleConfigParser.SimpleConfigParser()
@@ -297,7 +302,8 @@ def _run(config_file, configuration_directory, do_keep_gen_files, dry_run,
             settings.emr_sftp_server_private_key_pass,
             )
         GetEmrData.get_emr_data(configuration_directory, connection_details)
-
+    # load custom pre-processing filters
+    pre_filters = load_prerules(configuration_directory)
     # load custom post-processing rules
     rules = load_rules(settings.rules, configuration_directory)
 
@@ -1936,6 +1942,33 @@ def load_rules(rules, root='./'):
     logger.info("Loaded %s post-processing rule(s)" % len(loaded_rules))
     return loaded_rules
 
+
+def load_prerules(configuration_directory, root='./'):
+    """
+    Copied and modified version of load_rules function.
+    TODO: fix load_rules and load_prerules for better parallelism
+
+    """
+    loaded_rules = {}
+
+    path = os.path.join(configuration_directory, "preproc")
+    preproc_path = os.path.join(path, "preproc.py")
+
+    module = None
+
+    # verify pre-processing runner file exists 
+    if not os.path.exists(preproc_path):
+        logger.error("Required preprocessing runner file not present")
+        logger.error("File required to be at {0}".format(preproc_path))
+        logger.error("No preprocessing will be performed in this run.")
+    elif os.path.exists(preproc_path):
+        run_prerules(preproc_path)
+        loaded_rules=""
+    logger.info("Loaded %s pre-processing rule(s)" % len(loaded_rules))
+    return loaded_rules
+
+def run_prerules(preproc_path):
+    logger.info("Running preprocessing rules")
 
 def run_rules(rules, person_form_event_tree_with_data):
     errors = []
