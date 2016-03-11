@@ -155,6 +155,16 @@ def main():
     get_emr_data = args['--emrdata']
     dry_run = args['--dryrun']
 
+        # TODO better description of commandline argument handling 
+    input_file_path = args['--file']
+    logger.info("The file specified with the -f argument is: " + input_file_path)
+     #raw_txt_file = os.path.join(configuration_directory, 'raw.txt')
+    if (input_file_path != ""):
+        raw_txt_file = input_file_path
+        logger.info("The raw.txt file has been bypassed because the -f argument was specified")
+    else:
+        raw_txt_file = os.path.join(configuration_directory, 'raw.txt')
+
     # display version number and quit
     if args['--version']:
         print(__version__)
@@ -165,10 +175,6 @@ def main():
     # configure logger
     #TODO: make parameters configurable
     logger = configure_logging(data_directory, args['--verbose'], when='D', interval=1, backup_count=31)
-
-    # TODO create local variable to catch commandline arguement -f 
-    input_file_path = args['--file']
-    logger.info("The file path is: " + input_file_path)
 
     if input_file_path and get_emr_data:
         logger.error("You cannot use -e and -f together.")
@@ -225,7 +231,7 @@ def main():
 
     # This is the run that loads the data
     _run(config_file, configuration_directory, do_keep_gen_files, dry_run,
-         get_emr_data, settings, output_files, db_path, redcap_client,
+         get_emr_data, settings, output_files, db_path, raw_txt_file, redcap_client,
          report_courier, report_creator, args['--resume'],
          args['--skip-blanks'], args['--bulk-send-blanks'])
 
@@ -314,7 +320,7 @@ def connect_to_redcap(email_settings, redcap_settings, dry_run=False):
 
 
 def _run(config_file, configuration_directory, do_keep_gen_files, dry_run,
-         get_emr_data, settings, data_folder, database_path, redcap_client,
+         get_emr_data, settings, data_folder, database_path, raw_txt_file, redcap_client,
          report_courier, report_creator, resume=False, skip_blanks=False,
          bulk_send_blanks=False):
     global translational_table_tree
@@ -341,13 +347,6 @@ def _run(config_file, configuration_directory, do_keep_gen_files, dry_run,
 
     errors = run_preproc(pre_filters, settings)
     map(logger.warning, errors)
-
-    #raw_txt_file = os.path.join(configuration_directory, 'raw.txt')
-    if (input_file_path != ""):
-        raw_txt_file = input_file_path
-        logger.info("The raw.txt file has been bypassed because the -f argument was specified")
-    else:
-        raw_txt_file = os.path.join(configuration_directory, 'raw.txt')
 
     escaped_file = os.path.join(configuration_directory, 'rawEscaped.txt')
     raw_xml_file = os.path.join(configuration_directory, 'raw.xml')
