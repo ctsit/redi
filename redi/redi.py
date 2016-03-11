@@ -231,7 +231,7 @@ def main():
 
     # This is the run that loads the data
     _run(config_file, configuration_directory, do_keep_gen_files, dry_run,
-         get_emr_data, settings, output_files, db_path, redcap_client,
+         get_emr_data, settings, output_files, db_path, raw_txt_file, redcap_client,
          report_courier, report_creator, args['--resume'],
          args['--skip-blanks'], args['--bulk-send-blanks'])
 
@@ -320,7 +320,7 @@ def connect_to_redcap(email_settings, redcap_settings, dry_run=False):
 
 
 def _run(config_file, configuration_directory, do_keep_gen_files, dry_run,
-         get_emr_data, settings, data_folder, database_path, redcap_client,
+         get_emr_data, settings, data_folder, database_path, raw_txt_file, redcap_client,
          report_courier, report_creator, resume=False, skip_blanks=False,
          bulk_send_blanks=False):
     global translational_table_tree
