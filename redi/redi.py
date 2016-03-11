@@ -133,7 +133,7 @@ def main():
 
     # TODO create local variable to catch commandline arguement -f 
     input_file_path = args['-f']
-    print input_file_path
+    logger.info("The file path is" + input_file_path)
 
     data_directory = args['--datadir']
     if data_directory is None:
