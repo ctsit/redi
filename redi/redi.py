@@ -143,6 +143,10 @@ def main():
     # obtaining command line arguments for path to configuration directory
     args = docopt(__doc__, help=True)
 
+    # TODO create local variable to catch commandline arguement -f 
+    input_file_path = args['-f']
+    logger.info("The file path is" + input_file_path)
+
     data_directory = args['--datadir']
     if data_directory is None:
         data_directory = DEFAULT_DATA_DIRECTORY
