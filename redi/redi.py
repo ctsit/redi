@@ -170,6 +170,11 @@ def main():
     input_file_path = args['--file']
     logger.info("The file path is" + input_file_path)
 
+    if input_file_path && get_emr_data:
+        logger.error("You cannot use -e and -f together.")
+        logger.error("RED-I will now terminate.")
+        sys.exit()
+        
     # Parsing the config file using a method from module SimpleConfigParser
     settings = SimpleConfigParser.SimpleConfigParser()
     config_file = os.path.join(configuration_directory, 'settings.ini')
