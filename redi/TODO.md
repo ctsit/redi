@@ -1,7 +1,7 @@
 # Write a script to generate this file, along the lines of
 # `grep -r -i "TODO" . >> TODO.md` but something to eliminate duplicates.
 
-
+./redi.py:	# TODO: add `a` switch to redi to tell it to keep all data points from the input file.
 ./batch.py:        # TODO: refactor code to use ConfigParser.RawConfigParser in order to
 ./redi.py:    # TODO: UPDATE COMMENT HERE
 ./redi.py:        # TODO better description of commandline argument handling
@@ -20,3 +20,7 @@
 ./utils/GetEmrData.py:    # TODO: Replace csv2xml.py entirely?
 ./utils/SimpleConfigParser.py:# TODO:
 ./utils/throttle.py:        # @TODO: investigate why the deque is not
+# TODO: make tests: requirement -- msg= mock requires setuptools>=17.1. Aborting installation
+TODO: make tests requirement- msg=sudo easy_install sftpserver
+TODO: make all settings files pythonic aka config.yml .. etc using YAML standard
+TODO: take NOT_DONE examples for values without units data points out of vagrant/redi_out_reference.csv for hcv examples
