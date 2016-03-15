@@ -155,7 +155,7 @@ def main():
     get_emr_data = args['--emrdata']
     dry_run = args['--dryrun']
 
-        # TODO better description of commandline argument handling 
+        # TODO better description of commandline argument handling
     input_file_path = args['--file']
     logger.info("The file specified with the -f argument is: " + input_file_path)
      #raw_txt_file = os.path.join(configuration_directory, 'raw.txt')
@@ -180,7 +180,7 @@ def main():
         logger.error("You cannot use -e and -f together.")
         logger.error("RED-I will now terminate.")
         sys.exit()
-        
+
     # Parsing the config file using a method from module SimpleConfigParser
     settings = SimpleConfigParser.SimpleConfigParser()
     config_file = os.path.join(configuration_directory, 'settings.ini')
@@ -919,6 +919,14 @@ def compress_data_using_study_form_date(data):
             #print("Remove duplicate result using key: {}".format(key_debug))
             logger.debug("Remove duplicate result using key: {}".format(key_debug))
             subj.getparent().remove(subj)
+
+# TODO: look at adding a switch to RED-I, that will need to be caught here, that
+#       will allow another behavioe here that will let us keep all results vs
+#       the current behavior of sorting the events by timestamp and keeping only
+#       the first one to occur on a given day. Example: whne this feature is
+#       implemented red-i will be able to keep only 1 data point for each day
+#       for 50 days or keep 50 data points that may occur on the same day and
+#       map the 50 into 50 event slots in redcap. 
 
     filt = dict()
 
