@@ -143,6 +143,7 @@ def main():
     # obtaining command line arguments for path to configuration directory
     args = docopt(__doc__, help=True)
 
+
     data_directory = args['--datadir']
     if data_directory is None:
         data_directory = DEFAULT_DATA_DIRECTORY
@@ -151,17 +152,49 @@ def main():
     if configuration_directory is None:
         configuration_directory = os.path.join(data_directory, "config")
 
+
     do_keep_gen_files = args['--keep']
     get_emr_data = args['--emrdata']
     dry_run = args['--dryrun']
 
-        # TODO better description of commandline argument handling 
+    # setup the logger right away
+    # configure logger
+    #TODO: make logger parameters configurable
+    logger = configure_logging(data_directory, args['--verbose'], when='D', interval=1, backup_count=31)
+
+# ______________________________________________________________________________
+# commandline switch: -f, --file
+# ______________________________________________________________________________
+# -f, --file are commandline switches to allow the passing in of a data file to
+# RED-I. The file should exist, and it shoudl be a CSV, and it should be
+# readable. If no input is specified then use the defaults and look for a file
+# called raw.txt in the specified `config` directory.
+# ______________________________________________________________________________
+
+    # parse the commandline argument, args requires using long opt if it exists
+    # i.e. -f won't work here if --file is also part of the option.
     input_file_path = args['--file']
-    logger.info("The file specified with the -f argument is: " + input_file_path)
-     #raw_txt_file = os.path.join(configuration_directory, 'raw.txt')
+
+    # TODO: need to add this to the debug/verbose scaffolding
+    # print input_file_path
+    # sys.exit(0)
+
+    # say something nice to the people.
+    logger.info("Using file passed in via -f switch. File name: " + input_file_path)
+
+    # check to see if a file was passed in
     if (input_file_path != ""):
-        raw_txt_file = input_file_path
-        logger.info("The raw.txt file has been bypassed because the -f argument was specified")
+        # check to make sure its a file
+        if os.path.isfile(input_file_path):
+            #check to see if you can read it
+            if os.access(input_file_path, os.R_OK):
+                #ok , all is well make the assignment ;)
+                raw_txt_file = input_file_path
+            else:
+                logger.info("File passed in at the commandline cannot be accessed, file: " + input_file_path)
+        else:
+            logger.info("File passed in at the commandline is not a file: " + input_file_path)
+
     else:
         raw_txt_file = os.path.join(configuration_directory, 'raw.txt')
 
@@ -172,15 +205,12 @@ def main():
         print("http://redi.readthedocs.org")
         sys.exit()
 
-    # configure logger
-    #TODO: make parameters configurable
-    logger = configure_logging(data_directory, args['--verbose'], when='D', interval=1, backup_count=31)
 
     if input_file_path and get_emr_data:
         logger.error("You cannot use -e and -f together.")
         logger.error("RED-I will now terminate.")
         sys.exit()
-        
+
     # Parsing the config file using a method from module SimpleConfigParser
     settings = SimpleConfigParser.SimpleConfigParser()
     config_file = os.path.join(configuration_directory, 'settings.ini')
@@ -919,6 +949,14 @@ def compress_data_using_study_form_date(data):
             #print("Remove duplicate result using key: {}".format(key_debug))
             logger.debug("Remove duplicate result using key: {}".format(key_debug))
             subj.getparent().remove(subj)
+
+# TODO: look at adding a switch to RED-I, that will need to be caught here, that
+#       will allow another behavioe here that will let us keep all results vs
+#       the current behavior of sorting the events by timestamp and keeping only
+#       the first one to occur on a given day. Example: whne this feature is
+#       implemented red-i will be able to keep only 1 data point for each day
+#       for 50 days or keep 50 data points that may occur on the same day and
+#       map the 50 into 50 event slots in redcap.
 
     filt = dict()
 
