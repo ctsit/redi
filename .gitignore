@@ -1,3 +1,7 @@
+.coverage
+cover/
+coverage.xml
+nosetests.xml
 *.eggs
 venv/
 *.pyc
