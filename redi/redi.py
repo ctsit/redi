@@ -143,6 +143,11 @@ def main():
     # obtaining command line arguments for path to configuration directory
     args = docopt(__doc__, help=True)
 
+    # setup the logger right away
+    # configure logger
+    #TODO: make logger parameters configurable
+    logger = configure_logging(data_directory, args['--verbose'], when='D', interval=1, backup_count=31)
+
     data_directory = args['--datadir']
     if data_directory is None:
         data_directory = DEFAULT_DATA_DIRECTORY
@@ -172,9 +177,6 @@ def main():
         print("http://redi.readthedocs.org")
         sys.exit()
 
-    # configure logger
-    #TODO: make parameters configurable
-    logger = configure_logging(data_directory, args['--verbose'], when='D', interval=1, backup_count=31)
 
     if input_file_path and get_emr_data:
         logger.error("You cannot use -e and -f together.")
@@ -926,7 +928,7 @@ def compress_data_using_study_form_date(data):
 #       the first one to occur on a given day. Example: whne this feature is
 #       implemented red-i will be able to keep only 1 data point for each day
 #       for 50 days or keep 50 data points that may occur on the same day and
-#       map the 50 into 50 event slots in redcap. 
+#       map the 50 into 50 event slots in redcap.
 
     filt = dict()
 
