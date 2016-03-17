@@ -1,3 +1,10 @@
+2016-03-17 v0.15.2
+
+ * Summary: Hotfix to fix logging behavior when input file is not present.
+
+* Fixing check for input file in redi.py. Now log the file's location only if it's there. (Nicholas Rejack)
+* Update README.md (Nicholas Rejack)
+
 2016-03-17 v0.15.1
 
 * Summary: RED-I now accepts a file as input from the command line, using -f FILENAME.

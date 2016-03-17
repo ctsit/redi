@@ -179,11 +179,10 @@ def main():
     # print input_file_path
     # sys.exit(0)
 
-    # say something nice to the people.
-    logger.info("Using file passed in via -f switch. File name: " + input_file_path)
-
     # check to see if a file was passed in
-    if (input_file_path != ""):
+    if (input_file_path != None):
+        # say something nice to the people.
+        logger.info("Using file passed in via -f switch. File name: " + input_file_path)
         # check to make sure its a file
         if os.path.isfile(input_file_path):
             #check to see if you can read it
