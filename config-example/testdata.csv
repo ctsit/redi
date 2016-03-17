@@ -1,0 +1,7 @@
+"STUDY_ID","NAME","LOINC_CODE","RESULT","REFERENCE_UNIT","DATE_TIME_STAMP"
+"001","payment_status","1234","UNABLE TO PAY","","2016-03-01"
+"001","payment_status","1234","ABLE TO PAY","","2016-03-02"
+"001","preferred_dinner","5678","turkey, no gravy","2016-05-01"
+"001","drink","5679","Tab","2016-05-01"
+"001","preferred_dinner","5678","full rack of ribs, onion rings","2016-05-02"
+"001","drink","5679","sweet tea, extra sugar","2016-05-02"

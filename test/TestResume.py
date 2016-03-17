@@ -42,8 +42,8 @@ class TestResume(unittest.TestCase):
         with self.assertRaises(FileDeleted):
             redi_ref._run(config_file=None, configuration_directory='',
                       do_keep_gen_files=None, dry_run=True, get_emr_data=False,
-                      settings=MockSettings(), data_folder=None,
-                      database_path=None, redcap_client=None,
+                      settings=MockSettings(),  data_folder=None,
+                      database_path=None, raw_txt_file = None, redcap_client=None,
                       report_courier=None, report_creator=None)
 
     def test_no_resume_stores(self):
@@ -75,7 +75,7 @@ class TestResume(unittest.TestCase):
         with self.assertRaises(FileStored):
             redi_ref._run(config_file=None, configuration_directory='',
                       do_keep_gen_files=None, dry_run=True, get_emr_data=False,
-                      settings=MockSettings(), data_folder=None,
+                      settings=MockSettings(), data_folder=None, raw_txt_file = None,
                       database_path=None, redcap_client=None,
                       report_courier=None, report_creator=None)
 
@@ -98,7 +98,7 @@ class TestResume(unittest.TestCase):
         with self.assertRaises(DataFetched):
             redi_ref._run(config_file=None, configuration_directory='',
                       do_keep_gen_files=None, dry_run=True, get_emr_data=False,
-                      settings=MockSettings(), data_folder=None,
+                      settings=MockSettings(), data_folder=None, raw_txt_file = None,
                       database_path=None, resume=True, redcap_client=None,
                       report_courier=None, report_creator=None)
 

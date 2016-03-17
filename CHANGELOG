@@ -1,3 +1,29 @@
+2016-03-17 v0.15.1
+
+* Summary: RED-I now accepts a file as input from the command line, using -f FILENAME.
+
+* add tests to validate the input file used with the commandline switch -f or --file (Christopher Barnes)
+* move logger setup and config to start sooner since it is needed by other functions (Christopher Barnes)
+* add testdata.csv to use as test input for commandline options test and development (Christopher Barnes)
+* added .coverage, cover/, coverage.xml and nosettest.xml to .gitignore. The are local to my test runs (Christopher Barnes)
+* add TODO items (Christopher Barnes)
+* add todo item for adding a switch to allow another sorting behavior for data points and events (Christopher Barnes)
+* Fixing broken test. (Nicholas Rejack)
+* added raw text file to def _run and function signature (Kevin Steven Hanson)
+* moved raw txt exception out of run function (Kevin Steven Hanson)
+* adding option to bypass raw.txt with an if else block that makes more sense than my previous one (Kevin Steven Hanson)
+* Fixing bad operator. (Nicholas Rejack)
+* Adding code to catch if user tries to use -e and -f at same time (Nicholas Rejack)
+* added ability to use input file and bypass hard coded raw.txt (Kevin Steven Hanson)
+* i called logger in my agruement before it was defined, my bad (Kevin Steven Hanson)
+* adding info statement to work with logger for -f argument (Kevin Steven Hanson)
+* Added the missing usage for the file input. (Buck72)
+* Add the flag for input file for REDI to use. (Buck72)
+* created input file path to hanlde -f file handle with a basic print statement for now (Kevin Steven Hanson)
+* add .eggs as correction for directory name  to .gitignore (Christopher Barnes)
+* add .egg and virtualenvironment folder venv from instructions to .gitignore (Christopher Barnes)
+* Adding a new exception to watch for in redcapClient.py: ConnectionError (Nicholas Rejack)
+
 2016-02-12 v0.15.0
 
  * Summary: Improved handling of network issues while sending to REDCap.
