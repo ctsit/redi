@@ -895,7 +895,7 @@ def sort_element_tree(data, data_folder, keep_all_results):
     #       implemented red-i will be able to keep only 1 data point for each day
     #       for 50 days or keep 50 data points that may occur on the same day and
     #       map the 50 into 50 event slots in redcap.
-    if (keep_all_results == True):
+    if (keep_all_results == False):
         compress_data_using_study_form_date(data)
 
     #batch.printxml(container)
