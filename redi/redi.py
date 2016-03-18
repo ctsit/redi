@@ -428,7 +428,7 @@ def _run(config_file, configuration_directory, do_keep_gen_files, dry_run,
         _create_person_form_event_tree_with_data(
             config_file, configuration_directory, redcap_client,
             form_events_file, raw_xml_file, rules, settings, data_folder,
-            translation_table_file,keep_all_results=False)
+            translation_table_file, keep_all_results)
 
         _store_run_data(data_folder, alert_summary,
                         person_form_event_tree_with_data, rule_errors,
