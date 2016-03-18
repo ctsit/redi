@@ -507,7 +507,7 @@ def _run(config_file, configuration_directory, do_keep_gen_files, dry_run,
 
 def _create_person_form_event_tree_with_data(
         config_file, configuration_directory, redcap_client, form_events_file,
-        raw_xml_file, rules, settings, data_folder, translation_table_file):
+        raw_xml_file, rules, settings, data_folder, translation_table_file, keep_all_results):
 
     global translational_table_tree
     # parse the raw.xml file and fill the etree rawElementTree
