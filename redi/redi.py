@@ -394,6 +394,13 @@ def _run(config_file, configuration_directory, do_keep_gen_files, dry_run,
         # delete rawEscaped.txt
         GetEmrData.cleanup(escaped_file)
 
+    # TODO: clean this up as well was the get_emr_ stuff above
+    if (keep_all_results != None):
+        GetEmrData.data_preprocessing(raw_txt_file, escaped_file)
+        GetEmrData.generate_xml(escaped_file, raw_xml_file)
+        GetEmrData.cleanup(escaped_file)
+
+
 
     raw_xml_file = os.path.join(configuration_directory, settings.raw_xml_file)
     email_settings = get_email_settings(settings)
