@@ -614,7 +614,7 @@ def _create_person_form_event_tree_with_data(
         data,
         os.path.join(data_folder, 'rawDataWithDatumAndUnitsFieldNames.xml'))
     # sort the data tree and compress
-    sort_element_tree(data, data_folder)
+    sort_element_tree(data, data_folder, keep_all_results)
     write_element_tree_to_file(data, os.path.join(data_folder, \
         'rawDataSortedAfterCompression.xml'))
     # update eventName element
