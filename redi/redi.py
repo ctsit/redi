@@ -1033,12 +1033,7 @@ def get_key_date(ele,keep_all_results=False):
     loinc_code  = ele.findtext('loinc_code')
     timestamp   = ele.findtext("DATE_TIME_STAMP")
     # extract the date portion "2015-01-01" from "2015-01-01 00:00:00"
-    if (keep_all_results == False):
         date = timestamp.split(" ")[0]
-    else:
-        # don't strip the time stamp if you want to keep two records
-        # from the same day, but different times
-        date = timestamp
     return (study_id, form_name, loinc_code, date)
 
 
