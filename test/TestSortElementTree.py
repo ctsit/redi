@@ -93,7 +93,12 @@ class TestSortElementTree(unittest.TestCase):
 
     def test_sort_elementtree(self):
         tree_to_sort = etree.ElementTree(etree.fromstring(self.unsorted))
+        # make the original test work
         redi.sort_element_tree(tree_to_sort, self.dirpath, False)
+
+        # test the keep all results functionality
+
+        redi.sort_element_tree(tree_to_sort, self.dirpath, True)
 
         par = etree.XMLParser(remove_blank_text = True)
         clean_expect = etree.XML(self.sorted_tree, parser=par)
