@@ -24,3 +24,5 @@
 TODO: make tests requirement- msg=sudo easy_install sftpserver
 TODO: make all settings files pythonic aka config.yml .. etc using YAML standard
 TODO: take NOT_DONE examples for values without units data points out of vagrant/redi_out_reference.csv for hcv examples
+# TODO: -K 'keep all results' fail if in the settings.ini doesn't have Y-M-D H:M:S
+# TODO: Modify dates on ConMeds forms to validate for H:M:S.
