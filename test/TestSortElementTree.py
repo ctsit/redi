@@ -96,9 +96,9 @@ class TestSortElementTree(unittest.TestCase):
         # make the original test work
         redi.sort_element_tree(tree_to_sort, self.dirpath, False)
 
+        # TODO: create a way to test if --keep-all is True
         # test the keep all results functionality
-
-        redi.sort_element_tree(tree_to_sort, self.dirpath, True)
+        # redi.sort_element_tree(tree_to_sort, self.dirpath, True)
 
         par = etree.XMLParser(remove_blank_text = True)
         clean_expect = etree.XML(self.sorted_tree, parser=par)
