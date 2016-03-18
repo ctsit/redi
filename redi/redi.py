@@ -397,7 +397,7 @@ def _run(config_file, configuration_directory, do_keep_gen_files, dry_run,
     # TODO: clean this up as well was the get_emr_ stuff above
 
     # if either -K or -f are specifed run the steps to make raw.xml
-    if (keep_all_results != False or input_filename != None):
+    if (keep_all_results != False or input_file_path != None):
         GetEmrData.data_preprocessing(raw_txt_file, escaped_file)
         GetEmrData.generate_xml(escaped_file, raw_xml_file)
         GetEmrData.cleanup(escaped_file)
