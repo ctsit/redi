@@ -1036,7 +1036,9 @@ def get_key_date(ele,keep_all_results=False):
     if (keep_all_results == False):
         date = timestamp.split(" ")[0]
     else:
-        date = timestamp    
+        # don't strip the time stamp if you want to keep two records
+        # from the same day, but different times
+        date = timestamp
     return (study_id, form_name, loinc_code, date)
 
 
