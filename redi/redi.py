@@ -1017,7 +1017,7 @@ def get_key_timestamp(ele):
     return (study_id, form_name, timestamp)
 
 
-def get_key_date(ele):
+def get_key_date(ele,keep_all_results=False):
     """
     Helper function for #compress_data_using_study_form_date()
 
@@ -1033,7 +1033,10 @@ def get_key_date(ele):
     loinc_code  = ele.findtext('loinc_code')
     timestamp   = ele.findtext("DATE_TIME_STAMP")
     # extract the date portion "2015-01-01" from "2015-01-01 00:00:00"
-    date = timestamp.split(" ")[0]
+    if (keep_all_results == False):
+        date = timestamp.split(" ")[0]
+    else:
+        date = timestamp    
     return (study_id, form_name, loinc_code, date)
 
 
