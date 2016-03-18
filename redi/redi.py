@@ -354,7 +354,7 @@ def connect_to_redcap(email_settings, redcap_settings, dry_run=False):
 def _run(config_file, configuration_directory, do_keep_gen_files, dry_run,
          get_emr_data, settings, data_folder, database_path, raw_txt_file, redcap_client,
          report_courier, report_creator, resume=False, skip_blanks=False,
-         bulk_send_blanks=False):
+         bulk_send_blanks=False, keep_all_results, input_filename):
     global translational_table_tree
 
     assert _person_form_events_service is not None
@@ -395,7 +395,7 @@ def _run(config_file, configuration_directory, do_keep_gen_files, dry_run,
         GetEmrData.cleanup(escaped_file)
 
     # TODO: clean this up as well was the get_emr_ stuff above
-    if (keep_all_results != None):
+    if (keep_all_results != None or input_filename != None):
         GetEmrData.data_preprocessing(raw_txt_file, escaped_file)
         GetEmrData.generate_xml(escaped_file, raw_xml_file)
         GetEmrData.cleanup(escaped_file)
