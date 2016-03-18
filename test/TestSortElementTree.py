@@ -93,7 +93,7 @@ class TestSortElementTree(unittest.TestCase):
 
     def test_sort_elementtree(self):
         tree_to_sort = etree.ElementTree(etree.fromstring(self.unsorted))
-        redi.sort_element_tree(tree_to_sort, self.dirpath)
+        redi.sort_element_tree(tree_to_sort, self.dirpath, False)
 
         par = etree.XMLParser(remove_blank_text = True)
         clean_expect = etree.XML(self.sorted_tree, parser=par)
@@ -115,4 +115,3 @@ class TestSortElementTree(unittest.TestCase):
 
 if __name__ == '__main__':
     unittest.main()
-
