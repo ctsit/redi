@@ -354,7 +354,7 @@ def connect_to_redcap(email_settings, redcap_settings, dry_run=False):
 def _run(config_file, configuration_directory, do_keep_gen_files, dry_run,
          get_emr_data, settings, data_folder, database_path, raw_txt_file, redcap_client,
          report_courier, report_creator, resume=False, skip_blanks=False,
-         bulk_send_blanks=False, keep_all_results=None, input_file_path=None):
+         bulk_send_blanks=False, keep_all_results=False, input_file_path=None):
     global translational_table_tree
 
     assert _person_form_events_service is not None
@@ -397,7 +397,7 @@ def _run(config_file, configuration_directory, do_keep_gen_files, dry_run,
     # TODO: clean this up as well was the get_emr_ stuff above
 
     # if either -K or -f are specifed run the steps to make raw.xml
-    if (keep_all_results != None or input_filename != None):
+    if (keep_all_results != False or input_filename != None):
         GetEmrData.data_preprocessing(raw_txt_file, escaped_file)
         GetEmrData.generate_xml(escaped_file, raw_xml_file)
         GetEmrData.cleanup(escaped_file)
@@ -895,7 +895,7 @@ def sort_element_tree(data, data_folder, keep_all_results):
     #       implemented red-i will be able to keep only 1 data point for each day
     #       for 50 days or keep 50 data points that may occur on the same day and
     #       map the 50 into 50 event slots in redcap.
-    if (keep_all_results == None):
+    if (keep_all_results == True):
         compress_data_using_study_form_date(data)
 
     #batch.printxml(container)
