@@ -52,6 +52,7 @@ Options:
                                 [default:False]
     -b --bulk-send-blanks       Send blank events in bulk instead of
                                 individually [default:False]
+    -K --keep-all               Keep all results, do not compress by date
 """
 
 __author__ = "University of Florida CTS-IT Team"
@@ -876,7 +877,15 @@ def sort_element_tree(data, data_folder):
     write_element_tree_to_file(data, os.path.join(data_folder,
         "rawDataSortedBeforeCompression.xml"))
 
-    compress_data_using_study_form_date(data)
+    # TODO: look at adding a switch to RED-I, that will need to be caught here, that
+    #       will allow another behavioe here that will let us keep all results vs
+    #       the current behavior of sorting the events by timestamp and keeping only
+    #       the first one to occur on a given day. Example: whne this feature is
+    #       implemented red-i will be able to keep only 1 data point for each day
+    #       for 50 days or keep 50 data points that may occur on the same day and
+    #       map the 50 into 50 event slots in redcap.
+    if (args("--keep-all") = None):
+        compress_data_using_study_form_date(data)
 
     #batch.printxml(container)
 
@@ -949,13 +958,7 @@ def compress_data_using_study_form_date(data):
             logger.debug("Remove duplicate result using key: {}".format(key_debug))
             subj.getparent().remove(subj)
 
-# TODO: look at adding a switch to RED-I, that will need to be caught here, that
-#       will allow another behavioe here that will let us keep all results vs
-#       the current behavior of sorting the events by timestamp and keeping only
-#       the first one to occur on a given day. Example: whne this feature is
-#       implemented red-i will be able to keep only 1 data point for each day
-#       for 50 days or keep 50 data points that may occur on the same day and
-#       map the 50 into 50 event slots in redcap.
+
 
     filt = dict()
 
