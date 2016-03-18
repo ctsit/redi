@@ -22,7 +22,7 @@ redi.py - Converter from raw clinical data in XML format to REDCap API data
 
 Usage:
     redi.py -h | --help
-    redi.py [-v] [-V] [-k] [-e] [-d] [-f=<path>] [-r] [-c=<path>] [-D=<datadir>] [-s] [-b]
+    redi.py [-v] [-V] [-k] [-e] [-d] [-f=<path>] [-r] [-c=<path>] [-D=<datadir>] [-s] [-b] [-K]
 
 Options:
     -h --help                   Show this help message and exit
