@@ -144,8 +144,10 @@ def main():
     # obtaining command line arguments for path to configuration directory
     args = docopt(__doc__, help=True)
 
-
+    # capture any cli args passed in that are needed to pass into other funcs.
     data_directory = args['--datadir']
+    keep_all_results = args['--keep-all']
+
     if data_directory is None:
         data_directory = DEFAULT_DATA_DIRECTORY
 
@@ -857,7 +859,7 @@ def update_redcap_form(data, lookup_data, undefined):
         undefined)
 
 
-def sort_element_tree(data, data_folder):
+def sort_element_tree(data, data_folder, keep_all_results):
     """
     Sort element tree based on three given indices.
     @see #update_time_stamp()
@@ -884,7 +886,7 @@ def sort_element_tree(data, data_folder):
     #       implemented red-i will be able to keep only 1 data point for each day
     #       for 50 days or keep 50 data points that may occur on the same day and
     #       map the 50 into 50 event slots in redcap.
-    if (args("--keep-all") = None):
+    if (keep_all_results = None):
         compress_data_using_study_form_date(data)
 
     #batch.printxml(container)
