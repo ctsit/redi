@@ -45,8 +45,8 @@ class TestParseAll(unittest.TestCase):
 		<name>cbc</name>
 		<formDateField>cbc_lbdtc</formDateField>
 		<formCompletedFieldName>cbc_complete</formCompletedFieldName>
-		<formImportedFieldName>cbc_nximport</formImportedFieldName>
         <formCompletedFieldValue>2</formCompletedFieldValue>
+		<formImportedFieldName>cbc_nximport</formImportedFieldName>
         <formImportedFieldValue>Y</formImportedFieldValue>
 		<event>
     		<name>1_arm_1</name>
@@ -62,8 +62,8 @@ class TestParseAll(unittest.TestCase):
 		<name>chemistry</name>
 		<formDateField>chem_lbdtc</formDateField>
 		<formCompletedFieldName>chemistry_complete</formCompletedFieldName>
-		<formImportedFieldName>chem_nximport</formImportedFieldName>
         <formCompletedFieldValue>2</formCompletedFieldValue>
+		<formImportedFieldName>chem_nximport</formImportedFieldName>
         <formImportedFieldValue>Y</formImportedFieldValue>
 		<event>
 		    <name>1_arm_1</name>
