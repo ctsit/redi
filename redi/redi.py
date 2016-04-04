@@ -53,9 +53,7 @@ Options:
     -b --bulk-send-blanks       Send blank events in bulk instead of
                                 individually [default:False]
 """
-
 __author__ = "University of Florida CTS-IT Team"
-__version__ = "0.15.0"
 __email__ = "ctsit@ctsi.ufl.edu"
 __status__ = "Development"
 
@@ -90,12 +88,15 @@ from utils.redcapClient import RedcapClient
 import utils.SimpleConfigParser as SimpleConfigParser
 import utils.GetEmrData as GetEmrData
 from utils.GetEmrData import EmrFileAccessDetails
+from setuptools_scm import get_version
 
 #from memory_profiler import profile
 
+# set the version using setuptools_scm
+__version__ = get_version()
+
 # Command line default argument values
 _person_form_events_service = None
-
 translational_table_tree = None
 
 DEFAULT_DATA_DIRECTORY = os.getcwd()
@@ -135,7 +136,6 @@ def main():
 
     - write the Final ElementTree to EAV
     """
-
 
     # TODO: UPDATE COMMENT HERE
     global _person_form_events_service
