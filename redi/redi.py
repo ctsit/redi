@@ -93,7 +93,11 @@ from setuptools_scm import get_version
 #from memory_profiler import profile
 
 # set the version using setuptools_scm
-__version__ = get_version()
+# allow for setting the version when redi is imported
+try:
+    __version__ = get_version()
+except:
+    __version__ = get_version(root='..', relative_to=__file__)
 
 # Command line default argument values
 _person_form_events_service = None
