@@ -18,7 +18,7 @@ from setuptools import setup, find_packages
 
 setup(
     name='redi',
-    version='0.15.2',
+    use_scm_version=True,
     author='https://www.ctsi.ufl.edu/research/study-development/informatics-consulting/',
     author_email='ctsit@ctsi.ufl.edu',
     packages=find_packages(exclude=['test']),
@@ -54,5 +54,6 @@ setup(
     setup_requires=[
         "nose >= 1.0",
         "nosexcover >= 1.0.10",
+        "setuptools_scm >= 1.10.1"
     ],
 )
