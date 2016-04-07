@@ -706,6 +706,8 @@ def parse_form_events(form_events_file):
         logger.info("Form events file contains {} lines." \
                 .format(str(sum(1 for line in raw))))
 
+    validate_xml_file_and_extract_data(form_events_file, pkg_resources.resource_filename(
+        'redi', 'utils/formEvents.xsd'))
     data = etree.parse(form_events_file)
     event_sum = len(data.findall(".//event"))
     logger.debug(str(event_sum) + " total events read into tree.")

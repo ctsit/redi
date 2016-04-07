@@ -1,0 +1,33 @@
+<?xml version ="1.0"?>
+<xs:schema attributeFormDefault="unqualified" elementFormDefault="unqualified" xmlns:xs="http://www.w3.org/2001/XMLSchema">
+    <xs:element name="redcapProject">
+	    <xs:complexType>
+		     <xs:sequence>
+			    <xs:element name="name" type="xs:string" />
+				<xs:element name="form" maxOccurs="unbounded">
+				    <xs:complexType>
+					    <xs:sequence>
+                            <xs:element name="name" type="xs:string"/>
+                            <xs:element name="formDateField" type="xs:string"/>
+    					    <xs:element name="formFieldDetected" type="xs:string" minOccurs="0"/>
+						    <xs:element name="formQuantifiedField" type="xs:string" minOccurs="0"/>
+					        <xs:element name="formCompletedFieldName" type="xs:string"/>
+					        <xs:element name="formCompletedFieldValue" type="xs:int"/>
+					        <xs:element name="formImportedFieldName"  type="xs:string" minOccurs="0"/>
+						    <xs:element name="formImportedFieldValue"  type="xs:string" minOccurs="0"/>
+						    <xs:element name="formFieldNotes" type="xs:string" minOccurs="0"/>
+						    <xs:element name="formFieldVerbatim" type="xs:string" minOccurs="0"/>
+						    <xs:element name="event" maxOccurs="unbounded">
+						        <xs:complexType>
+			    			        <xs:sequence>
+				    			        <xs:element name="name" type="xs:string"/>
+					        	    </xs:sequence>
+					            </xs:complexType>
+		    	            </xs:element>
+					    </xs:sequence>
+				    </xs:complexType>
+				</xs:element>
+			</xs:sequence>
+		</xs:complexType>
+	</xs:element>
+</xs:schema>
