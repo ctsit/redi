@@ -22,7 +22,7 @@ redi.py - Converter from raw clinical data in XML format to REDCap API data
 
 Usage:
     redi.py -h | --help
-    redi.py [-v] [-V] [-k] [-e] [-d] [-f=<path>] [-r] [-c=<path>] [-D=<datadir>] [-s] [-b]
+    redi.py [-v] [-V] [-k] [-e] [-d] [-f=<path>] [-r] [-c=<path>] [-D=<datadir>] [-s] [-b] [-K]
 
 Options:
     -h --help                   Show this help message and exit
@@ -52,10 +52,9 @@ Options:
                                 [default:False]
     -b --bulk-send-blanks       Send blank events in bulk instead of
                                 individually [default:False]
+    -K --keep-all               Keep all results, do not compress by date
 """
-
 __author__ = "University of Florida CTS-IT Team"
-__version__ = "0.15.0"
 __email__ = "ctsit@ctsi.ufl.edu"
 __status__ = "Development"
 
@@ -90,12 +89,19 @@ from utils.redcapClient import RedcapClient
 import utils.SimpleConfigParser as SimpleConfigParser
 import utils.GetEmrData as GetEmrData
 from utils.GetEmrData import EmrFileAccessDetails
+from setuptools_scm import get_version
 
 #from memory_profiler import profile
 
+# set the version using setuptools_scm
+# allow for setting the version when redi is imported
+try:
+    __version__ = get_version()
+except:
+    __version__ = get_version(root='..', relative_to=__file__)
+
 # Command line default argument values
 _person_form_events_service = None
-
 translational_table_tree = None
 
 DEFAULT_DATA_DIRECTORY = os.getcwd()
@@ -136,15 +142,16 @@ def main():
     - write the Final ElementTree to EAV
     """
 
-
     # TODO: UPDATE COMMENT HERE
     global _person_form_events_service
 
     # obtaining command line arguments for path to configuration directory
     args = docopt(__doc__, help=True)
 
-
+    # capture any cli args passed in that are needed to pass into other funcs.
     data_directory = args['--datadir']
+    keep_all_results = args['--keep-all']
+
     if data_directory is None:
         data_directory = DEFAULT_DATA_DIRECTORY
 
@@ -262,7 +269,7 @@ def main():
     _run(config_file, configuration_directory, do_keep_gen_files, dry_run,
          get_emr_data, settings, output_files, db_path, raw_txt_file, redcap_client,
          report_courier, report_creator, args['--resume'],
-         args['--skip-blanks'], args['--bulk-send-blanks'])
+         args['--skip-blanks'], args['--bulk-send-blanks'], keep_all_results, input_file_path)
 
     # TODO: post processing will go here
 
@@ -351,7 +358,7 @@ def connect_to_redcap(email_settings, redcap_settings, dry_run=False):
 def _run(config_file, configuration_directory, do_keep_gen_files, dry_run,
          get_emr_data, settings, data_folder, database_path, raw_txt_file, redcap_client,
          report_courier, report_creator, resume=False, skip_blanks=False,
-         bulk_send_blanks=False):
+         bulk_send_blanks=False, keep_all_results=False, input_file_path=None):
     global translational_table_tree
 
     assert _person_form_events_service is not None
@@ -391,6 +398,15 @@ def _run(config_file, configuration_directory, do_keep_gen_files, dry_run,
         # delete rawEscaped.txt
         GetEmrData.cleanup(escaped_file)
 
+    # TODO: clean this up as well was the get_emr_ stuff above
+
+    # if either -K or -f are specifed run the steps to make raw.xml
+    if (keep_all_results != False or input_file_path != None):
+        GetEmrData.data_preprocessing(raw_txt_file, escaped_file)
+        GetEmrData.generate_xml(escaped_file, raw_xml_file)
+        GetEmrData.cleanup(escaped_file)
+
+
 
     raw_xml_file = os.path.join(configuration_directory, settings.raw_xml_file)
     email_settings = get_email_settings(settings)
@@ -416,7 +432,7 @@ def _run(config_file, configuration_directory, do_keep_gen_files, dry_run,
         _create_person_form_event_tree_with_data(
             config_file, configuration_directory, redcap_client,
             form_events_file, raw_xml_file, rules, settings, data_folder,
-            translation_table_file)
+            translation_table_file, keep_all_results)
 
         _store_run_data(data_folder, alert_summary,
                         person_form_event_tree_with_data, rule_errors,
@@ -495,7 +511,7 @@ def _run(config_file, configuration_directory, do_keep_gen_files, dry_run,
 
 def _create_person_form_event_tree_with_data(
         config_file, configuration_directory, redcap_client, form_events_file,
-        raw_xml_file, rules, settings, data_folder, translation_table_file):
+        raw_xml_file, rules, settings, data_folder, translation_table_file, keep_all_results):
 
     global translational_table_tree
     # parse the raw.xml file and fill the etree rawElementTree
@@ -602,7 +618,7 @@ def _create_person_form_event_tree_with_data(
         data,
         os.path.join(data_folder, 'rawDataWithDatumAndUnitsFieldNames.xml'))
     # sort the data tree and compress
-    sort_element_tree(data, data_folder)
+    sort_element_tree(data, data_folder, keep_all_results)
     write_element_tree_to_file(data, os.path.join(data_folder, \
         'rawDataSortedAfterCompression.xml'))
     # update eventName element
@@ -702,6 +718,8 @@ def parse_form_events(form_events_file):
         logger.info("Form events file contains {} lines." \
                 .format(str(sum(1 for line in raw))))
 
+    validate_xml_file_and_extract_data(form_events_file, pkg_resources.resource_filename(
+        'redi', 'utils/formEvents.xsd'))
     data = etree.parse(form_events_file)
     event_sum = len(data.findall(".//event"))
     logger.debug(str(event_sum) + " total events read into tree.")
@@ -856,7 +874,7 @@ def update_redcap_form(data, lookup_data, undefined):
         undefined)
 
 
-def sort_element_tree(data, data_folder):
+def sort_element_tree(data, data_folder, keep_all_results):
     """
     Sort element tree based on three given indices.
     @see #update_time_stamp()
@@ -876,7 +894,15 @@ def sort_element_tree(data, data_folder):
     write_element_tree_to_file(data, os.path.join(data_folder,
         "rawDataSortedBeforeCompression.xml"))
 
-    compress_data_using_study_form_date(data)
+    # TODO: look at adding a switch to RED-I, that will need to be caught here, that
+    #       will allow another behavioe here that will let us keep all results vs
+    #       the current behavior of sorting the events by timestamp and keeping only
+    #       the first one to occur on a given day. Example: whne this feature is
+    #       implemented red-i will be able to keep only 1 data point for each day
+    #       for 50 days or keep 50 data points that may occur on the same day and
+    #       map the 50 into 50 event slots in redcap.
+    if (keep_all_results == False):
+        compress_data_using_study_form_date(data)
 
     #batch.printxml(container)
 
@@ -949,13 +975,7 @@ def compress_data_using_study_form_date(data):
             logger.debug("Remove duplicate result using key: {}".format(key_debug))
             subj.getparent().remove(subj)
 
-# TODO: look at adding a switch to RED-I, that will need to be caught here, that
-#       will allow another behavioe here that will let us keep all results vs
-#       the current behavior of sorting the events by timestamp and keeping only
-#       the first one to occur on a given day. Example: whne this feature is
-#       implemented red-i will be able to keep only 1 data point for each day
-#       for 50 days or keep 50 data points that may occur on the same day and
-#       map the 50 into 50 event slots in redcap.
+
 
     filt = dict()
 
@@ -1003,7 +1023,7 @@ def get_key_timestamp(ele):
     return (study_id, form_name, timestamp)
 
 
-def get_key_date(ele):
+def get_key_date(ele,keep_all_results=False):
     """
     Helper function for #compress_data_using_study_form_date()
 

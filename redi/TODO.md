@@ -24,3 +24,16 @@
 TODO: make tests requirement- msg=sudo easy_install sftpserver
 TODO: make all settings files pythonic aka config.yml .. etc using YAML standard
 TODO: take NOT_DONE examples for values without units data points out of vagrant/redi_out_reference.csv for hcv examples
+<<<<<<< HEAD
+# TODO: -K 'keep all results' fail if in the settings.ini doesn't have Y-M-D H:M:S
+
+
+
+# TODO: Modify dates on ConMeds forms to validate for H:M:S.
+=======
+
+** TODO: To be able to make pull request for keep-all switch . Write unit test(s) for all the functions touched by the keep-all commandline switch.
+** TODO: TO be able to make a pull request for keep-all switch. Write end-to-end tests to take in fake conmeds data, call the sithc, pass in the file, use redcap     api to query out the data and compare to input csv. Use N Rejack scripts to create test data.
+** TODO: change install redcap setting to enable table based authentication.    
+** TODO: find out why sometimes redcap can't talk to mysql. restart mysql fixes. may need to add this to the bootstrap to restart apache and mysql right at the e    nd.
+>>>>>>> afd8c4190fafc4092152fcfb7c5dcee57cd5eb47

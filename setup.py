@@ -18,7 +18,7 @@ from setuptools import setup, find_packages
 
 setup(
     name='redi',
-    version='0.15.2',
+    use_scm_version=True,
     author='https://www.ctsi.ufl.edu/research/study-development/informatics-consulting/',
     author_email='ctsit@ctsi.ufl.edu',
     packages=find_packages(exclude=['test']),
@@ -27,7 +27,7 @@ setup(
         'redi': ['utils/*.xsl', 'utils/*.xsd']
     },
     url='https://github.com/ctsit/redi',
-    download_url = 'https://github.com/ctsit/redi/releases/tag/0.15.1',
+    download_url = 'https://github.com/ctsit/redi/releases/tag/0.15.3',
     keywords = ['EMR', 'EHR', 'REDCap', 'Clinical Data'],
     license='BSD 3-Clause',
     description='REDCap Electronic Data Importer',
@@ -54,5 +54,6 @@ setup(
     setup_requires=[
         "nose >= 1.0",
         "nosexcover >= 1.0.10",
+        "setuptools_scm >= 1.10.1"
     ],
 )
