@@ -40,6 +40,7 @@ setup(
         "docopt >= 0.6.2",
         "pycrypto >= 2.6.1",
         "redcap_cli >= 0.1.0",
+        "setuptools_scm >= 1.10.1"
     ],
     entry_points={
         'console_scripts': [
