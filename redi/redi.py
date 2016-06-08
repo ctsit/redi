@@ -2101,12 +2101,12 @@ def run_preproc(preprocessors, settings):
             module.run_processing(settings, redi=sys.modules[__name__],
                                   logger=logging)
         except Exception as e:
-            message_format = 'Error processing rule "{0}". {1}'
+            message_format = 'Error processing rule "{0}". {1} {2}'
             if not hasattr(e, 'errors'):
-                errors.append(message_format.format(preprocessor, e.message))
+                errors.append(message_format.format(preprocessor, e.message, e.args))
                 continue
             for error in e.errors:
-                errors.append(message_format.format(preprocessor, error))
+                errors.append(message_format.format(preprocessor, error, e.args))
 
     return errors
 
