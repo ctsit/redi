@@ -148,8 +148,15 @@ def main():
     # obtaining command line arguments for path to configuration directory
     args = docopt(__doc__, help=True)
 
+
+    #def get_args():
+    #    return args
+
     # capture any cli args passed in that are needed to pass into other funcs.
     data_directory = args['--datadir']
+    # we need to access this in nested functions.
+    # make it global. CPB made me do it.
+    global keep_all_results
     keep_all_results = args['--keep-all']
 
     if data_directory is None:
@@ -376,6 +383,17 @@ def _run(config_file, configuration_directory, do_keep_gen_files, dry_run,
             settings.emr_sftp_server_private_key_pass,
             )
         GetEmrData.get_emr_data(configuration_directory, connection_details)
+
+    # save raw file into expected location, config directory + "raw.txt"
+    # this is so the prefilters know where to find it
+    if keep_all_results:
+        with open(raw_txt_file, 'r') as f:
+            lines = f.readlines()
+            with open(os.path.join(configuration_directory, "raw.txt"), "w") as f2:
+                f2.writelines(lines)
+        # now that we've written to raw.txt, change raw_txt_file to point to it
+        raw_txt_file = os.path.join(configuration_directory, 'raw.txt')
+
     # load custom pre-processing filters
     pre_filters = load_preproc(settings.preprocessors, configuration_directory)
     # load custom post-processing rules
@@ -622,7 +640,7 @@ def _create_person_form_event_tree_with_data(
     write_element_tree_to_file(data, os.path.join(data_folder, \
         'rawDataSortedAfterCompression.xml'))
     # update eventName element
-    alert_summary = update_event_name(data, form_events_tree, 'undefined')
+    alert_summary = update_event_name(data, form_events_tree, 'undefined', )
     # write back the changed global Element Tree
     write_element_tree_to_file(data, os.path.join(data_folder, \
         'rawDataWithAllUpdates.xml'))
@@ -1219,6 +1237,7 @@ def update_event_name(data, lookup_data, undefined):
     last_record_group = 'dummy'
     last_timestamp_group = 'dummy'
     event_index = 0
+    first_time = True
     lookup_table_length = 1
     old_form_name = 'dummy'
     distinct_value = Counter()
@@ -1242,6 +1261,7 @@ def update_event_name(data, lookup_data, undefined):
         # if the form_name 'undefined, go to the next record!
         if form_name == 'undefined':
             # log something as info
+            logger.info("form_name is marked as undefined.")
             element_to_set.text = undefined
         elif timestamp == '':
             # Log this as bad data we are skipping
@@ -1254,6 +1274,9 @@ def update_event_name(data, lookup_data, undefined):
             current_record_group = string.join([study_id, form_name], "_")
             current_timestamp_group = \
                 string.join([study_id, form_name, timestamp], "_")
+        if keep_all_results:
+            logger.info("event_index: {}".format(str(event_index)))
+
             if last_record_group != current_record_group:
                 # Check that the event counter form the previous loop did not
                 # exceed the size of the event list.  If it did we should
@@ -1281,14 +1304,28 @@ def update_event_name(data, lookup_data, undefined):
                 last_form_name = form_name
                 last_timestamp_group = current_timestamp_group
                 event_index = 0
+                # reset first_time if we're keeping all results
+                # so we don't increment event_index on the first time through
+                if keep_all_results:
+                    first_time = True
+
             if last_timestamp_group != current_timestamp_group:
                 # move to the next event
                 logger.debug("update_event_name: Move to next event: " +
                              current_timestamp_group)
-                event_index += 1
+                if not first_time:
+                    event_index += 1
                 last_timestamp_group = current_timestamp_group
             else:
-                pass
+                # this handles the condition where there are two medications on the same day that look identical
+                # the timestamp group doesn't change in that case, so we much increment it here.
+                if (last_timestamp_group == current_timestamp_group) and keep_all_results:
+                    if first_time:
+                        #logger.info("where event_index: {}".format(event_index))
+                        first_time = False
+                    elif not first_time:
+                        event_index +=1
+
             # note which form we were on
             old_form_name = form_name
             # check that we have not exceeded the event count for this form.
