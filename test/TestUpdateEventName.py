@@ -16,6 +16,7 @@
 # For full text of the BSD 3-Clause License see http://opensource.org/licenses/BSD-3-Clause
 
 import unittest
+import mock
 from lxml import etree
 import os
 from redi import redi
@@ -29,6 +30,7 @@ DEFAULT_DATA_DIRECTORY = os.getcwd()
 class TestUpdateEventName(unittest.TestCase):
 
     def setUp(self):
+        redi.keep_all_results = False
         self.sortedData = """
     <study>
     <subject>
