@@ -640,7 +640,7 @@ def _create_person_form_event_tree_with_data(
     write_element_tree_to_file(data, os.path.join(data_folder, \
         'rawDataSortedAfterCompression.xml'))
     # update eventName element
-    alert_summary = update_event_name(data, form_events_tree, 'undefined', )
+    alert_summary = update_event_name(data, form_events_tree, 'undefined')
     # write back the changed global Element Tree
     write_element_tree_to_file(data, os.path.join(data_folder, \
         'rawDataWithAllUpdates.xml'))
@@ -1274,8 +1274,8 @@ def update_event_name(data, lookup_data, undefined):
             current_record_group = string.join([study_id, form_name], "_")
             current_timestamp_group = \
                 string.join([study_id, form_name, timestamp], "_")
-        if keep_all_results:
-            logger.info("event_index: {}".format(str(event_index)))
+        # if keep_all_results:
+        #     logger.info("event_index: {}".format(str(event_index)))
 
             if last_record_group != current_record_group:
                 # Check that the event counter form the previous loop did not
@@ -1313,8 +1313,8 @@ def update_event_name(data, lookup_data, undefined):
                 # move to the next event
                 logger.debug("update_event_name: Move to next event: " +
                              current_timestamp_group)
-                if not first_time:
-                    event_index += 1
+                #if not first_time:
+                event_index += 1
                 last_timestamp_group = current_timestamp_group
             else:
                 # this handles the condition where there are two medications on the same day that look identical
