@@ -41,6 +41,7 @@ from TestUpdateDataFromLookup import TestUpdateDataFromLookup
 from TestAddElementsToTree import TestAddElementsToTree
 from TestUpdateRedcapFieldNameValueAndUnits import TestUpdateRedcapFieldNameValueAndUnits
 from TestUpdateEventName import TestUpdateEventName
+from TestUpdateEventName_KeepAllEvents import TestUpdateEventName_KeepAllEvents
 from TestResearchIdToRedcapId import TestResearchIdToRedcapId
 from TestUpdateFormImported import TestUpdateFormImported
 from TestCreateSummaryReport import TestCreateSummaryReport
@@ -83,6 +84,7 @@ class redi_suite(unittest.TestSuite):
         redi_test_suite.addTest(TestAddElementsToTree)
         redi_test_suite.addTest(TestUpdateRedcapFieldNameValueAndUnits)
         redi_test_suite.addTest(TestUpdateEventName)
+        redi_test_suite.addTest(TestUpdateEventName_KeepAllEvents)
         redi_test_suite.addTest(TestResearchIdToRedcapId)
         redi_test_suite.addTest(TestUpdateFormImported)
         redi_test_suite.addTest(TestCreateSummaryReport)
