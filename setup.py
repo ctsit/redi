@@ -27,7 +27,7 @@ setup(
         'redi': ['utils/*.xsl', 'utils/*.xsd']
     },
     url='https://github.com/ctsit/redi',
-    download_url = 'https://github.com/ctsit/redi/releases/tag/0.15.3',
+    download_url = 'https://github.com/ctsit/redi/releases/tag/0.15.4',
     keywords = ['EMR', 'EHR', 'REDCap', 'Clinical Data'],
     license='BSD 3-Clause',
     description='REDCap Electronic Data Importer',
