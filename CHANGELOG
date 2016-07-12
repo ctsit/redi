@@ -1,3 +1,14 @@
+2016-07-12 v0.15.4
+ 
+ *   Updating .gitignore. (Nicholas Rejack)
+ *   Adding new test to verify behavior when keep_all_events is set to True. (Nicholas Rejack)
+ *   Adding new logic to properly update event tree when keep_all_events is True. (Nicholas Rejack)
+ *   Updating new test to test when keep_all_events is True (Nicholas Rejack)
+ *   Modifying redi.py to correctly increment events in the case where we are keeping all. (Nicholas Rejack)
+ *   Improving error logging when preprocessors fail. (Nicholas Rejack)
+ *   Adding setuptools_scm to install_requires in setup.py. (Nicholas Rejack)
+ *   fixed merge messages left in TODO (Christopher Barnes)
+
 2016-05-19 v0.15.3
 
 * modify TestSortElementTree to test for new commandline switch for keeping all results that bypasses the compress events functions (Christopher Barnes)
