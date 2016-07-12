@@ -3,6 +3,7 @@ cover/
 coverage.xml
 nosetests.xml
 *.eggs
+*.egg
 venv/
 *.pyc
 *.pyo

@@ -27,10 +27,10 @@ proj_root = os.path.abspath(goal_dir)+'/'
 
 DEFAULT_DATA_DIRECTORY = os.getcwd()
 
-class TestUpdateEventName(unittest.TestCase):
+class TestUpdateEventName_KeepAllEvents(unittest.TestCase):
 
     def setUp(self):
-        redi.keep_all_results = False
+        redi.keep_all_results = True
         self.sortedData = """
     <study>
     <subject>
@@ -161,6 +161,9 @@ class TestUpdateEventName(unittest.TestCase):
 		<event>
 			<name>3_arm_1</name>
 		</event>
+		<event>
+			<name>4_arm_1</name>
+		</event>
     </form>
 	<form>
 		<name>chemistry</name>
@@ -174,6 +177,9 @@ class TestUpdateEventName(unittest.TestCase):
 		</event>
 		<event>
 			<name>3_arm_1</name>
+		</event>
+		<event>
+			<name>4_arm_1</name>
 		</event>
     </form>
 </redcapProject>
@@ -199,7 +205,7 @@ class TestUpdateEventName(unittest.TestCase):
         <loinc_code>1534435</loinc_code>
         <Reference_Unit>g/dL</Reference_Unit>
         <Result_Value>11.3</Result_Value>
-    <timestamp>1906-03-15 11:00</timestamp><redcapFormName>cbc</redcapFormName><eventName>1_arm_1</eventName><formDateField/><formCompletedFieldName/><timestamp/><redcapFormName/><eventName/><formDateField/><formCompletedFieldName/></subject>
+    <timestamp>1906-03-15 11:00</timestamp><redcapFormName>cbc</redcapFormName><eventName>2_arm_1</eventName><formDateField/><formCompletedFieldName/><timestamp/><redcapFormName/><eventName/><formDateField/><formCompletedFieldName/></subject>
     <subject>
         <STUDY_ID>11</STUDY_ID>
         <Collection_Date>05/20/20</Collection_Date>
@@ -208,7 +214,7 @@ class TestUpdateEventName(unittest.TestCase):
         <loinc_code>1577876</loinc_code>
         <Reference_Unit>g/dL</Reference_Unit>
         <Result_Value>8.7</Result_Value>
-    <timestamp>1903-04-16 12:00</timestamp><redcapFormName>cbc</redcapFormName><eventName>2_arm_1</eventName><formDateField/><formCompletedFieldName/><timestamp/><redcapFormName/><eventName/><formDateField/><formCompletedFieldName/></subject>
+    <timestamp>1903-04-16 12:00</timestamp><redcapFormName>cbc</redcapFormName><eventName>3_arm_1</eventName><formDateField/><formCompletedFieldName/><timestamp/><redcapFormName/><eventName/><formDateField/><formCompletedFieldName/></subject>
     <subject>
         <STUDY_ID>11</STUDY_ID>
         <Collection_Date>05/20/20</Collection_Date>
@@ -217,7 +223,7 @@ class TestUpdateEventName(unittest.TestCase):
         <loinc_code>1534435</loinc_code>
         <Reference_Unit>g/dL</Reference_Unit>
         <Result_Value>11.3</Result_Value>
-    <timestamp>1903-04-16 12:00</timestamp><redcapFormName>cbc</redcapFormName><eventName>2_arm_1</eventName><formDateField/><formCompletedFieldName/><timestamp/><redcapFormName/><eventName/><formDateField/><formCompletedFieldName/></subject>
+    <timestamp>1903-04-16 12:00</timestamp><redcapFormName>cbc</redcapFormName><eventName>4_arm_1</eventName><formDateField/><formCompletedFieldName/><timestamp/><redcapFormName/><eventName/><formDateField/><formCompletedFieldName/></subject>
         <subject>
         <STUDY_ID>11</STUDY_ID>
         <Collection_Date>10/12/18</Collection_Date>
@@ -294,7 +300,7 @@ class TestUpdateEventName(unittest.TestCase):
 
         self.expect = etree.tostring(etree.fromstring(self.output))
 
-    def test_update_event_name(self):
+    def test_update_event_name_keep_all_events(self):
         redi.configure_logging(DEFAULT_DATA_DIRECTORY)
         redi.update_event_name(self.data, self.form_events_tree, 'undefined')
         result = etree.tostring(self.data)
