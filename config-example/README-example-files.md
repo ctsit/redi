@@ -19,23 +19,23 @@ This example configuration is based on one of the default REDCap example project
 
 ### settings.ini:
 
-This file contains settings necessary to run REDI. It contains detailed descriptions of the fields which need to be set before running REDI.
+This file contains settings necessary to run RED-I. It contains detailed descriptions of the fields which need to be set before running RED-I.
 
 ### research_id_to_redcap_id_map.xml:
 
-This file contains mappings of primary keys of your REDCap system and your custom project. This file is used by REDI at runtime to map your incoming project specific Id's to that of REDCap Id's.
+This file contains mappings of primary keys of your REDCap system and your custom project. This file is used by RED-I at runtime to map your incoming project's specific IDs to that of the REDCap's IDs.
 
 ### translationTable.xml:
 
-This file maps your project specific component id's with REDCap Fields. Change this file to map your project specific component id's to REDCap Fields.
+This file maps your project specific component id's with REDCap Fields. Change this file to map your project specific component IDs to REDCap Fields.
 
 ### formEvents.xml:
 
-This file contains details of the form, events and fields which are updated by running REDI. If you have any forms to be updated, please add them in this file before running REDI.
+This file contains details of the form, events and fields which are updated by running RED-I. If you have any forms to be updated, please add them in this file before running RED-I.
 
 ### report.xsl:
 
-This file is used for formatting the final REDI run report, which is sent to the receiver_email set in the settings.ini
+This file is used for formatting the final RED-I run report, which is sent to the receiver_email set in the settings.ini
 
 ### clinical-component-to-loinc-example.xml:
 
