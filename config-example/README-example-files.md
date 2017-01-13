@@ -13,7 +13,7 @@ REDI also includes the ability to create a REDCap server inside a virtual machin
 
 ## Getting the Right REDCap Project to use these files
 
-This example configuration is based on the one of the default REDCap example projects.  This project is identified as "Longitudinal Database (1 arm)" in the REDCap template library.  In fresh REDCap installations like you will find in the test virtual machine, the project named "Example Database (Longitudinal)" has already been created for you using this template.
+This example configuration is based on one of the default REDCap example projects. This project is identified as "Longitudinal Database (1 arm)" in the REDCap template library. In a fresh REDCap installation, (like you will find in a test virtual machine), the project named "Example Database (Longitudinal)" has already been created for you in this template.
 
 ## File Descriptions
 
