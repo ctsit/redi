@@ -1,7 +1,6 @@
 # Example Configuration Files
 
-The configuration file examples provided here will allow you to test RED-I to push data into a sample REDCap project.  To use these files you will need access to a running REDCap server with the appropriate example project, and an API Token for that project that allows you to write to the project.
-
+The example configuration files provide here will allow you to execute a test run of data being pushed into a sample REDCap project.To use these files, you will need access to a running REDCap server with the appropriate example project, and an API Token for that project which will allow RED-I access to write to the sample project.
 
 ## Getting REDCap
 
