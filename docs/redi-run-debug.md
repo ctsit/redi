@@ -12,5 +12,4 @@ Go to the project root. Run `ls -alh`. See when things were modified. Check to s
 Go and look at the files in `/etc/cron.d`. See if the command is scheduled to run at the time you think. 
 
 #### 4 Check mail ####
-When cron jobs error they send a local mail to the root user. I believe that this is forwarded to the redi user. If you have mail then you have information about runs that ran. Check your mails
-
+When cron jobs error they send a local mail to the root user. The `redi` user is forwarded these mails. You can switch users to `redi` by running `sudo su - redi`. To view the mails use the `mutt` command. 
