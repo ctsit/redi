@@ -17,6 +17,8 @@ ifneq ("$(wildcard $(MAKE_CONFIG_FILE))", "")
    REDCAP_SQL_PATCHES_FOLDER := $(CONFIG_FOLDER_VAGRANT)/sqlPatches
    ENROLLMENT_CSV_FILE  := $(CONFIG_FOLDER_VAGRANT)/enrollment_test_data.csv
    REFERENCE_OUTPUT_FILE:= $(CONFIG_FOLDER_VAGRANT)/redi_out_reference.csv
+   GENERATE_INPUT_SCRIPT:= $(CONFIG_FOLDER_VAGRANT)/generate_enrollment.sh
+   NUMBER_OF_RECORDS_TO_ENROLL:= $(shell cat ${MAKE_CONFIG_FILE} | grep 'number_of_records_for_enrollment' | cut -d = -f2 | tr -d ' ')
 
    REDCAP_API_URI := $(shell cat ${CONFIG_FILE} | sed -e 's/ //g' | grep -v '^\#' | grep 'redcap_uri=' | cut -d '=' -f2)
    REDCAP_VM_URI := $(subst api/,,$(REDCAP_API_URI))
@@ -138,6 +140,7 @@ rc_clean:
 	vagrant ssh -c 'cd /vagrant/scripts && php redcapdbm.php -d $(REDCAP_PROJECT_ID)'
 
 rc_enrollment: check_config
+	$(shell [ -f $(GENERATE_INPUT_SCRIPT) ] && $(GENERATE_INPUT_SCRIPT) $(NUMBER_OF_RECORDS_TO_ENROLL) $(ENROLLMENT_CSV_FILE))
 	$(REDCAP_RECORDS_CMD) -i $(ENROLLMENT_CSV_FILE)
 
 rc_post:
