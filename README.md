@@ -2,11 +2,9 @@ RED-I Project
 =============
 
 <a href="https://zenodo.org/badge/latestdoi/4064/ctsit/redi"><img src="https://zenodo.org/badge/4064/ctsit/redi.svg" alt="10.5281/zenodo.47793"><a>
-[![Travis CI](https://api.travis-ci.org/ctsit/redi.svg?branch=master)](https://api.travis-ci.org/ctsit/redi.svg?branch=master)
-[![Version](https://pypip.in/v/redi/badge.png)](https://pypip.in/v/redi/badge.png)
-[![Coverage Status Master](https://coveralls.io/repos/ctsit/redi/badge.svg?branch=master)](https://coveralls.io/r/ctsit/redi?branch=master)
+[![Travis CI](https://api.travis-ci.org/ctsit/redi.svg?branch=develop)](https://api.travis-ci.org/ctsit/redi.svg?branch=develop)
+[![PyPI version](https://badge.fury.io/py/redi.svg)](https://badge.fury.io/py/redi)
 [![Coverage Status Develop](https://coveralls.io/repos/ctsit/redi/badge.svg?branch=develop)](https://coveralls.io/r/ctsit/redi?branch=develop)
-[![Downloads](https://pypip.in/d/redi/badge.png)](https://pypip.in/d/redi/badge.png)
 
 
 Introduction
@@ -25,7 +23,7 @@ investigator with feedback on upload success in the form of summary
 reporting of the data upload process.
 
 You can view a presentation of the RED-I tool in action on
-[youtube](https://www.youtube.com/watch?v=0x04y5SNPL8&feature=youtu.be)
+[youtube](https://www.youtube.com/watch?v=0x04y5SNPL8&feature=youtu.be).
 
 For the official documentation please refer to
 [http://redi.readthedocs.io](http://redi.readthedocs.io) or
