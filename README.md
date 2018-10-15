@@ -1,10 +1,10 @@
 RED-I Project
 =============
 
-<a href="https://zenodo.org/badge/latestdoi/4064/ctsit/redi"><img src="https://zenodo.org/badge/4064/ctsit/redi.svg" alt="10.5281/zenodo.47793"><a>
-[![Travis CI](https://api.travis-ci.org/ctsit/redi.svg?branch=develop)](https://api.travis-ci.org/ctsit/redi.svg?branch=develop)
+[![10.5281/zenodo.47793](https://zenodo.org/badge/4064/ctsit/redi.svg)](http://ufl.to/ctsit)
+[![Travis CI](https://api.travis-ci.org/ctsit/redi.svg?branch=master)](https://api.travis-ci.org/ctsit/redi.svg?branch=master)
 [![PyPI version](https://badge.fury.io/py/redi.svg)](https://badge.fury.io/py/redi)
-[![Coverage Status Develop](https://coveralls.io/repos/ctsit/redi/badge.svg?branch=develop)](https://coveralls.io/r/ctsit/redi?branch=develop)
+[![Coverage Status Develop](https://coveralls.io/repos/ctsit/redi/badge.svg?branch=master)](https://coveralls.io/r/ctsit/redi?branch=master)
 
 
 Introduction
@@ -28,3 +28,4 @@ You can view a presentation of the RED-I tool in action on
 For the official documentation please refer to
 [http://redi.readthedocs.io](http://redi.readthedocs.io) or
 [RED-I Project](https://github.com/ctsit/redi/blob/master/docs/about.rst).
+
