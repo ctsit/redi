@@ -1,5 +1,21 @@
+CHANGELOG
+=========
+
+2018-10-15 v0.15.5
+
+ * Update badges in README (Taeber Rapczak)
+ * Merge pull request #230 from PFWhite/feature/rediRunDebugDocs (Christopher P. Barnes)
+ * Update redi-run-debug.md (Patrick White)
+ * added docs for debuging redi runs (Patrick White)
+ * Update README-example-files.md (Michael Buchholz)
+ * Improve configuration examples for use in vagrant installs (Roy Keyes)
+ * Merge pull request #212 from ctsit/develop (Nicholas Rejack)
+ * Merge pull request #211 from nrejack/fix_getemrdata_unittest (Nicholas Rejack)
+ * Fixing broken unittest TestGetEMRData. Skipping problematic test. See issue #210. (Nicholas Rejack)
+
+
 2016-07-12 v0.15.4
- 
+
  *   Updating .gitignore. (Nicholas Rejack)
  *   Adding new test to verify behavior when keep_all_events is set to True. (Nicholas Rejack)
  *   Adding new logic to properly update event tree when keep_all_events is True. (Nicholas Rejack)
@@ -8,6 +24,7 @@
  *   Improving error logging when preprocessors fail. (Nicholas Rejack)
  *   Adding setuptools_scm to install_requires in setup.py. (Nicholas Rejack)
  *   fixed merge messages left in TODO (Christopher Barnes)
+
 
 2016-05-19 v0.15.3
 
@@ -47,12 +64,14 @@
 * cleanup -K keep all switch (Christopher Barnes)
 * add switch to keep all results (Christopher Barnes)
 
+
 2016-03-17 v0.15.2
 
  * Summary: Hotfix to fix logging behavior when input file is not present.
 
 * Fixing check for input file in redi.py. Now log the file's location only if it's there. (Nicholas Rejack)
 * Update README.md (Nicholas Rejack)
+
 
 2016-03-17 v0.15.1
 
